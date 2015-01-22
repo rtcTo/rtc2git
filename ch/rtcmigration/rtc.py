@@ -14,7 +14,7 @@ class ImportHandler:
         changeEntries = []
         with open(rtcmigration.outputFileName, 'r') as file:
             for line in file:
-                splittedLines = line.split(RTC.informationSeparator)
+                splittedLines = line.split(ImportHandler.informationSeparator)
                 revisionWithBrackets = splittedLines[0].strip()
                 revision = revisionWithBrackets[1:-1]
                 author = splittedLines[1].strip()
