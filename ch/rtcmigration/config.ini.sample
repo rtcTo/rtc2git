@@ -3,7 +3,7 @@ Repo=https://rtc.mySite.com
 User=USR
 Password=secret
 Stream=MainDevStream
-GIT-Reponame=bisonProcess.git
+GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 
 [Migration]
