@@ -1,0 +1,16 @@
+[General]
+Repo=https://rtc.mySite.com
+User=USR
+Password=secret
+Stream=MainDevStream
+GIT-Reponame=bisonProcess.git
+WorkspaceName=ToBeCreatedWorkspaceName
+
+[Migration]
+# They should follow the order the way you like your branches separated by "," eg. Stream_Version1, Stream_Version2, Stream_Version3
+Streams=Stream_Version1, Stream_Version2, Stream_Version3
+
+# Optional, can be defined to set version back to a specific baseline --> Format ComponentName = BaseLineName, AnotherComponentName=BaseLineName
+# Use scm --show-uuid y list baselines --components "YourComponent" -r RTC-Repo --max 20000
+InitialBaseLine=ComponentName = "MyInitialBaseLineCommit", AnotherComponentName="AnotherInitialBaselineCommit"
+
