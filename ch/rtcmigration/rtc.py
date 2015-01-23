@@ -8,14 +8,11 @@ class ImportHandler:
     informationSeparator = "@@"
 
     def __init__(self, config):
-        self.workspace = config.workspace
-        self.repoURL = config.repo
-        self.outputFileName = config.outputFileName
-        self.workDirectory = config.workDirectory
+        self.config = config
 
     def getChangeEntries(self, baselineToCompare):
         Shell.execute(
-            "scm --show-alias n --show-uuid y compare ws " + self.workspace + " baseline " + baselineToCompare + " -r " + self.repoURL + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@")
+            "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@")
         changeEntries = []
         with open(self.outputFileName, 'r') as file:
             for line in file:
@@ -37,7 +34,7 @@ class ImportHandler:
             revision = changeEntry.revision
             print("accepting: " + changeEntry.comment + " (Date: " + changeEntry.date, " Revision: " + revision + ")")
             Shell.execute(
-                "scm accept --changes " + revision + " -r " + self.repoURL + " --target " + self.workspace,
+                "scm accept --changes " + revision + " -r " + self.config.repo + " --target " + self.config.workspace,
                 "accept.txt", "a")
             print("Revision " + revision + " accepted")
         print(datetime.now().strftime('%H:%M:%S') + " - All changes from " + baselineToCompare + " accepted")
@@ -74,14 +71,21 @@ class ImportHandler:
     def acceptChangesFromStreams(self, streams):
         for stream in streams:
             fileName = "StreamComponents_" + stream + ".txt"
-            Shell.execute("scm --show-alias n --show-uuid y list components -v -r " + self.repoURL + " " + stream,
+            Shell.execute("scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
                           fileName)
             for componentBaseLineEntry in self.getBaseLinesFromStream(stream, fileName):
                 self.acceptChangesFromBaseLine(componentBaseLineEntry.baseline)
 
-    def initializeWorkspace(self):
-# Shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
-#Shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
+    def initialize(self):
+        config = self.config
+        repo = config.repo
+        Shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        Shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        # Shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
+        #Shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
+        Shell.execute("scm load -r %s %s" % (repo, config.workspace))
+
+
 
 class ChangeEntry:
     def __init__(self, revision, author, date, comment):

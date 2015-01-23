@@ -25,9 +25,23 @@ def readConfig():
     repositoryURL = generalSection['Repo']
     mainStream = generalSection['Stream']
     workDirectory = generalSection['Directory']
+    if not workDirectory:
+        workDirectory = "."
+    migrationSection = config['Migration']
     streams = []
-    for stream in config['Migration']['Streams'].split(","):
+    for stream in migrationSection['Streams'].split(","):
         streams.append(stream.strip())
+    initialComponentBaseLines = []
+    definedBaseLines = migrationSection['InitialBaseLine']
+    if definedBaseLines:
+        componentBaseLines = definedBaseLines.split(",")
+        for entry in componentBaseLines:
+            componentBaseLine = entry.split("=")
+            component = componentBaseLine[0].strip()
+            baseline = componentBaseLine[1].strip()
+            if (" " in baseline):
+                baseLine = baseline.replace(" ", Shell.spaceSeparator)
+
     return Config(user, password, repositoryURL, workspace, workDirectory, mainStream, streams)
 
 
