@@ -5,6 +5,8 @@ Password=secret
 Stream=MainDevStream
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
+## Will be created or emptied on initialization
+Directory = \temp\myWorkingDirectory
 
 [Migration]
 # They should follow the order the way you like your branches separated by "," eg. Stream_Version1, Stream_Version2, Stream_Version3
