@@ -45,15 +45,15 @@ class ImportHandler:
         self.acceptChangesIntoWorkspace(baseLineToCompare)
 
     def getBaseLinesFromStream(self, stream, filename):
-        skipFirstRow = 1
+        firstRowSkipped = False
         isComponentLine = 2
         componentBaseLinesEntries = []
         component = None
         baseline = None
         with open(filename, 'r') as file:
             for line in file:
-                if (skipFirstRow == 1):
-                    skipFirstRow = 0
+                if (firstRowSkipped == False):
+                    firstRowSkipped = True
                     continue
                 splittedLines = line.split("\"")[0].split(" ")
                 if isComponentLine % 2 == 0:
