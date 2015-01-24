@@ -28,7 +28,7 @@ class Initializer:
 class Commiter:
     def addAndcommit(self, changeEntry):
         os.system("git config --global user.name " + changeEntry.author)
-        os.system("git add .")
+        os.system("git add -A")
         os.system("git commit -m " + changeEntry.comment)
 
     def branch(self, branchName):
