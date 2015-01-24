@@ -22,7 +22,7 @@ class Initializer:
     def initialCommitAndPush(self):
         os.system("git add .")
         os.system("git commit -m Initial Commit")
-        os.system("git push origin")
+        os.system("git push origin master")
 
 
 class Commiter:
