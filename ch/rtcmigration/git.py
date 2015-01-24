@@ -8,8 +8,8 @@ class Initializer:
 
     def createIgnore(self):
         newLine = "\n"
-        with open(".gitIgnore", "w") as ignore:
-            ignore.write(".jazz" + newLine)
+        with open(".gitignore", "w") as ignore:
+            ignore.write(".jazz5" + newLine)
             ignore.write(".metadata" + newLine)
 
     def initalize(self):
@@ -21,15 +21,15 @@ class Initializer:
 
     def initialCommitAndPush(self):
         os.system("git add -A")
-        os.system("git commit -m Initial Commit")
+        os.system("git commit -m \"Initial Commit\"")
         os.system("git push origin master")
 
 
 class Commiter:
     def addAndcommit(self, changeEntry):
-        os.system("git config --global user.name " + changeEntry.author)
+        os.system("git config --global --replace-all user.name \"" + changeEntry.author + "\"")
         os.system("git add -A")
-        os.system("git commit -m " + changeEntry.comment)
+        os.system("git commit -m \"" + changeEntry.comment + "\"")
 
     def branch(self, branchName):
         os.system("git checkout -b " + branchName)
