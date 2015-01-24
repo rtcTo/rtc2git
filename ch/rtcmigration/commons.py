@@ -1,18 +1,28 @@
 import configparser
+import os
 from subprocess import call
+
 
 
 class Shell:
     spaceSeparator = "****"
 
-    def execute(commandToExecute, outputfile="output.txt", openMode="w"):
-        commands = []
-        for splittedcommand in commandToExecute.split(' '):
-            if splittedcommand.__contains__(Shell.spaceSeparator):
-                splittedcommand = splittedcommand.replace(Shell.spaceSeparator, " ")
-            commands.append(splittedcommand)
-        with open(outputfile, openMode) as file:
-            call(commands, stdout=file)
+    def execute(self, commandToExecute, outputfile=None, openMode="w", useShell=False):
+        command = getCommands(commandToExecute)
+        if not outputfile:
+            call(command, shell=useShell)
+        else:
+            with open(outputfile, openMode) as file:
+                call(command, stdout=file, shell=useShell)
+
+
+def getCommands(command):
+    commands = []
+    for splittedcommand in command.split(' '):
+        if splittedcommand.__contains__(Shell.spaceSeparator):
+            splittedcommand = splittedcommand.replace(Shell.spaceSeparator, " ")
+        commands.append(splittedcommand)
+    return commands
 
 
 def readConfig():
@@ -41,14 +51,14 @@ def readConfig():
             baseline = componentBaseLine[1].strip()
             if (" " in baseline):
                 baseLine = baseline.replace(" ", Shell.spaceSeparator)
-
-    return Config(user, password, repositoryURL, workspace, workDirectory, mainStream, streams)
+    gitRepoName = generalSection['GIT-Reponame']
+    return Config(user, password, repositoryURL, workspace, workDirectory, mainStream, streams, gitRepoName)
 
 
 class Config:
     outputFileName = "output.txt"
 
-    def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams):
+    def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams, gitRepoName):
         self.user = user
         self.password = password
         self.repo = repo
@@ -56,5 +66,10 @@ class Config:
         self.workDirectory = workDirectory
         self.mainStream = mainStream
         self.streams = streams
+        self.gitRepoName = gitRepoName
+        self.clonedGitRepoName = gitRepoName[:-4]
+        self.logFolder = os.getcwd()
 
+    def getLogPath(self, filename):
+        return "%s\%s" % (self.logFolder, filename)
 

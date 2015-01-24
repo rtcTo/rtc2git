@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rtc2git.ch.rtcmigration.commons import Shell
+from rtc2git.ch.rtcmigration.git import Commiter
 
 
 class ImportHandler:
@@ -9,12 +10,16 @@ class ImportHandler:
 
     def __init__(self, config):
         self.config = config
+        self.shell = Shell()
+        self.git = Commiter()
 
     def getChangeEntries(self, baselineToCompare):
-        Shell.execute(
-            "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@")
+        outputFileName = self.config.getLogPath(self.config.outputFileName)
+        self.shell.execute(
+            "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
+            outputFileName)
         changeEntries = []
-        with open(self.outputFileName, 'r') as file:
+        with open(outputFileName, 'r') as file:
             for line in file:
                 splittedLines = line.split(self.informationSeparator)
                 revisionWithBrackets = splittedLines[0].strip()
@@ -33,9 +38,11 @@ class ImportHandler:
         for changeEntry in changeEntries:
             revision = changeEntry.revision
             print("accepting: " + changeEntry.comment + " (Date: " + changeEntry.date, " Revision: " + revision + ")")
-            Shell.execute(
-                "scm accept --changes " + revision + " -r " + self.config.repo + " --target " + self.config.workspace,
-                "accept.txt", "a")
+
+            acceptCommand = "scm accept --changes " + revision + " -r " + self.config.repo + " --target " + self.config.workspace
+            self.shell.execute(acceptCommand, self.config.getLogPath("accept.txt"), "a")
+            self.git.addAndcommit(changeEntry)
+
             print("Revision " + revision + " accepted")
         print(datetime.now().strftime('%H:%M:%S') + " - All changes from " + baselineToCompare + " accepted")
 
@@ -68,22 +75,25 @@ class ImportHandler:
                 isComponentLine += 1
         return componentBaseLinesEntries
 
-    def acceptChangesFromStreams(self, streams):
-        for stream in streams:
-            fileName = "StreamComponents_" + stream + ".txt"
-            Shell.execute("scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
+    def acceptChangesFromStreams(self):
+        for stream in self.config.streams:
+            fileName = self.config.getLogPath("StreamComponents_" + stream + ".txt")
+            self.shell.execute(
+                "scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
                           fileName)
+            self.git.branch(stream)
             for componentBaseLineEntry in self.getBaseLinesFromStream(stream, fileName):
                 self.acceptChangesFromBaseLine(componentBaseLineEntry.baseline)
+            self.git.pushBranch(stream)
 
     def initialize(self):
         config = self.config
         repo = config.repo
-        Shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        Shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
-        # Shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
-        #Shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
-        Shell.execute("scm load -r %s %s" % (repo, config.workspace))
+        self.shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        # self.shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        #self.shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
+        #self.shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
+        self.shell.execute("scm load -r %s %s" % (repo, config.workspace))
 
 
 
