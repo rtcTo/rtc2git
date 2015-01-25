@@ -9,7 +9,7 @@ WorkspaceName=ToBeCreatedWorkspaceName
 Directory = \temp\myWorkingDirectory
 
 [Migration]
-# They should follow the order the way you like your branches separated by "," eg. Stream_Version1, Stream_Version2, Stream_Version3
+# Streams referenced by UUID, separated by ",". They should follow the order the way you like your branches eg. Stream_Version1, Stream_Version2, Stream_Version3
 Streams=Stream_Version1, Stream_Version2, Stream_Version3
 
 # Optional, can be defined to set version back to a specific baseline --> Format ComponentName = BaseLineName, AnotherComponentName=BaseLineName
