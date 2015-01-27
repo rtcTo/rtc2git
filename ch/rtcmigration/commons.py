@@ -1,13 +1,14 @@
 import configparser
 import os
 from subprocess import call
+from datetime import datetime
 
 
 
 class Shell:
     spaceSeparator = "****"
 
-    def execute(self, commandToExecute, outputfile=None, openMode="w", useShell=False):
+    def execute(self, commandToExecute, outputfile=None, openMode="w", useShell=True):
         command = getCommands(commandToExecute)
         if not outputfile:
             call(command, shell=useShell)
@@ -54,6 +55,9 @@ def readConfig():
     gitRepoName = generalSection['GIT-Reponame']
     return Config(user, password, repositoryURL, workspace, workDirectory, mainStream, streams, gitRepoName)
 
+
+def getTimeStamp():
+    return datetime.now().strftime('%H:%M:%S')
 
 class Config:
     outputFileName = "output.txt"
