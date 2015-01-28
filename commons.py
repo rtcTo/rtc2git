@@ -50,7 +50,7 @@ def readConfig():
             componentBaseLine = entry.split("=")
             component = componentBaseLine[0].strip()
             baseline = componentBaseLine[1].strip()
-            if (" " in baseline):
+            if " " in baseline:
                 baseLine = baseline.replace(" ", Shell.spaceSeparator)
     gitRepoName = generalSection['GIT-Reponame']
     return Config(user, password, repositoryURL, workspace, workDirectory, mainStream, streams, gitRepoName)
