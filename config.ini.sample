@@ -9,10 +9,13 @@ WorkspaceName=ToBeCreatedWorkspaceName
 Directory = \temp\myWorkingDirectory
 
 [Migration]
-# Streams referenced by UUID, separated by ",". They should follow the order the way you like your branches eg. Stream_Version1, Stream_Version2, Stream_Version3
+# Streams referenced by UUID, separated by ",". They should follow the order the way you like your branches, beginning from the oldest
+# eg. Stream_Version1, Stream_Version2, Stream_Version3
+# Use scm --show-alias n --show-uuid y list streams -r Repo
 Streams=Stream_Version1, Stream_Version2, Stream_Version3
 
 # Optional, can be defined to set version back to a specific baseline --> Format ComponentName = BaseLineName, AnotherComponentName=BaseLineName
-# Use scm --show-uuid y list baselines --components "YourComponent" -r RTC-Repo --max 20000
+# Use scm --show-uuid y list baselines --components "YourComponent" -r Repo -m 20000
 InitialBaseLine=ComponentName = "MyInitialBaseLineCommit", AnotherComponentName="AnotherInitialBaselineCommit"
+
 
