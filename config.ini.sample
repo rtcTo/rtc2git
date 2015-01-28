@@ -9,8 +9,8 @@ WorkspaceName=ToBeCreatedWorkspaceName
 Directory = \temp\myWorkingDirectory
 
 [Migration]
-# Streams referenced by UUID, separated by ",". They should follow the order the way you like your branches, beginning from the oldest
-# eg. Stream_Version1, Stream_Version2, Stream_Version3
+# Streams referenced by UUID, separated by ",". They should follow the order the way you like your branches, beginning from the oldest and ending with your maindevstream
+# eg. Stream_Version1, Stream_Version2, Stream_Version3, Stream_Head
 # Use scm --show-alias n --show-uuid y list streams -r Repo
 Streams=Stream_Version1, Stream_Version2, Stream_Version3
 
