@@ -1,9 +1,9 @@
 import os
 import shutil
 
-from rtc2git.ch.rtcmigration.rtc import ImportHandler
-from rtc2git.ch.rtcmigration.git import Initializer
-from rtc2git.ch.rtcmigration import commons
+from rtc2git.rtcFunctions import ImportHandler
+from rtc2git.gitFunctions import Initializer
+from rtc2git import commons
 
 
 def initialize(dir):

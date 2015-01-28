@@ -1,6 +1,6 @@
-from rtc2git.ch.rtcmigration.commons import Shell
-from rtc2git.ch.rtcmigration.git import Commiter
-from rtc2git.ch.rtcmigration import commons
+from rtc2git.commons import Shell
+from rtc2git.gitFunctions import Commiter
+from rtc2git import commons
 
 
 class ImportHandler:
