@@ -3,7 +3,7 @@ from subprocess import call
 spaceSeparator = "****"
 
 
-def execute(self, commandToExecute, outputfile=None, openMode="w", useShell=True):
+def execute(commandToExecute, outputfile=None, openMode="w", useShell=True):
     command = getCommands(commandToExecute)
     if not outputfile:
         call(command, shell=useShell)
