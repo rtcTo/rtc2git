@@ -3,7 +3,7 @@ import shutil
 
 from rtc2git.rtcFunctions import ImportHandler
 from rtc2git.gitFunctions import Initializer
-from rtc2git import commons
+from rtc2git import config
 
 
 def initialize(dir):
@@ -16,7 +16,7 @@ def initialize(dir):
     gitInitializer.initialCommitAndPush()
 
 
-config = commons.readConfig()
+config = config.readConfig()
 rtcHandler = ImportHandler(config)
 gitInitializer = Initializer(config)
 initialize(config.workDirectory)

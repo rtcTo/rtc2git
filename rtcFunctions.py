@@ -1,20 +1,19 @@
-from rtc2git.commons import Shell
+from rtc2git import shell
 from rtc2git.gitFunctions import Commiter
-from rtc2git import commons
+from rtc2git import shouter
 
 
 class ImportHandler:
-    dateFormat = "yyyy-MM-dd" + Shell.spaceSeparator + "HH:mm:ss"
+    dateFormat = "yyyy-MM-dd" + shell.spaceSeparator + "HH:mm:ss"
     informationSeparator = "@@"
 
     def __init__(self, config):
         self.config = config
-        self.shell = Shell()
         self.git = Commiter()
 
     def getChangeEntries(self, baselineToCompare):
         outputFileName = self.config.getLogPath(self.config.outputFileName)
-        self.shell.execute(
+        shell.execute(
             "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
             outputFileName)
         changeEntries = []
@@ -33,7 +32,7 @@ class ImportHandler:
 
     def acceptChangesIntoWorkspace(self, baselineToCompare):
         changeEntries = self.getChangeEntries(baselineToCompare)
-        print("Start accepting changes @ " + commons.getTimeStamp())
+        print("Start accepting changes @ " + shouter.getTimeStamp())
         for changeEntry in changeEntries:
             revision = changeEntry.revision
             print("accepting: " + changeEntry.comment + " (Date: " + changeEntry.date, " Revision: " + revision + ")")
@@ -43,7 +42,7 @@ class ImportHandler:
             self.git.addAndcommit(changeEntry)
 
             print("Revision " + revision + " accepted")
-        print(commons.getTimeStamp() + " - All changes from " + baselineToCompare + " accepted")
+        print(shouter.getTimeStamp() + " - All changes from " + baselineToCompare + " accepted")
 
     def acceptChangesFromBaseLine(self, baseLineToCompare):
         self.acceptChangesIntoWorkspace(baseLineToCompare)
@@ -77,7 +76,7 @@ class ImportHandler:
     def acceptChangesFromStreams(self):
         for stream in self.config.streams:
             fileName = self.config.getLogPath("StreamComponents_" + stream + ".txt")
-            self.shell.execute(
+            shell.execute(
                 "scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
                           fileName)
             self.git.branch(stream)
@@ -88,13 +87,13 @@ class ImportHandler:
     def initialize(self):
         config = self.config
         repo = config.repo
-        self.shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        # self.shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
-        #self.shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
-        #self.shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
-        print(commons.getTimeStamp() + " - Starting initial load of workspace")
-        self.shell.execute("scm load -r %s %s" % (repo, config.workspace))
-        print(commons.getTimeStamp() + " - Initial load of workspace finished")
+        shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        # shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        # shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
+        # shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
+        print(shouter.getTimeStamp() + " - Starting initial load of workspace")
+        shell.execute("scm load -r %s %s" % (repo, config.workspace))
+        print(shouter.getTimeStamp() + " - Initial load of workspace finished")
 
 
 
