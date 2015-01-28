@@ -1,5 +1,7 @@
 import os
 
+from rtc2git import shouter
+
 
 class Initializer:
     def __init__(self, config):
@@ -14,13 +16,15 @@ class Initializer:
 
     def initalize(self):
         os.system("git init --bare " + self.repoName)
-        print("Repository was created in " + os.getcwd())
+        shouter.shout("Repository was created in " + os.getcwd())
         os.system("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
         self.createIgnore()
 
     def initialCommitAndPush(self):
+        shouter.shout("Initial git add")
         os.system("git add -A")
+        shouter.shout("Finished initial git add")
         os.system("git commit -m \"Initial Commit\"")
         os.system("git push origin master")
 

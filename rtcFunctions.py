@@ -32,20 +32,20 @@ class ImportHandler:
 
     def acceptChangesIntoWorkspace(self, baselineToCompare):
         changeEntries = self.getChangeEntries(baselineToCompare)
-        print("Start accepting changes @ " + shouter.getTimeStamp())
+        shouter.shout("Start accepting changes @ " + shouter.getTimeStamp())
         for changeEntry in changeEntries:
             revision = changeEntry.revision
-            print("accepting: " + changeEntry.comment + " (Date: " + changeEntry.date, " Revision: " + revision + ")")
+            shouter.shout("Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date,
+                          " Revision: " + revision + ")")
 
             acceptCommand = "lscm accept --changes " + revision
             self.shell.execute(acceptCommand, self.config.getLogPath("accept.txt"), "a")
             self.git.addAndcommit(changeEntry)
 
-            print("Revision " + revision + " accepted")
-        print(shouter.getTimeStamp() + " - All changes from " + baselineToCompare + " accepted")
+            shouter.shout("Revision '" + revision + "' accepted")
 
-    def acceptChangesFromBaseLine(self, baseLineToCompare):
-        self.acceptChangesIntoWorkspace(baseLineToCompare)
+    def acceptChangesFromBaseLine(self, baselineToCompare):
+        self.acceptChangesIntoWorkspace(baselineToCompare)
 
     def getBaseLinesFromStream(self, stream, filename):
         firstRowSkipped = False
@@ -78,10 +78,12 @@ class ImportHandler:
             fileName = self.config.getLogPath("StreamComponents_" + stream + ".txt")
             shell.execute(
                 "scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-                          fileName)
+                fileName)
             self.git.branch(stream)
             for componentBaseLineEntry in self.getBaseLinesFromStream(stream, fileName):
                 self.acceptChangesFromBaseLine(componentBaseLineEntry.baseline)
+                shouter.shout("All changes from Baseline '%s' and Componenent '%s' accepted" % (
+                componentBaseLineEntry.baseline, componentBaseLineEntry.component))
             self.git.pushBranch(stream)
 
     def initialize(self):
@@ -91,9 +93,9 @@ class ImportHandler:
         # shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
         # shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
         # shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
-        print(shouter.getTimeStamp() + " - Starting initial load of workspace")
+        shouter.shout("Starting initial load of workspace")
         shell.execute("scm load -r %s %s" % (repo, config.workspace))
-        print(shouter.getTimeStamp() + " - Initial load of workspace finished")
+        shouter.shout("Initial load of workspace finished")
 
 
 
