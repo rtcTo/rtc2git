@@ -16,10 +16,10 @@ def initialize(dir):
     gitInitializer.initialCommitAndPush()
 
 
-config = config.readConfig()
-rtcHandler = ImportHandler(config)
-gitInitializer = Initializer(config)
-initialize(config.workDirectory)
+myConfig = config.readConfig()
+rtcHandler = ImportHandler(myConfig)
+gitInitializer = Initializer(myConfig)
+initialize(myConfig.workDirectory)
 rtcHandler.acceptChangesFromStreams()
 
 
