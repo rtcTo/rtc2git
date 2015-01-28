@@ -6,15 +6,19 @@ from rtc2git.gitFunctions import Initializer
 from rtc2git import config
 
 
-def initialize(dir):
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
-    os.mkdir(dir)
-    os.chdir(dir)
+def initialize(directory):
+    if os.path.exists(directory):
+        shutil.rmtree(directory)
+    os.mkdir(directory)
+    os.chdir(directory)
     gitInitializer.initalize()
     rtcHandler.initialize()
     gitInitializer.initialCommitAndPush()
 
+
+def resume(directory):
+    os.chdir(directory)
+    os.chdir(gitInitializer.clonedRepoName)
 
 myConfig = config.readConfig()
 rtcHandler = ImportHandler(myConfig)
