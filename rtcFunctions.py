@@ -90,9 +90,8 @@ class ImportHandler:
         config = self.config
         repo = config.repo
         shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        # shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
-        # shell.execute("scm set component -r " + repositoryURL + " -b " + firstApplicationBaseLine + " " + workspace + " stream " + mainStream + " BP_Application BP_Application_UnitTest")
-        # shell.execute("scm set component -r " + repositoryURL + " -b " + firstBaseLine + " " + workspace + " stream " + mainStream + " BT_Frame_Installer BT_Frame_Server BT_Frame_UnitTest BX_BuildEnvironment")
+        shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        # implement logic here for replacing components by oldest baseline - scm set components
         shouter.shout("Starting initial load of workspace")
         shell.execute("scm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
