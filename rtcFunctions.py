@@ -12,7 +12,7 @@ class ImportHandler:
         self.git = Commiter()
 
     def getChangeEntries(self, baselineToCompare):
-        outputFileName = self.config.getLogPath(self.config.outputFileName)
+        outputFileName = self.config.getLogPath("Compare_" + baselineToCompare)
         shell.execute(
             "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
             outputFileName)
@@ -27,7 +27,6 @@ class ImportHandler:
                 date = splittedLines[3].strip()
                 changeEntry = ChangeEntry(revision, author, date, comment)
                 changeEntries.append(changeEntry)
-                # print("Revision: " + revision + " Author:" + author + " Comment" + comment + " Date: " +date)
         return changeEntries
 
     def acceptChangesIntoWorkspace(self, baselineToCompare):
@@ -35,11 +34,11 @@ class ImportHandler:
         shouter.shout("Start accepting changes @ " + shouter.getTimeStamp())
         for changeEntry in changeEntries:
             revision = changeEntry.revision
-            shouter.shout("Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date,
-                          " Revision: " + revision + ")")
+            shouter.shout(
+                "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Revision: " + revision + ")")
 
             acceptCommand = "lscm accept --changes " + revision
-            self.shell.execute(acceptCommand, self.config.getLogPath("accept.txt"), "a")
+            shell.execute(acceptCommand, self.config.getLogPath("accept.txt"), "a")
             self.git.addAndcommit(changeEntry)
 
             shouter.shout("Revision '" + revision + "' accepted")

@@ -35,8 +35,6 @@ def readConfig():
 
 
 class ConfigObject:
-    outputFileName = "output.txt"
-
     def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams, gitRepoName):
         self.user = user
         self.password = password
