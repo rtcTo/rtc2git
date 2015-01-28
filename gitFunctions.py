@@ -36,7 +36,11 @@ class Commiter:
         os.system("git commit -m \"" + changeEntry.comment + "\"")
 
     def branch(self, branchName):
-        os.system("git checkout -b " + branchName)
+        branchExist = os.system("git show-ref --verify --quiet refs/heads/" + branchName)
+        if branchExist is 0:
+            os.system("git checkout " + branchName)
+        else:
+            os.system("git checkout -b " + branchName)
 
     def pushBranch(self, branchName):
         os.system("git push origin " + branchName)
