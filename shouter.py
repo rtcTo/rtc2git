@@ -1,8 +1,9 @@
 from datetime import datetime
 
 
-def shout(messageToShout):
-    print("%s - %s" % (getTimeStamp(), messageToShout))
+def shout(messagetoshout):
+    print("%s - %s" % (gettimestamp(), messagetoshout))
 
-def getTimeStamp():
+
+def gettimestamp():
     return datetime.now().strftime('%H:%M:%S')

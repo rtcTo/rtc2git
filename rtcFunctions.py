@@ -33,7 +33,7 @@ class ImportHandler:
 
     def acceptchangesintoworkspace(self, baselinetocompare):
         changeentries = self.getchangeentries(baselinetocompare)
-        shouter.shout("Start accepting changes @ " + shouter.getTimeStamp())
+        shouter.shout("Start accepting changes @ " + shouter.gettimestamp())
         for changeEntry in changeentries:
             revision = changeEntry.revision
             shouter.shout(
