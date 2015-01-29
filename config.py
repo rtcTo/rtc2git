@@ -17,9 +17,7 @@ def readConfig():
     if not workDirectory:
         workDirectory = "."
     migrationSection = config['Migration']
-    streams = []
-    for stream in migrationSection['Streams'].split(","):
-        streams.append(stream.strip())
+    streams = collectstreams(migrationSection['Streams'], repositoryURL)
     initialComponentBaseLines = []
     definedBaseLines = migrationSection['InitialBaseLine']
     if definedBaseLines:
@@ -33,6 +31,16 @@ def readConfig():
     gitRepoName = generalSection['GIT-Reponame']
     return ConfigObject(user, password, repositoryURL, workspace, workDirectory, mainStream, streams, gitRepoName)
 
+
+def collectstreams(streamsfromconfig, repo):
+    streams = []
+    for streamname in streamsfromconfig.split(","):
+        streamname = streamname.strip()
+        output = shell.getoutput("lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (repo, streamname))
+        splittedfirstline = output[0].split(" ")
+        streamuuid = splittedfirstline[0].strip()[1:-1]
+        streams.append(streamuuid)
+    return streams
 
 class ConfigObject:
     def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams, gitRepoName):
