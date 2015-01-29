@@ -12,21 +12,23 @@ class ImportHandler:
         self.git = Commiter()
 
     def getChangeEntries(self, baselineToCompare):
-        outputFileName = self.config.getLogPath("Compare_" + baselineToCompare)
+        outputFileName = self.config.getLogPath("Compare_" + baselineToCompare + ".txt")
         shell.execute(
-            "scm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
+            "lscm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselineToCompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
             outputFileName)
         changeEntries = []
         with open(outputFileName, 'r') as file:
             for line in file:
-                splittedLines = line.split(self.informationSeparator)
-                revisionWithBrackets = splittedLines[0].strip()
-                revision = revisionWithBrackets[1:-1]
-                author = splittedLines[1].strip()
-                comment = splittedLines[2].strip()
-                date = splittedLines[3].strip()
-                changeEntry = ChangeEntry(revision, author, date, comment)
-                changeEntries.append(changeEntry)
+                cleanedLine = line.strip()
+                if cleanedLine:
+                    splittedLines = cleanedLine.split(self.informationSeparator)
+                    revisionWithBrackets = splittedLines[0].strip()
+                    revision = revisionWithBrackets[1:-1]
+                    author = splittedLines[1].strip()
+                    comment = splittedLines[2].strip()
+                    date = splittedLines[3].strip()
+                    changeEntry = ChangeEntry(revision, author, date, comment)
+                    changeEntries.append(changeEntry)
         return changeEntries
 
     def acceptChangesIntoWorkspace(self, baselineToCompare):
@@ -46,7 +48,7 @@ class ImportHandler:
     def acceptChangesFromBaseLine(self, baselineToCompare):
         self.acceptChangesIntoWorkspace(baselineToCompare)
 
-    def getBaseLinesFromStream(self, stream, filename):
+    def getBaseLinesFromStream(self, filename):
         firstRowSkipped = False
         isComponentLine = 2
         componentBaseLinesEntries = []
@@ -54,32 +56,33 @@ class ImportHandler:
         baseline = None
         with open(filename, 'r') as file:
             for line in file:
-                if (firstRowSkipped == False):
-                    firstRowSkipped = True
-                    continue
-                splittedLines = line.split("\"")[0].split(" ")
-                if isComponentLine % 2 == 0:
-                    component = splittedLines[3].strip()[1:-1]
-                else:
-                    baseline = splittedLines[5].strip()[1:-1]
+                cleanedLine = line.strip()
+                if cleanedLine:
+                    if firstRowSkipped == False:
+                        firstRowSkipped = True
+                        continue
+                    splittedLines = line.split("\"")[0].split(" ")
+                    if isComponentLine % 2 == 0:
+                        component = splittedLines[3].strip()[1:-1]
+                    else:
+                        baseline = splittedLines[5].strip()[1:-1]
 
-                if baseline != None and component != None:
-                    componentBaseLineEntry = ComponentBaseLineEntry(component, baseline)
-                    componentBaseLinesEntries.append(componentBaseLineEntry)
-                    baseline = None
-                    component = None
-
-                isComponentLine += 1
+                    if baseline != None and component != None:
+                        componentBaseLineEntry = ComponentBaseLineEntry(component, baseline)
+                        componentBaseLinesEntries.append(componentBaseLineEntry)
+                        baseline = None
+                        component = None
+                    isComponentLine += 1
         return componentBaseLinesEntries
 
     def acceptChangesFromStreams(self):
         for stream in self.config.streams:
             fileName = self.config.getLogPath("StreamComponents_" + stream + ".txt")
             shell.execute(
-                "scm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
+                "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
                 fileName)
             self.git.branch(stream)
-            for componentBaseLineEntry in self.getBaseLinesFromStream(stream, fileName):
+            for componentBaseLineEntry in self.getBaseLinesFromStream(fileName):
                 self.acceptChangesFromBaseLine(componentBaseLineEntry.baseline)
                 shouter.shout("All changes from Baseline '%s' and Componenent '%s' accepted" % (
                 componentBaseLineEntry.baseline, componentBaseLineEntry.component))
@@ -88,11 +91,11 @@ class ImportHandler:
     def initialize(self):
         config = self.config
         repo = config.repo
-        shell.execute("scm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        shell.execute("scm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        # shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
         # implement logic here for replacing components by oldest baseline - scm set components
         shouter.shout("Starting initial load of workspace")
-        shell.execute("scm load -r %s %s" % (repo, config.workspace))
+        shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
 
 
