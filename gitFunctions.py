@@ -35,7 +35,7 @@ class Commiter:
     def addAndcommit(self, changeEntry):
         os.system("git config --global --replace-all user.name \"" + changeEntry.author + "\"")
         os.system("git add -A")
-        os.system("git commit -m \"%s\" --date \"%s\"" % (changeEntry.comment, changeEntry.date))
+        os.system("git commit -m \"%s\" --date %s" % (changeEntry.comment, changeEntry.date))
 
     def branch(self, branchName):
         branchExist = os.system("git show-ref --verify --quiet refs/heads/" + branchName)
