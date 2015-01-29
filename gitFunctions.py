@@ -24,16 +24,18 @@ class Initializer:
     def initialCommitAndPush(self):
         shouter.shout("Initial git add")
         os.system("git add -A")
-        shouter.shout("Finished initial git add")
+        shouter.shout("Finished initial git add, starting commit")
         os.system("git commit -m \"Initial Commit\"")
+        shouter.shout("Finished commit")
         os.system("git push origin master")
+        shouter.shout("Finished push")
 
 
 class Commiter:
     def addAndcommit(self, changeEntry):
         os.system("git config --global --replace-all user.name \"" + changeEntry.author + "\"")
         os.system("git add -A")
-        os.system("git commit -m \"" + changeEntry.comment + "\"")
+        os.system("git commit -m \"%s\" --date \"%s\"" % (changeEntry.comment, changeEntry.date))
 
     def branch(self, branchName):
         branchExist = os.system("git show-ref --verify --quiet refs/heads/" + branchName)
