@@ -8,20 +8,22 @@ class Initializer:
         self.repoName = config.gitRepoName
         self.clonedRepoName = config.clonedGitRepoName
 
-    def createIgnore(self):
-        newLine = "\n"
+    @staticmethod
+    def createignore(self):
+        newline = "\n"
         with open(".gitignore", "w") as ignore:
-            ignore.write(".jazz5" + newLine)
-            ignore.write(".metadata" + newLine)
+            ignore.write(".jazz5" + newline)
+            ignore.write(".metadata" + newline)
 
     def initalize(self):
         os.system("git init --bare " + self.repoName)
         shouter.shout("Repository was created in " + os.getcwd())
         os.system("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
-        self.createIgnore()
+        self.createignore()
 
-    def initialCommitAndPush(self):
+    @staticmethod
+    def initialcommitandpush(self):
         shouter.shout("Initial git add")
         os.system("git add -A")
         shouter.shout("Finished initial git add, starting commit")
@@ -32,17 +34,20 @@ class Initializer:
 
 
 class Commiter:
-    def addAndcommit(self, changeEntry):
-        os.system("git config --global --replace-all user.name \"" + changeEntry.author + "\"")
+    @staticmethod
+    def addandcommit(self, changeentry):
+        os.system("git config --global --replace-all user.name \"" + changeentry.author + "\"")
         os.system("git add -A")
-        os.system("git commit -m \"%s\" --date %s" % (changeEntry.comment, changeEntry.date))
+        os.system("git commit -m \"%s\" --date %s" % (changeentry.comment, changeentry.date))
 
-    def branch(self, branchName):
-        branchExist = os.system("git show-ref --verify --quiet refs/heads/" + branchName)
-        if branchExist is 0:
-            os.system("git checkout " + branchName)
+    @staticmethod
+    def branch(self, branchname):
+        branchexist = os.system("git show-ref --verify --quiet refs/heads/" + branchname)
+        if branchexist is 0:
+            os.system("git checkout " + branchname)
         else:
-            os.system("git checkout -b " + branchName)
+            os.system("git checkout -b " + branchname)
 
-    def pushBranch(self, branchName):
-        os.system("git push origin " + branchName)
+    @staticmethod
+    def pushbranch(self, branchname):
+        os.system("git push origin " + branchname)

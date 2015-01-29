@@ -4,13 +4,13 @@ from subprocess import call
 spaceSeparator = "****"
 
 
-def execute(commandToExecute, outputfile=None, openMode="w", useShell=True):
-    command = getCommands(commandToExecute)
+def execute(commandtoexecute, outputfile=None, openmode="w"):
+    command = getcommands(commandtoexecute)
     if not outputfile:
-        call(command, shell=useShell)
+        call(command, shell=True)
     else:
-        with open(outputfile, openMode) as file:
-            call(command, stdout=file, shell=useShell)
+        with open(outputfile, openmode) as file:
+            call(command, stdout=file, shell=True)
 
 
 def getoutput(commandtoexecute):
@@ -27,7 +27,7 @@ def getoutput(commandtoexecute):
     return strippedlines
 
 
-def getCommands(command):
+def getcommands(command):
     commands = []
     for splittedcommand in command.split(' '):
         if splittedcommand.__contains__(spaceSeparator):

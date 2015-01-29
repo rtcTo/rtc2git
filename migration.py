@@ -13,18 +13,16 @@ def initialize(directory):
     os.chdir(directory)
     gitInitializer.initalize()
     rtcHandler.initialize()
-    gitInitializer.initialCommitAndPush()
+    gitInitializer.initialcommitandpush()
 
 
 def resume(directory):
     os.chdir(directory)
     os.chdir(gitInitializer.clonedRepoName)
 
-myConfig = config.readConfig()
+
+myConfig = config.readconfig()
 rtcHandler = ImportHandler(myConfig)
 gitInitializer = Initializer(myConfig)
 initialize(myConfig.workDirectory)
-rtcHandler.acceptChangesFromStreams()
-
-
-
+rtcHandler.acceptchangesfromstreams()

@@ -4,32 +4,32 @@ import configparser
 from rtc2git import shell
 
 
-def readConfig():
+def readconfig():
     config = configparser.ConfigParser()
     config.read("config.ini")
-    generalSection = config['General']
-    user = generalSection['User']
-    password = generalSection['Password']
-    workspace = generalSection['WorkspaceName']
-    repositoryURL = generalSection['Repo']
-    mainStream = generalSection['Stream']
-    workDirectory = generalSection['Directory']
-    if not workDirectory:
-        workDirectory = "."
-    migrationSection = config['Migration']
-    streams = collectstreams(migrationSection['Streams'], repositoryURL)
-    initialComponentBaseLines = []
-    definedBaseLines = migrationSection['InitialBaseLine']
-    if definedBaseLines:
-        componentBaseLines = definedBaseLines.split(",")
-        for entry in componentBaseLines:
-            componentBaseLine = entry.split("=")
-            component = componentBaseLine[0].strip()
-            baseline = componentBaseLine[1].strip()
+    generalsection = config['General']
+    user = generalsection['User']
+    password = generalsection['Password']
+    workspace = generalsection['WorkspaceName']
+    repositoryurl = generalsection['Repo']
+    mainstream = generalsection['Stream']
+    workdirectory = generalsection['Directory']
+    if not workdirectory:
+        workdirectory = "."
+    migrationsection = config['Migration']
+    streams = collectstreams(migrationsection['Streams'], repositoryurl)
+    initialcomponentbaselines = []
+    definedbaselines = migrationsection['InitialBaseLine']
+    if definedbaselines:
+        componentbaselines = definedbaselines.split(",")
+        for entry in componentbaselines:
+            componentbaseline = entry.split("=")
+            component = componentbaseline[0].strip()
+            baseline = componentbaseline[1].strip()
             if " " in baseline:
-                baseLine = baseline.replace(" ", shell.spaceSeparator)
-    gitRepoName = generalSection['GIT-Reponame']
-    return ConfigObject(user, password, repositoryURL, workspace, workDirectory, mainStream, streams, gitRepoName)
+                baseline = baseline.replace(" ", shell.spaceSeparator)
+    gitreponame = generalsection['GIT-Reponame']
+    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streams, gitreponame)
 
 
 def collectstreams(streamsfromconfig, repo):
@@ -41,6 +41,7 @@ def collectstreams(streamsfromconfig, repo):
         streamuuid = splittedfirstline[0].strip()[1:-1]
         streams.append(streamuuid)
     return streams
+
 
 class ConfigObject:
     def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams, gitRepoName):
@@ -55,7 +56,7 @@ class ConfigObject:
         self.clonedGitRepoName = gitRepoName[:-4]  # cut .git
         self.logFolder = os.getcwd()
 
-    def getLogPath(self, filename):
+    def getlogpath(self, filename):
         return "%s\%s" % (self.logFolder, filename)
 
 
