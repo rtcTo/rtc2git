@@ -48,7 +48,10 @@ class ImportHandler:
     def acceptChangesFromBaseLine(self, baselineToCompare):
         self.acceptChangesIntoWorkspace(baselineToCompare)
 
-    def getBaseLinesFromStream(self, filename):
+    def getBaseLinesFromStream(self, stream):
+        filename = self.config.getLogPath("StreamComponents_" + stream + ".txt")
+        shell.execute("lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
+                      filename)
         firstRowSkipped = False
         isComponentLine = 2
         componentBaseLinesEntries = []
@@ -77,12 +80,8 @@ class ImportHandler:
 
     def acceptChangesFromStreams(self):
         for stream in self.config.streams:
-            fileName = self.config.getLogPath("StreamComponents_" + stream + ".txt")
-            shell.execute(
-                "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-                fileName)
             self.git.branch(stream)
-            for componentBaseLineEntry in self.getBaseLinesFromStream(fileName):
+            for componentBaseLineEntry in self.getBaseLinesFromStream(stream):
                 self.acceptChangesFromBaseLine(componentBaseLineEntry.baseline)
                 shouter.shout("All changes from Baseline '%s' and Componenent '%s' accepted" % (
                 componentBaseLineEntry.baseline, componentBaseLineEntry.component))
