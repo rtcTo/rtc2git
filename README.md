@@ -2,8 +2,13 @@
 A tool made for migrating code from an existing RTC SCM repository into a Git repository
 It uses the CLI of RTC to gather the required informations
 
+## Usage
+<ul>
+<li>Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" as reference</li>
+<li>Execute migration.py</li>
+</ul>
 
-## How does it work
+## How does it work?
 <ol>
 <li>It initalizes an empty git repository and clones it</li>
 <li>In this repository its loading a newly created rtc workspace based on your oldest stream</li>
@@ -12,3 +17,4 @@ It uses the CLI of RTC to gather the required informations
 <li>The result of the compare will be parsed to get to the necessary commit-informations (such as author, comment, date)</li>
 <li>The change will be accepted in the workspace</li>
 <li>The corresponding git command will be executed to do the same change in the git-repository</li>
+</ol>
