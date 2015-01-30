@@ -8,7 +8,7 @@ class Initializer:
         self.clonedRepoName = config.clonedGitRepoName
 
     @staticmethod
-    def createignore(self):
+    def createignore():
         newline = "\n"
         with open(".gitignore", "w") as ignore:
             ignore.write(".jazz5" + newline)
@@ -22,7 +22,7 @@ class Initializer:
         self.createignore()
 
     @staticmethod
-    def initialcommitandpush(self):
+    def initialcommitandpush():
         shouter.shout("Initial git add")
         os.system("git add -A")
         shouter.shout("Finished initial git add, starting commit")
@@ -34,13 +34,13 @@ class Initializer:
 
 class Commiter:
     @staticmethod
-    def addandcommit(self, changeentry):
+    def addandcommit(changeentry):
         os.system("git config --global --replace-all user.name \"" + changeentry.author + "\"")
         os.system("git add -A")
         os.system("git commit -m \"%s\" --date %s" % (changeentry.comment, changeentry.date))
 
     @staticmethod
-    def branch(self, branchname):
+    def branch(branchname):
         branchexist = os.system("git show-ref --verify --quiet refs/heads/" + branchname)
         if branchexist is 0:
             os.system("git checkout " + branchname)
@@ -48,5 +48,5 @@ class Commiter:
             os.system("git checkout -b " + branchname)
 
     @staticmethod
-    def pushbranch(self, branchname):
+    def pushbranch(branchname):
         os.system("git push origin " + branchname)
