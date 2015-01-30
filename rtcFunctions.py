@@ -11,45 +11,25 @@ class ImportHandler:
         self.config = config
         self.git = Commiter()
 
-    def getchangeentries(self, baselinetocompare):
-        outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
-        shell.execute(
-            "lscm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselinetocompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
-            outputfilename)
-        changeentries = []
-        with open(outputfilename, 'r') as file:
-            for line in file:
-                cleanedline = line.strip()
-                if cleanedline:
-                    splittedlines = cleanedline.split(self.informationSeparator)
-                    revisionwithbrackets = splittedlines[0].strip()
-                    revision = revisionwithbrackets[1:-1]
-                    author = splittedlines[1].strip()
-                    comment = splittedlines[2].strip()
-                    date = splittedlines[3].strip()
-                    changeentry = ChangeEntry(revision, author, date, comment)
-                    changeentries.append(changeentry)
-        return changeentries
+    def initialize(self):
+        config = self.config
+        repo = config.repo
+        shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.mainstream, config.workspace))
+        # implement logic here for replacing components by oldest baseline - scm set components
+        config.collectstreamuuids()
+        shouter.shout("Starting initial load of workspace")
+        shell.execute("lscm load -r %s %s" % (repo, config.workspace))
+        shouter.shout("Initial load of workspace finished")
 
-    def acceptchangesintoworkspace(self, baselinetocompare):
-        changeentries = self.getchangeentries(baselinetocompare)
-        shouter.shout("Start accepting changes @ " + shouter.gettimestamp())
-        for changeEntry in changeentries:
-            revision = changeEntry.revision
-            shouter.shout(
-                "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Revision: " + revision + ")")
-
-            acceptcommand = "lscm accept --changes " + revision
-            shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
-            self.git.addandcommit(changeEntry)
-
-            shouter.shout("Revision '" + revision + "' accepted")
-
-    def acceptchangesfrombaseline(self, componentbaselineentry):
-        self.acceptchangesintoworkspace(componentbaselineentry.baseline)
-        componentmigratedmessage = "All changes in Component '%s' from Baseline '%s' are accepted" % \
-                                   (componentbaselineentry.component, componentbaselineentry.baseline)
-        shouter.shout(componentmigratedmessage)
+    def acceptchangesfromstreams(self):
+        streamuuids = self.config.streamuuids
+        for streamuuid in streamuuids:
+            streamname = self.config.streamnames[streamuuids.index(streamuuid)]
+            self.git.branch(streamname)
+            for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
+                self.acceptchangesfrombaseline(componentBaseLineEntry)
+            self.git.pushbranch(streamname)
 
     def getbaselinesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
@@ -80,25 +60,45 @@ class ImportHandler:
                     islinewithcomponent += 1
         return componentbaselinesentries
 
-    def acceptchangesfromstreams(self):
-        streamuuids = self.config.streamuuids
-        for streamuuid in streamuuids:
-            streamname = self.config.streamnames[streamuuids.index(streamuuid)]
-            self.git.branch(streamname)
-            for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
-                self.acceptchangesfrombaseline(componentBaseLineEntry)
-            self.git.pushbranch(streamname)
+    def acceptchangesfrombaseline(self, componentbaselineentry):
+        self.acceptchangesintoworkspace(componentbaselineentry.baseline)
+        componentmigratedmessage = "All changes in Component '%s' from Baseline '%s' are accepted" % \
+                                   (componentbaselineentry.component, componentbaselineentry.baseline)
+        shouter.shout(componentmigratedmessage)
 
-    def initialize(self):
-        config = self.config
-        repo = config.repo
-        shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.mainstream, config.workspace))
-        # implement logic here for replacing components by oldest baseline - scm set components
-        config.collectstreamuuids()
-        shouter.shout("Starting initial load of workspace")
-        shell.execute("lscm load -r %s %s" % (repo, config.workspace))
-        shouter.shout("Initial load of workspace finished")
+    def acceptchangesintoworkspace(self, baselinetocompare):
+        changeentries = self.getchangeentries(baselinetocompare)
+        shouter.shout("Start accepting changes @ " + shouter.gettimestamp())
+        for changeEntry in changeentries:
+            revision = changeEntry.revision
+            shouter.shout(
+                "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Revision: " + revision + ")")
+
+            acceptcommand = "lscm accept --changes " + revision
+            shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
+            self.git.addandcommit(changeEntry)
+
+            shouter.shout("Revision '" + revision + "' accepted")
+
+    def getchangeentries(self, baselinetocompare):
+        outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
+        shell.execute(
+            "lscm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselinetocompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
+            outputfilename)
+        changeentries = []
+        with open(outputfilename, 'r') as file:
+            for line in file:
+                cleanedline = line.strip()
+                if cleanedline:
+                    splittedlines = cleanedline.split(self.informationSeparator)
+                    revisionwithbrackets = splittedlines[0].strip()
+                    revision = revisionwithbrackets[1:-1]
+                    author = splittedlines[1].strip()
+                    comment = splittedlines[2].strip()
+                    date = splittedlines[3].strip()
+                    changeentry = ChangeEntry(revision, author, date, comment)
+                    changeentries.append(changeentry)
+        return changeentries
 
 
 class ChangeEntry:
