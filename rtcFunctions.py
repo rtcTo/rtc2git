@@ -1,6 +1,6 @@
-from rtc2git import shell
-from rtc2git.gitFunctions import Commiter
-from rtc2git import shouter
+import shell
+from gitFunctions import Commiter
+import shouter
 
 
 class ImportHandler:

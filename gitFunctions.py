@@ -1,6 +1,5 @@
 import os
-
-from rtc2git import shouter
+import shouter
 
 
 class Initializer:
