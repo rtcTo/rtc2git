@@ -17,7 +17,7 @@ def readconfig():
         workdirectory = "."
     migrationsection = config['Migration']
     streamsfromconfig = migrationsection['Streams']
-    streams = collectstreams(streamsfromconfig, repositoryurl)
+    streamuuids = collectstreams(streamsfromconfig, repositoryurl)
     streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
     definedbaselines = migrationsection['InitialBaseLine']
@@ -30,12 +30,13 @@ def readconfig():
             if " " in baseline:
                 baseline = baseline.replace(" ", shell.spaceSeparator)
     gitreponame = generalsection['GIT-Reponame']
-    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streams, gitreponame)
+    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streamuuids, streamnames, gitreponame)
 
 def getstreamnames(streamsfromconfig):
     streamnames = []
     for streamname in streamsfromconfig.split(","):
         streamname = streamname.strip()
+        streamnames.append(streamname)
     return streamnames
 
 def collectstreams(streamsfromconfig, repo):
