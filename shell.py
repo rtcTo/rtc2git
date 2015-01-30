@@ -1,5 +1,7 @@
 import os
+import sys
 from subprocess import call
+from subprocess import check_output
 
 spaceSeparator = "****"
 
@@ -14,16 +16,14 @@ def execute(commandtoexecute, outputfile=None, openmode="w"):
 
 
 def getoutput(commandtoexecute):
-    tempfile = "tempOutput.txt"
-    execute(commandtoexecute, tempfile)
+    command = getcommands(commandtoexecute)
+    outputasbytestring = check_output(command, shell=True)
+    output = outputasbytestring.decode(sys.stdout.encoding).splitlines()
     strippedlines = []
-
-    with open(tempfile, 'r') as file:
-        for line in file:
-            cleanedline = line.strip()
-            if cleanedline:
-                strippedlines.append(cleanedline)
-    os.remove(tempfile)
+    for line in output:
+        cleanedline = line.strip()
+        if cleanedline:
+            strippedlines.append(cleanedline)
     return strippedlines
 
 

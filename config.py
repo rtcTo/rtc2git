@@ -1,6 +1,7 @@
 import os
 import configparser
 import shell
+import shouter
 
 
 def readconfig():
@@ -17,7 +18,6 @@ def readconfig():
         workdirectory = "."
     migrationsection = config['Migration']
     streamsfromconfig = migrationsection['Streams']
-    streamuuids = collectstreams(streamsfromconfig, repositoryurl)
     streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
     definedbaselines = migrationsection['InitialBaseLine']
@@ -30,7 +30,8 @@ def readconfig():
             if " " in baseline:
                 baseline = baseline.replace(" ", shell.spaceSeparator)
     gitreponame = generalsection['GIT-Reponame']
-    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streamuuids, streamnames, gitreponame)
+    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streamnames, gitreponame)
+
 
 def getstreamnames(streamsfromconfig):
     streamnames = []
@@ -39,32 +40,42 @@ def getstreamnames(streamsfromconfig):
         streamnames.append(streamname)
     return streamnames
 
-def collectstreams(streamsfromconfig, repo):
-    streamuuids = []
-    for streamname in getstreamnames(streamsfromconfig):
-        streamname = streamname.strip()
-        output = shell.getoutput("lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (repo, streamname))
-        splittedfirstline = output[0].split(" ")
-        streamuuid = splittedfirstline[0].strip()[1:-1]
-        streamuuids.append(streamuuid)
-    return streamuuids
-
 
 class ConfigObject:
-    def __init__(self, user, password, repo, workspace, workdirectory, mainstream, streamuuids, streamnames, gitRepoName):
+    def __init__(self, user, password, repo, workspace, workdirectory, mainstream, streamnames, gitreponame):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
         self.workDirectory = workdirectory
         self.mainStream = mainstream
-        self.streamuuids = streamuuids
         self.streamnames = streamnames
-        self.gitRepoName = gitRepoName
-        self.clonedGitRepoName = gitRepoName[:-4]  # cut .git
+        self.gitRepoName = gitreponame
+        self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.logFolder = os.getcwd()
+        self.streamuuids = []
 
     def getlogpath(self, filename):
         return "%s\%s" % (self.logFolder, filename)
+
+    def collectstreamuuids(self):
+        shouter.shout("Get UUID's of configured streams")
+        for streamname in self.streamnames:
+            streamname = streamname.strip()
+            showuuidcommand = "lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (self.repo, streamname)
+            output = shell.getoutput(showuuidcommand)
+            splittedfirstline = output[0].split(" ")
+            streamuuid = splittedfirstline[0].strip()[1:-1]
+            self.streamuuids.append(streamuuid)
+
+
+
+
+
+
+
+
+
+
 
 
