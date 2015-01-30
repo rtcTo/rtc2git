@@ -59,7 +59,7 @@ class ConfigObject:
         return "%s\%s" % (self.logFolder, filename)
 
     def collectstreamuuids(self):
-        shouter.shout("Get UUID's of configured streams")
+        shouter.shout("Get UUID's of configured streamnames")
         for streamname in self.streamnames:
             streamname = streamname.strip()
             showuuidcommand = "lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (self.repo, streamname)
