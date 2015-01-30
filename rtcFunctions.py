@@ -81,17 +81,19 @@ class ImportHandler:
         return componentbaselinesentries
 
     def acceptchangesfromstreams(self):
-        for stream in self.config.streams:
-            self.git.branch(stream)
-            for componentBaseLineEntry in self.getbaselinesfromstream(stream):
+        streamuuids = self.config.streamuuids
+        for streamuuid in streamuuids:
+            streamname = self.config.streamnames[streamuuids.index(streamuuid)]
+            self.git.branch(streamname)
+            for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
-            self.git.pushbranch(stream)
+            self.git.pushbranch(streamname)
 
     def initialize(self):
         config = self.config
         repo = config.repo
         shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.mainStream, config.workspace))
+        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.mainstream, config.workspace))
         # implement logic here for replacing components by oldest baseline - scm set components
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
