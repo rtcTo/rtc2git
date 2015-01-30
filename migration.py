@@ -1,9 +1,9 @@
 import os
 import shutil
 
-from rtc2git.rtcFunctions import ImportHandler
-from rtc2git.gitFunctions import Initializer
-from rtc2git import config
+from rtcFunctions import ImportHandler
+from gitFunctions import Initializer
+import config
 
 
 def initialize(directory):

@@ -1,7 +1,6 @@
 import os
 import configparser
-
-from rtc2git import shell
+import shell
 
 
 def readconfig():
@@ -17,7 +16,9 @@ def readconfig():
     if not workdirectory:
         workdirectory = "."
     migrationsection = config['Migration']
-    streams = collectstreams(migrationsection['Streams'], repositoryurl)
+    streamsfromconfig = migrationsection['Streams']
+    streams = collectstreams(streamsfromconfig, repositoryurl)
+    streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
     definedbaselines = migrationsection['InitialBaseLine']
     if definedbaselines:
@@ -31,27 +32,33 @@ def readconfig():
     gitreponame = generalsection['GIT-Reponame']
     return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streams, gitreponame)
 
+def getstreamnames(streamsfromconfig):
+    streamnames = []
+    for streamname in streamsfromconfig.split(","):
+        streamname = streamname.strip()
+    return streamnames
 
 def collectstreams(streamsfromconfig, repo):
-    streams = []
-    for streamname in streamsfromconfig.split(","):
+    streamuuids = []
+    for streamname in getstreamnames(streamsfromconfig):
         streamname = streamname.strip()
         output = shell.getoutput("lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (repo, streamname))
         splittedfirstline = output[0].split(" ")
         streamuuid = splittedfirstline[0].strip()[1:-1]
-        streams.append(streamuuid)
-    return streams
+        streamuuids.append(streamuuid)
+    return streamuuids
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, workspace, workDirectory, mainStream, streams, gitRepoName):
+    def __init__(self, user, password, repo, workspace, workdirectory, mainstream, streamuuids, streamnames, gitRepoName):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
-        self.workDirectory = workDirectory
-        self.mainStream = mainStream
-        self.streams = streams
+        self.workDirectory = workdirectory
+        self.mainStream = mainstream
+        self.streamuuids = streamuuids
+        self.streamnames = streamnames
         self.gitRepoName = gitRepoName
         self.clonedGitRepoName = gitRepoName[:-4]  # cut .git
         self.logFolder = os.getcwd()
