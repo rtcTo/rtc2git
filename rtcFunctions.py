@@ -94,7 +94,7 @@ class ImportHandler:
                     revisionwithbrackets = splittedlines[0].strip()
                     revision = revisionwithbrackets[1:-1]
                     author = splittedlines[1].strip()
-                    comment = splittedlines[2].strip()
+                    comment = splittedlines[2].strip().replace("\"", "'")
                     date = splittedlines[3].strip()
                     changeentry = ChangeEntry(revision, author, date, comment)
                     changeentries.append(changeentry)
