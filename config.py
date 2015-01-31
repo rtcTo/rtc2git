@@ -1,5 +1,6 @@
 import os
 import configparser
+
 import shell
 import shouter
 
@@ -20,7 +21,7 @@ def readconfig():
     streamsfromconfig = migrationsection['Streams']
     streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
-    definedbaselines = migrationsection['InitialBaseLine']
+    definedbaselines = ""  # migrationsection['InitialBaseLine']
     if definedbaselines:
         componentbaselines = definedbaselines.split(",")
         for entry in componentbaselines:
