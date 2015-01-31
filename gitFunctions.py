@@ -26,7 +26,7 @@ class Initializer:
         shouter.shout("Initial git add")
         os.system("git add -A")
         shouter.shout("Finished initial git add, starting commit")
-        os.system("git commit -m \"Initial Commit\"")
+        os.system("git commit -m \"Initial Commit\" -q")
         shouter.shout("Finished commit")
         os.system("git push origin master")
         shouter.shout("Finished push")
