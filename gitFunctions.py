@@ -38,6 +38,7 @@ class Commiter:
     @staticmethod
     def addandcommit(changeentry):
         message = Commiter.replacespaces(changeentry.comment)
+        date = Commiter.replacespaces(changeentry.date)
         shell.execute("git config --global --replace-all user.name \"" + changeentry.author + "\"")
         shell.execute("git add -A")
         shell.execute("git commit -m \"%s\" --date %s" % (message, changeentry.date))
