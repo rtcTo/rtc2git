@@ -41,7 +41,7 @@ class Commiter:
         date = Commiter.replacespaces(changeentry.date)
         shell.execute("git config --global --replace-all user.name \"" + changeentry.author + "\"")
         shell.execute("git add -A")
-        shell.execute("git commit -m \"%s\" --date %s" % (message, changeentry.date))
+        shell.execute("git commit -m \"%s\" --date %s" % (message, date))
 
     @staticmethod
     def replacespaces(comment):
