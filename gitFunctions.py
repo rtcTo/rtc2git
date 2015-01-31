@@ -1,4 +1,5 @@
 import os
+
 import shouter
 import shell
 
@@ -37,17 +38,13 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
-        message = Commiter.replacespaces(changeentry.comment)
-        date = Commiter.replacespaces(changeentry.date)
-        shell.execute("git config --global --replace-all user.name \"" + changeentry.author + "\"")
+        message = shell.replacespaces(changeentry.comment)
+        date = shell.replacespaces(changeentry.date)
+        author = shell.replacespaces(changeentry.author)
+        shell.execute("git config --global --replace-all user.name \"" + author + "\"")
         shell.execute("git add -A")
         shell.execute("git commit -m \"%s\" --date %s" % (message, date))
 
-    @staticmethod
-    def replacespaces(comment):
-        if comment.__contains__(' '):
-            comment = comment.replace(' ', shell.spaceSeparator)
-        return comment
 
 
     @staticmethod

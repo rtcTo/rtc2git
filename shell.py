@@ -1,4 +1,3 @@
-import os
 import sys
 from subprocess import call
 from subprocess import check_output
@@ -34,3 +33,10 @@ def getcommands(command):
             splittedcommand = splittedcommand.replace(spaceSeparator, " ")
         commands.append(splittedcommand)
     return commands
+
+
+@staticmethod
+def replacespaces(stringwithspaces):
+    if stringwithspaces.__contains__(' '):
+        stringwithspaces = stringwithspaces.replace(' ', spaceSeparator)
+    return stringwithspaces
