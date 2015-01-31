@@ -2,18 +2,15 @@
 Repo=https://rtc.mySite.com
 User=USR
 Password=secret
-Stream=MainDevStream
+Stream=HeadDevelopmentStream
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 ## Will be created or emptied on initialization
 Directory = \temp\myWorkingDirectory
 
 [Migration]
-# Streams referenced by Name or UUID, separated by ",". They should follow the order the way you like your branches, beginning from the oldest and ending with your maindevstream
-Streams=Stream_Version1, Stream_Version2, Stream_Version3
-
-# Optional, can be defined to set version back to a specific baseline --> Format ComponentName = BaseLineName, AnotherComponentName=BaseLineName
-# Use scm --show-uuid y list baselines --components "YourComponent" -r Repo -m 20000
-InitialBaseLine=ComponentName = "MyInitialBaseLineCommit", AnotherComponentName="AnotherInitialBaselineCommit"
+# Streams referenced by Name or UUID, separated by ",".
+# They should follow the order the way you like your branches, beginning from the oldest and ending with your most current stream
+Streams=Stream_Version1, Stream_Version2, HeadDevelopmentStream
 
 
