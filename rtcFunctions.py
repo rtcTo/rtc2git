@@ -71,8 +71,10 @@ class ImportHandler:
         shouter.shout("Start accepting changes @ " + shouter.gettimestamp())
         for changeEntry in changeentries:
             revision = changeEntry.revision
+            acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
+                           + changeEntry.author + " Revision: " + revision + ")"
             shouter.shout(
-                "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Revision: " + revision + ")")
+                acceptingmsg)
 
             acceptcommand = "lscm accept --changes " + revision
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
