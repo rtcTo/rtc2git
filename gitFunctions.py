@@ -27,18 +27,27 @@ class Initializer:
         shouter.shout("Initial git add")
         shell.execute("git add -A", os.devnull)
         shouter.shout("Finished initial git add, starting commit")
-        shell.execute("git commit -m \"Initial Commit\" -q")
+        shell.execute("git commit -m \"Initial%sCommit\" -q" % shell.spaceSeparator)
         shouter.shout("Finished commit")
         shell.execute("git push origin master")
         shouter.shout("Finished push")
 
 
 class Commiter:
+
     @staticmethod
     def addandcommit(changeentry):
+        message = Commiter.replacespaces(changeentry.comment)
         shell.execute("git config --global --replace-all user.name \"" + changeentry.author + "\"")
         shell.execute("git add -A")
-        shell.execute("git commit -m \"%s\" --date %s" % (changeentry.comment, changeentry.date))
+        shell.execute("git commit -m \"%s\" --date %s" % (message, changeentry.date))
+
+    @staticmethod
+    def replacespaces(comment):
+        if comment.__contains__(' '):
+            comment = comment.replace(' ', shell.spaceSeparator)
+        return comment
+
 
     @staticmethod
     def branch(branchname):
