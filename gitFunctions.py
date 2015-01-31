@@ -25,7 +25,7 @@ class Initializer:
     @staticmethod
     def initialcommitandpush():
         shouter.shout("Initial git add")
-        shell.execute("git add -A", outputfile=os.devnull)
+        shell.execute("git add -A", os.devnull)
         shouter.shout("Finished initial git add, starting commit")
         shell.execute("git commit -m \"Initial Commit\" -q")
         shouter.shout("Finished commit")
