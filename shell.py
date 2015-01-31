@@ -35,7 +35,6 @@ def getcommands(command):
     return commands
 
 
-@staticmethod
 def replacespaces(stringwithspaces):
     if stringwithspaces.__contains__(' '):
         stringwithspaces = stringwithspaces.replace(' ', spaceSeparator)
