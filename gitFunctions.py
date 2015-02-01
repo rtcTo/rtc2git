@@ -8,6 +8,7 @@ class Initializer:
     def __init__(self, config):
         self.repoName = config.gitRepoName
         self.clonedRepoName = config.clonedGitRepoName
+        self.author = config.user
 
     @staticmethod
     def createignore():
@@ -17,6 +18,7 @@ class Initializer:
             ignore.write(".metadata" + newline)
 
     def initalize(self):
+        Commiter.replaceauthor(self.author)
         shell.execute("git init --bare " + self.repoName)
         shouter.shout("Repository was created in " + os.getcwd())
         shell.execute("git clone " + self.repoName)
@@ -40,12 +42,14 @@ class Commiter:
     def addandcommit(changeentry):
         message = shell.replacespaces(changeentry.comment)
         date = shell.replacespaces(changeentry.date)
-        author = shell.replacespaces(changeentry.author)
-        shell.execute("git config --global --replace-all user.name \"" + author + "\"")
+        Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
         shell.execute("git commit -m \"%s\" --date %s" % (message, date))
 
-
+    @staticmethod
+    def replaceauthor(author):
+        author = shell.replacespaces(author)
+        shell.execute("git config --global --replace-all user.name \"" + author + "\"")
 
     @staticmethod
     def branch(branchname):
