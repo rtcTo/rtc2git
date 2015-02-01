@@ -49,7 +49,7 @@ class Commiter:
     @staticmethod
     def replaceauthor(author):
         author = shell.replacespaces(author)
-        shell.execute("git config --global --replace-all user.name \"" + author + "\"")
+        shell.execute("git config --replace-all user.name \"" + author + "\"")
 
     @staticmethod
     def branch(branchname):
