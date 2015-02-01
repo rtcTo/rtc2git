@@ -18,11 +18,11 @@ class Initializer:
             ignore.write(".metadata" + newline)
 
     def initalize(self):
-        Commiter.replaceauthor(self.author)
         shell.execute("git init --bare " + self.repoName)
         shouter.shout("Repository was created in " + os.getcwd())
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
+        Commiter.replaceauthor(self.author)
         self.createignore()
 
     @staticmethod
