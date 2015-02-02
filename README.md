@@ -2,6 +2,12 @@
 A tool made for migrating code from an existing RTC SCM repository into a Git repository
 It uses the CLI of RTC to gather the required informations
 
+## Prerequirements
+<ul>
+<li> RTC Version > 5.0 (maybe 4.0 works too) </li>
+<li> Working RTC CLI (Command "lscm help" should work in console) </li>
+</ul>
+
 ## Usage
 <ul>
 <li>Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" as reference</li>
@@ -18,3 +24,4 @@ It uses the CLI of RTC to gather the required informations
 <li>The change will be accepted in the workspace</li>
 <li>The corresponding git command will be executed to do the same change in the git-repository</li>
 </ol>
+
