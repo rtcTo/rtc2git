@@ -4,8 +4,8 @@ It uses the CLI of RTC to gather the required informations
 
 ## Prerequirements
 <ul>
-<li> RTC Version > 5.0 (maybe 4.0 works too) </li>
-<li> Working RTC CLI (Command "lscm help" should work in console) </li>
+<li> RTC Version 5.0+ </li>
+<li> Working RTC CLI aka [scm tools](https://www.jazz.net/downloads/rational-team-concert/releases/5.0.2?p=allDownloads)  --> (e.g Command "lscm help" should work in console) </li>
 </ul>
 
 ## Usage
