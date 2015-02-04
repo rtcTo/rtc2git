@@ -51,6 +51,7 @@ class ConfigObject:
         self.workDirectory = workdirectory
         self.mainStream = mainstream
         self.streamnames = streamnames
+        self.earlieststreamname = streamnames[0]
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.logFolder = os.getcwd()
