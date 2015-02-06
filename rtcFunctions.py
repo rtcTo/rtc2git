@@ -28,8 +28,6 @@ class ImportHandler:
             streamname = self.config.streamnames[streamuuids.index(streamuuid)]
             self.git.branch(streamname)
             for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
-                if Commiter.commitcounter % 100 is 0:
-                    self.git.pushbranch(streamname)
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
             self.git.pushbranch(streamname)
 
