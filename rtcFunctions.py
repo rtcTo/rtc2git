@@ -117,17 +117,15 @@ class ImportHandler:
         componentname = ""
         lines = shell.getoutput("lscm --show-alias n show attributes -C %s -r %s" % (componentuuid, self.config.repo))
         if lines:
-            componentname = lines[0].strip()
+            componentname = lines[0].strip()[1:-1]
         return componentname
 
     def getbaselinename(self, baselineuuid):
         baselinename = ""
         lines = shell.getoutput("lscm --show-alias n show attributes -b %s -r %s" % (baselineuuid, self.config.repo))
-        for line in lines:
-            line = line.strip()
-            if line:
-                splittedlines = line.split("\"")
-                baselinename = splittedlines[1].strip()
+        if lines:
+            splittedlines = lines[0].strip().split("\"")
+            baselinename = splittedlines[1].strip()
         return baselinename
 
 class ChangeEntry:
