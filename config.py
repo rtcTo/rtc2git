@@ -22,14 +22,12 @@ def readconfig():
     streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
     definedbaselines = ""  # migrationsection['InitialBaseLine']
-    if definedbaselines:
-        componentbaselines = definedbaselines.split(",")
-        for entry in componentbaselines:
-            componentbaseline = entry.split("=")
-            component = componentbaseline[0].strip()
-            baseline = componentbaseline[1].strip()
-            if " " in baseline:
-                baseline = baseline.replace(" ", shell.spaceSeparator)
+    # if definedbaselines:
+    #     componentbaselines = definedbaselines.split(",")
+    #     for entry in componentbaselines:
+    #         componentbaseline = entry.split("=")
+    #         component = componentbaseline[0].strip()
+    #         baseline = componentbaseline[1].strip()
     gitreponame = generalsection['GIT-Reponame']
     return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streamnames, gitreponame)
 
