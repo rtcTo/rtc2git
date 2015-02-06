@@ -1,6 +1,4 @@
 import sys
-import shlex
-import json
 
 from subprocess import call
 from subprocess import check_output
