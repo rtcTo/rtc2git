@@ -30,7 +30,7 @@ class Initializer:
         shouter.shout("Initial git add")
         shell.execute("git add -A", os.devnull)
         shouter.shout("Finished initial git add, starting commit")
-        shell.execute("git commit -m \"Initial%sCommit\" -q" % shell.spaceSeparator)
+        shell.execute("git commit -m %s -q" % shell.quote("Initial Commit"))
         shouter.shout("Finished commit")
         shell.execute("git push origin master")
         shouter.shout("Finished push")
@@ -40,16 +40,26 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
-        message = shell.replacespaces(changeentry.comment)
-        date = shell.replacespaces(changeentry.date)
+        comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
         Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
-        shell.execute("git commit -m \"%s\" --date %s" % (message, date))
+        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), changeentry.date))
+
+    @staticmethod
+    def replacegitcreatingfilesymbol(comment):
+        newword = "to"
+        if "-->" in comment:
+            comment = comment.replace("-->", newword)
+        elif "->" in comment:
+            comment = comment.replace("->", newword)
+        elif ">" in comment:
+            comment = comment.replace(">", newword)
+
+
 
     @staticmethod
     def replaceauthor(author):
-        author = shell.replacespaces(author)
-        shell.execute("git config --replace-all user.name \"" + author + "\"")
+        shell.execute("git config --replace-all user.name " + shell.quote(author))
 
     @staticmethod
     def branch(branchname):
