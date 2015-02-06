@@ -40,9 +40,22 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
+        comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
         Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
-        shell.execute("git commit -m %s --date %s" % (shell.quote(changeentry.comment), changeentry.date))
+        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), changeentry.date))
+
+    @staticmethod
+    def replacegitcreatingfilesymbol(comment):
+        newword = "to"
+        if "-->" in comment:
+            comment = comment.replace("-->", newword)
+        elif "->" in comment:
+            comment = comment.replace("->", newword)
+        elif ">" in comment:
+            comment = comment.replace(">", newword)
+
+
 
     @staticmethod
     def replaceauthor(author):
