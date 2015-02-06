@@ -37,6 +37,7 @@ class Initializer:
 
 
 class Commiter:
+    commitcounter = 0
 
     @staticmethod
     def addandcommit(changeentry):
@@ -44,6 +45,7 @@ class Commiter:
         Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
         shell.execute("git commit -m %s --date %s" % (shell.quote(comment), changeentry.date))
+        Commiter.commitcounter += 1
 
     @staticmethod
     def replacegitcreatingfilesymbol(comment):
