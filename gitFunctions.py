@@ -54,7 +54,7 @@ class Commiter:
             comment = comment.replace("->", newword)
         elif ">" in comment:
             comment = comment.replace(">", newword)
-
+        return comment
 
 
     @staticmethod
