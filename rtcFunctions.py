@@ -28,8 +28,6 @@ class ImportHandler:
             streamname = self.config.streamnames[streamuuids.index(streamuuid)]
             self.git.branch(streamname)
             for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
-                if Commiter.commitcounter % 100 is 0:
-                    self.git.pushbranch(streamname)
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
             self.git.pushbranch(streamname)
 
@@ -50,27 +48,31 @@ class ImportHandler:
                         skippedfirstrow = True
                         continue
                     splittedlines = line.split("\"")[0].split(" ")
-                    if islinewithcomponent % 2 == 0:
+                    if islinewithcomponent % 2 is 0:
                         component = splittedlines[3].strip()[1:-1]
                     else:
                         baseline = splittedlines[5].strip()[1:-1]
 
                     if baseline is not None and component is not None:
-                        componentbaselinesentries.append(ComponentBaseLineEntry(component, baseline))
+                        componentbaselinesentries.append(self.createcomponentbaselineentry(component, baseline))
                         baseline = None
                         component = None
                     islinewithcomponent += 1
         return componentbaselinesentries
 
     def acceptchangesfrombaseline(self, componentbaselineentry):
+        startcomponentmigrationmessage = "Start accepting changes in component '%s' from baseline '%s'" % \
+                                         (componentbaselineentry.componentname, componentbaselineentry.baselinename)
+        shouter.shoutwithdate(startcomponentmigrationmessage)
+
         self.acceptchangesintoworkspace(componentbaselineentry.baseline)
-        componentmigratedmessage = "All changes in Component '%s' from Baseline '%s' are accepted" % \
-                                   (componentbaselineentry.component, componentbaselineentry.baseline)
+
+        componentmigratedmessage = "All changes in component '%s' from baseline '%s' are accepted" % \
+                                   (componentbaselineentry.componentname, componentbaselineentry.baselinename)
         shouter.shout(componentmigratedmessage)
 
     def acceptchangesintoworkspace(self, baselinetocompare):
         changeentries = self.getchangeentries(baselinetocompare)
-        shouter.shout("Start accepting changes @ " + shouter.gettimestamp())
         for changeEntry in changeentries:
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
@@ -104,6 +106,25 @@ class ImportHandler:
                     changeentries.append(changeentry)
         return changeentries
 
+    def createcomponentbaselineentry(self, component, baseline):
+        componentname = self.getcomponentname(component)
+        baselinename = self.getbaselinename(baseline)
+        return ComponentBaseLineEntry(component, baseline, componentname, baselinename)
+
+    def getcomponentname(self, componentuuid):
+        componentname = ""
+        lines = shell.getoutput("lscm --show-alias n show attributes -C %s -r %s" % (componentuuid, self.config.repo))
+        if lines:
+            componentname = lines[0].strip()[1:-1]
+        return componentname
+
+    def getbaselinename(self, baselineuuid):
+        baselinename = ""
+        lines = shell.getoutput("lscm --show-alias n show attributes -b %s -r %s" % (baselineuuid, self.config.repo))
+        if lines:
+            splittedlines = lines[0].strip().split("\"")
+            baselinename = splittedlines[1].strip()
+        return baselinename
 
 class ChangeEntry:
     def __init__(self, revision, author, date, comment):
@@ -114,6 +135,8 @@ class ChangeEntry:
 
 
 class ComponentBaseLineEntry:
-    def __init__(self, component, baseline):
+    def __init__(self, component, baseline, componentname, baselinename):
         self.component = component
         self.baseline = baseline
+        self.componentname = componentname
+        self.baselinename = baselinename

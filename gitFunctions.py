@@ -23,6 +23,7 @@ class Initializer:
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
         Commiter.replaceauthor(self.author)
+        shell.execute("git config push.default current")
         self.createignore()
 
     @staticmethod
@@ -44,8 +45,10 @@ class Commiter:
         comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
         Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
-        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), changeentry.date))
+        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
         Commiter.commitcounter += 1
+        if Commiter.commitcounter % 100 is 0:
+            Commiter.pushbranch()
 
     @staticmethod
     def replacegitcreatingfilesymbol(comment):
@@ -73,4 +76,5 @@ class Commiter:
 
     @staticmethod
     def pushbranch(branchname):
+        shouter.shout("Push branch " + branchname)
         shell.execute("git push origin " + branchname)
