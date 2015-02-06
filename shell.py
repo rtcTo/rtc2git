@@ -3,6 +3,7 @@ import sys
 from subprocess import call
 from subprocess import check_output
 
+
 def execute(command, outputfile=None, openmode="w"):
     if not outputfile:
         call(command, shell=True)
