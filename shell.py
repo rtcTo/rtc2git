@@ -28,10 +28,8 @@ def getoutput(commandtoexecute):
 
 def getcommands(command):
     commands = []
-    for splittedcommand in command.split(' '):
-        if splittedcommand.__contains__(spaceSeparator):
-            splittedcommand = splittedcommand.replace(spaceSeparator, " ")
-        commands.append(splittedcommand)
+    for commandswithspaces in command.split(' '):
+        commands.append(replacespaces(commandswithspaces))
     return commands
 
 
