@@ -44,7 +44,7 @@ class Commiter:
         comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
         Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
-        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), changeentry.date))
+        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
         Commiter.commitcounter += 1
 
     @staticmethod
@@ -73,4 +73,5 @@ class Commiter:
 
     @staticmethod
     def pushbranch(branchname):
+        shouter.shout("Push branch " + branchname)
         shell.execute("git push origin " + branchname)
