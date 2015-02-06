@@ -4,7 +4,7 @@ import shouter
 
 
 class ImportHandler:
-    dateFormat = "yyyy-MM-dd" + shell.spaceSeparator + "HH:mm:ss"
+    dateFormat = "yyyy-MM-dd HH:mm:ss"
     informationSeparator = "@@"
 
     def __init__(self, config):
@@ -96,7 +96,7 @@ class ImportHandler:
                     revisionwithbrackets = splittedlines[0].strip()
                     revision = revisionwithbrackets[1:-1]
                     author = splittedlines[1].strip()
-                    comment = splittedlines[2].strip().replace("\"", "'")
+                    comment = splittedlines[2].strip()
                     date = splittedlines[3].strip()
                     changeentry = ChangeEntry(revision, author, date, comment)
                     changeentries.append(changeentry)
