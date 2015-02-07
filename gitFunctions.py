@@ -48,7 +48,7 @@ class Commiter:
         shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
         Commiter.commitcounter += 1
         if Commiter.commitcounter % 100 is 0:
-            Commiter.pushbranch()
+            Commiter.pushbranch("")
 
     @staticmethod
     def replacegitcreatingfilesymbol(comment):
