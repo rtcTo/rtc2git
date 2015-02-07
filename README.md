@@ -4,7 +4,7 @@ It uses the CLI of RTC to gather the required informations
 
 ## Prerequirements
 <ul>
-<li> RTC Version 5.0+ </li>
+<li> RTC Version 5.0+ (Was tested using 5.0.1) </li> 
 <li> Working RTC CLI aka "SCM Tools"  --> (e.g Command "lscm help" should work in console) </li>
 </ul>
 
