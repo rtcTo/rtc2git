@@ -50,17 +50,17 @@ class Commiter:
         if Commiter.commitcounter % 100 is 0:
             Commiter.pushbranch("")
 
+
     @staticmethod
     def replacegitcreatingfilesymbol(comment):
-        newword = "to"
-        if "-->" in comment:
-            comment = comment.replace("-->", newword)
-        elif "->" in comment:
-            comment = comment.replace("->", newword)
-        elif ">" in comment:
-            comment = comment.replace(">", newword)
-        return comment
+        return Commiter.replacewords(" to ", comment, "-->", "->", ">")
 
+    @staticmethod
+    def replacewords(replacedwith, word, *replacingstrings):
+        for replacingstring in replacingstrings:
+            if replacingstring in word:
+                word = word.replace(replacingstring, replacedwith)
+        return word
 
     @staticmethod
     def replaceauthor(author):
