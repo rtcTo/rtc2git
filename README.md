@@ -4,7 +4,7 @@ It uses the CLI of RTC to gather the required informations
 
 ## Prerequirements
 <ul>
-<li> RTC Version 5.0+ </li>
+<li> RTC Version 5.0+ (Was tested using 5.0.1) </li> 
 <li> Working RTC CLI aka "SCM Tools"  --> (e.g Command "lscm help" should work in console) </li>
 </ul>
 
@@ -17,7 +17,7 @@ It uses the CLI of RTC to gather the required informations
 ## How does it work?
 <ol>
 <li>It initalizes an empty git repository and clones it</li>
-<li>In this repository its loading a newly created rtc workspace based on your oldest stream</li>
+<li>In this repository, it loads a newly created rtc workspace based on your oldest stream</li>
 <li>It iterates to a configured list of streams to determine the baseline of each component of this stream</li>
 <li>For each baseline of this component a compare command will be executed</li>
 <li>The result of the compare will be parsed to get to the necessary commit-informations (such as author, comment, date)</li>
