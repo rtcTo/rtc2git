@@ -30,6 +30,7 @@ class ImportHandler:
             componentbaselineentries = self.getbaselinesfromstream(streamuuid)
             for componentBaseLineEntry in componentbaselineentries:
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
+            shouter.shout("All changes of stream '%s' accepted" % streamname)
             self.git.pushbranch(streamname)
             self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
             self.setnewflowtargets(streamuuid)
