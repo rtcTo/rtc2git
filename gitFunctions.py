@@ -16,6 +16,7 @@ class Initializer:
         with open(".gitignore", "w") as ignore:
             ignore.write(".jazz5" + newline)
             ignore.write(".metadata" + newline)
+            ignore.write(".jazzShed" + newline)
 
     def initalize(self):
         shell.execute("git init --bare " + self.repoName)
