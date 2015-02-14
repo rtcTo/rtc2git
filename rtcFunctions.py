@@ -32,6 +32,7 @@ class ImportHandler:
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
             self.git.pushbranch(streamname)
             self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
+            self.reloadworkspace()
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
@@ -39,6 +40,9 @@ class ImportHandler:
             shell.execute(replacecommand %
                           (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
                            self.config.mainStream, componentbaselineentry.component))
+
+    def reloadworkspace(self):
+        shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
 
     def getbaselinesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
