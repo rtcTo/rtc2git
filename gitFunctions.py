@@ -48,7 +48,8 @@ class Commiter:
         shell.execute("git add -A")
         shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
         Commiter.commitcounter += 1
-        if Commiter.commitcounter % 100 is 0:
+        if Commiter.commitcounter % 50 is 0:
+            shouter.shout("50 Commits happend, push current branch to avoid out of memory")
             Commiter.pushbranch("")
 
 
@@ -77,5 +78,6 @@ class Commiter:
 
     @staticmethod
     def pushbranch(branchname):
-        shouter.shout("Push branch " + branchname)
+        if branchname:
+            shouter.shout("Final push of branch " + branchname)
         shell.execute("git push origin " + branchname)

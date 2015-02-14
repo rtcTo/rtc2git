@@ -27,9 +27,40 @@ class ImportHandler:
         for streamuuid in streamuuids:
             streamname = self.config.streamnames[streamuuids.index(streamuuid)]
             self.git.branch(streamname)
-            for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
+            componentbaselineentries = self.getbaselinesfromstream(streamuuid)
+            for componentBaseLineEntry in componentbaselineentries:
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
             self.git.pushbranch(streamname)
+            self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
+            self.setnewflowtargets(streamuuid)
+            self.reloadworkspace()
+
+    def setnewflowtargets(self, streamuuid):
+        shouter.shout("Replacing Flowtargets")
+        self.removedefaultflowtarget()
+        shell.execute("lscm add flowtarget -r %s %s %s"
+                      % (self.config.repo, self.config.workspace, streamuuid))
+        shell.execute("lscm set flowtarget -r %s %s --default --current %s"
+                      % (self.config.repo, self.config.workspace, streamuuid))
+
+    def removedefaultflowtarget(self):
+        flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
+                                         % (self.config.repo, self.config.workspace))[0]
+        flowtargetnametoremove = flowtargetline.split("\"")[1]
+        shell.execute("lscm remove flowtarget -r %s %s %s"
+                      % (self.config.repo, self.config.workspace, flowtargetnametoremove))
+
+
+    def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
+        for componentbaselineentry in componentbaselineentries:
+            replacecommand = "lscm set component -r %s - b % s %s stream %s %s"
+            shell.execute(replacecommand %
+                          (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                           self.config.mainStream, componentbaselineentry.component))
+
+    def reloadworkspace(self):
+        shouter.shout("Start reloading/replacing current workspace")
+        shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
 
     def getbaselinesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
@@ -125,6 +156,7 @@ class ImportHandler:
             splittedlines = lines[0].strip().split("\"")
             baselinename = splittedlines[1].strip()
         return baselinename
+
 
 class ChangeEntry:
     def __init__(self, revision, author, date, comment):
