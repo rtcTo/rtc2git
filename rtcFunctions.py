@@ -139,6 +139,7 @@ class ImportHandler:
             baselinename = splittedlines[1].strip()
         return baselinename
 
+
 class ChangeEntry:
     def __init__(self, revision, author, date, comment):
         self.revision = revision
