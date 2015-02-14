@@ -45,11 +45,9 @@ class ImportHandler:
     def removedefaultflowtarget(self):
         flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
                                          % (self.config.repo, self.config.workspace))[0]
-        flowtargetnametoremove = flowtargetline.split("\"")[0]
+        flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
                       % (self.config.repo, self.config.workspace, flowtargetnametoremove))
-        # cutrightsymbols = len(" (default) (current)") + 1
-        # flowtargetnametoremove = flowtargetline[1: -cutrightsymbols]
 
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
