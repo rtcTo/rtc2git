@@ -27,9 +27,18 @@ class ImportHandler:
         for streamuuid in streamuuids:
             streamname = self.config.streamnames[streamuuids.index(streamuuid)]
             self.git.branch(streamname)
-            for componentBaseLineEntry in self.getbaselinesfromstream(streamuuid):
+            componentbaselineentries = self.getbaselinesfromstream(streamuuid)
+            for componentBaseLineEntry in componentbaselineentries:
                 self.acceptchangesfrombaseline(componentBaseLineEntry)
             self.git.pushbranch(streamname)
+            self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
+
+    def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
+        for componentbaselineentry in componentbaselineentries:
+            replacecommand = "lscm set component -r %s - b % s %s stream %s %s"
+            shell.execute(replacecommand %
+                          (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                           self.config.mainStream, componentbaselineentry.component))
 
     def getbaselinesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
