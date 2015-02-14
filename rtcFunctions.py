@@ -36,6 +36,7 @@ class ImportHandler:
             self.reloadworkspace()
 
     def setnewflowtargets(self, streamuuid):
+        shouter.shout("Replacing Flowtargets")
         self.removedefaultflowtarget()
         shell.execute("lscm add flowtarget -r %s %s %s"
                       % (self.config.repo, self.config.workspace, streamuuid))
@@ -58,6 +59,7 @@ class ImportHandler:
                            self.config.mainStream, componentbaselineentry.component))
 
     def reloadworkspace(self):
+        shouter.shout("Start reloading/replacing current workspace")
         shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
 
     def getbaselinesfromstream(self, stream):
