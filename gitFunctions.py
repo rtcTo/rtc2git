@@ -78,5 +78,6 @@ class Commiter:
 
     @staticmethod
     def pushbranch(branchname):
-        shouter.shout("Push branch " + branchname)
+        if branchname:
+            shouter.shout("Push branch " + branchname)
         shell.execute("git push origin " + branchname)
