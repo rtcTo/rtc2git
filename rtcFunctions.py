@@ -54,7 +54,7 @@ class ImportHandler:
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
-            replacecommand = "lscm set component -r %s - b % s %s stream %s %s"
+            replacecommand = "lscm set component -r %s -b % s %s stream %s %s"
             shell.execute(replacecommand %
                           (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
                            self.config.mainStream, componentbaselineentry.component))
