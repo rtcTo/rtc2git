@@ -51,13 +51,12 @@ class ImportHandler:
         shell.execute("lscm remove flowtarget -r %s %s %s"
                       % (self.config.repo, self.config.workspace, flowtargetnametoremove))
 
-
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
-            replacecommand = "lscm set component -r %s -b % s %s stream %s %s"
-            shell.execute(replacecommand %
-                          (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
-                           self.config.mainStream, componentbaselineentry.component))
+            replacecommand = "lscm set component -r %s -b % s %s stream %s %s --overwrite-uncommitted" % \
+                             (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                              self.config.mainStream, componentbaselineentry.component)
+            shell.execute(replacecommand)
 
     def reloadworkspace(self):
         shouter.shout("Start reloading/replacing current workspace")
