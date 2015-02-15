@@ -109,10 +109,8 @@ class ImportHandler:
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
                            + changeEntry.author + " Revision: " + revision + ")"
-            shouter.shout(
-                acceptingmsg)
-
-            acceptcommand = "lscm accept --changes " + revision
+            shouter.shout(acceptingmsg)
+            acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
             self.git.addandcommit(changeEntry)
 
