@@ -6,10 +6,10 @@ from subprocess import check_output
 
 def execute(command, outputfile=None, openmode="w"):
     if not outputfile:
-        call(command, shell=True)
+        return call(command, shell=True)
     else:
         with open(outputfile, openmode) as file:
-            call(command, stdout=file, shell=True)
+            return call(command, stdout=file, shell=True)
 
 
 def getoutput(command):
