@@ -10,14 +10,14 @@ class ImportHandler:
     def __init__(self, config):
         self.config = config
         self.git = Commiter()
-        config.collectstreamuuids()
 
     def initialize(self):
         config = self.config
         repo = config.repo
         shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
+        # shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
         # implement logic here for replacing components by oldest baseline - scm set components
+        config.collectstreamuuids()
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
