@@ -15,7 +15,7 @@ class ImportHandler:
         config = self.config
         repo = config.repo
         shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
-        # shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
+        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
         # implement logic here for replacing components by oldest baseline - scm set components
         config.collectstreamuuids()
         shouter.shout("Starting initial load of workspace")
