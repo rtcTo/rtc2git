@@ -57,6 +57,9 @@ class ImportHandler:
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
+            shouter.shout("Set component '%s' to baseline '%s'"
+                          % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
+
             replacecommand = "lscm set component -r %s -b % s %s stream %s %s --overwrite-uncommitted" % \
                              (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
                               self.config.mainStream, componentbaselineentry.component)
