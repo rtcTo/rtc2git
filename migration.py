@@ -20,6 +20,7 @@ def resume(directory):
     os.chdir(directory)
     os.chdir(gitInitializer.clonedRepoName)
     rtcHandler.loginandcollectstreams()
+    rtcHandler.reloadworkspace()  # remove any locks which are left over from previous try
 
 
 myConfig = config.readconfig()
