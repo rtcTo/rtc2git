@@ -48,9 +48,10 @@ class Commiter:
         shell.execute("git add -A")
         shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
         Commiter.commitcounter += 1
-        if Commiter.commitcounter % 50 is 0:
-            shouter.shout("50 Commits happend, push current branch to avoid out of memory")
+        if Commiter.commitcounter is 30:
+            shouter.shout("30 Commits happend, push current branch to avoid out of memory")
             Commiter.pushbranch("")
+            Commiter.commitcounter = 0
 
 
     @staticmethod
