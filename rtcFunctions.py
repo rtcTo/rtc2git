@@ -148,6 +148,7 @@ class ImportHandler:
         return ComponentBaseLineEntry(component, baseline, componentname, baselinename)
 
     def getcomponentname(self, componentuuid):
+        shouter.shout("Determine componentname of " + componentuuid)
         componentname = ""
         lines = shell.getoutput("lscm --show-alias n show attributes -C %s -r %s" % (componentuuid, self.config.repo))
         if lines:
@@ -155,6 +156,7 @@ class ImportHandler:
         return componentname
 
     def getbaselinename(self, baselineuuid):
+        shouter.shout("Determine baselinename of " + baselineuuid)
         baselinename = ""
         lines = shell.getoutput("lscm --show-alias n show attributes -b %s -r %s" % (baselineuuid, self.config.repo))
         if lines:
