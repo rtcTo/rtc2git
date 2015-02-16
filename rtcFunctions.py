@@ -14,13 +14,17 @@ class ImportHandler:
     def initialize(self):
         config = self.config
         repo = config.repo
-        shell.execute("lscm login -r %s -u %s -P %s" % (repo, config.user, config.password))
+        self.loginandcollectstreams()
         shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
         # implement logic here for replacing components by oldest baseline - scm set components
-        config.collectstreamuuids()
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
+
+    def loginandcollectstreams(self):
+        config = self.config
+        shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
+        config.collectstreamuuids()
 
     def acceptchangesfromstreams(self):
         streamuuids = self.config.streamuuids
