@@ -37,23 +37,7 @@ class ImportHandler:
             shouter.shout("All changes of stream '%s' accepted" % streamname)
             self.git.pushbranch(streamname)
             self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
-            self.setnewflowtargets(streamuuid)
             self.reloadworkspace()
-
-    def setnewflowtargets(self, streamuuid):
-        shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
-        shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
-        shell.execute("lscm set flowtarget -r %s %s --default --current %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
-
-    def removedefaultflowtarget(self):
-        flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.config.repo, self.config.workspace))[0]
-        flowtargetnametoremove = flowtargetline.split("\"")[1]
-        shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, flowtargetnametoremove))
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
