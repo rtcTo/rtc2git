@@ -19,6 +19,7 @@ def initialize(directory):
 def resume(directory):
     os.chdir(directory)
     os.chdir(gitInitializer.clonedRepoName)
+    rtcHandler.loginandcollectstreams()
 
 
 myConfig = config.readconfig()
