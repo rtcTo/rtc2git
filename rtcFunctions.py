@@ -25,14 +25,20 @@ class ImportHandler:
         shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
         config.collectstreamuuids()
 
-    def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
+    def recreateworkspace(self, stream):
+        workspace = self.config.workspace
+        shouter.shout("Recreating workspace")
+        shell.execute("lscm delete workspace " + workspace)
+        shell.execute("lscm create workspace -s %s %s" % (stream, workspace))
+
+    def resetcomponentstobaseline(self, componentbaselineentries, stream):
         for componentbaselineentry in componentbaselineentries:
             shouter.shout("Set component '%s' to baseline '%s'"
                           % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
 
-            replacecommand = "lscm set component -r %s -b % s %s stream %s %s --overwrite-uncommitted" % \
+            replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
-                              self.config.mainStream, componentbaselineentry.component)
+                              stream, componentbaselineentry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
