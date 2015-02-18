@@ -36,6 +36,7 @@ def startmigration():
         shouter.shout("All changes of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
         rtc.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
+        rtc.setnewflowtargets(streamuuid)
         rtc.reloadworkspace()
 
 
