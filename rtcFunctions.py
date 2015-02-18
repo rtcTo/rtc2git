@@ -16,7 +16,6 @@ class ImportHandler:
         repo = config.repo
         self.loginandcollectstreams()
         shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
-        # implement logic here for replacing components by oldest baseline - scm set components
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
@@ -25,35 +24,6 @@ class ImportHandler:
         config = self.config
         shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
         config.collectstreamuuids()
-
-    def acceptchangesfromstreams(self):
-        streamuuids = self.config.streamuuids
-        for streamuuid in streamuuids:
-            streamname = self.config.streamnames[streamuuids.index(streamuuid)]
-            self.git.branch(streamname)
-            componentbaselineentries = self.getbaselinesfromstream(streamuuid)
-            for componentBaseLineEntry in componentbaselineentries:
-                self.acceptchangesfrombaseline(componentBaseLineEntry)
-            shouter.shout("All changes of stream '%s' accepted" % streamname)
-            self.git.pushbranch(streamname)
-            self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
-            self.setnewflowtargets(streamuuid)
-            self.reloadworkspace()
-
-    def setnewflowtargets(self, streamuuid):
-        shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
-        shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
-        shell.execute("lscm set flowtarget -r %s %s --default --current %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
-
-    def removedefaultflowtarget(self):
-        flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.config.repo, self.config.workspace))[0]
-        flowtargetnametoremove = flowtargetline.split("\"")[1]
-        shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, flowtargetnametoremove))
 
     def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
         for componentbaselineentry in componentbaselineentries:
