@@ -100,8 +100,7 @@ class ImportHandler:
                                    (componentbaselineentry.componentname, componentbaselineentry.baselinename)
         shouter.shout(componentmigratedmessage)
 
-    def acceptchangesintoworkspace(self, baselinetocompare):
-        changeentries = self.getchangeentries(baselinetocompare)
+    def acceptchangesintoworkspace(self, changeentries):
         for changeEntry in changeentries:
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
