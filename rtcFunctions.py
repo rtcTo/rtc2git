@@ -89,17 +89,6 @@ class ImportHandler:
                     islinewithcomponent += 1
         return componentbaselinesentries
 
-    def acceptchangesfrombaseline(self, componentbaselineentry):
-        startcomponentmigrationmessage = "Start accepting changes in component '%s' from baseline '%s'" % \
-                                         (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shoutwithdate(startcomponentmigrationmessage)
-
-        self.acceptchangesintoworkspace(componentbaselineentry.baseline)
-
-        componentmigratedmessage = "All changes in component '%s' from baseline '%s' are accepted" % \
-                                   (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shout(componentmigratedmessage)
-
     def acceptchangesintoworkspace(self, changeentries):
         for changeEntry in changeentries:
             revision = changeEntry.revision
