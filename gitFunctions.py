@@ -23,7 +23,6 @@ class Initializer:
         shouter.shout("Repository was created in " + os.getcwd())
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
-        Commiter.replaceauthor(self.author)
         shell.execute("git config push.default current")
         self.createignore()
 
@@ -44,9 +43,9 @@ class Commiter:
     @staticmethod
     def addandcommit(changeentry):
         comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
-        Commiter.replaceauthor(changeentry.author)
         shell.execute("git add -A")
-        shell.execute("git commit -m %s --date %s" % (shell.quote(comment), shell.quote(changeentry.date)))
+        shell.execute("git commit -m %s --date %s --author=%s"
+                      % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor()))
         Commiter.commitcounter += 1
         if Commiter.commitcounter is 30:
             shouter.shout("30 Commits happend, push current branch to avoid out of memory")
@@ -64,10 +63,6 @@ class Commiter:
             if replacingstring in word:
                 word = word.replace(replacingstring, replacedwith)
         return word
-
-    @staticmethod
-    def replaceauthor(author):
-        shell.execute("git config --replace-all user.name " + shell.quote(author))
 
     @staticmethod
     def branch(branchname):

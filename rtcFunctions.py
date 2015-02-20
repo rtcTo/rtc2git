@@ -62,8 +62,9 @@ class ImportHandler:
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        shell.execute("lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-                      filename)
+        shell.execute(
+            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
+            filename)
         componentbaselinesentries = []
         skippedfirstrow = False
         islinewithcomponent = 2
@@ -123,9 +124,9 @@ class ImportHandler:
 
     def getchangeentries(self, baselinetocompare):
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
-        shell.execute(
-            "lscm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselinetocompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
-            outputfilename)
+        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.workspace, baselinetocompare, self.config.repo, self.dateFormat)
+        shell.execute(comparecommand, outputfilename)
         changeentries = []
         with open(outputfilename, 'r') as file:
             for line in file:
@@ -135,19 +136,25 @@ class ImportHandler:
                     revisionwithbrackets = splittedlines[0].strip()
                     revision = revisionwithbrackets[1:-1]
                     author = splittedlines[1].strip()
-                    comment = splittedlines[2].strip()
-                    date = splittedlines[3].strip()
-                    changeentry = ChangeEntry(revision, author, date, comment)
+                    email = splittedlines[2].strip()
+                    comment = splittedlines[3].strip()
+                    date = splittedlines[4].strip()
+                    changeentry = ChangeEntry(revision, author, email, date, comment)
                     changeentries.append(changeentry)
         return changeentries
 
 
 class ChangeEntry:
-    def __init__(self, revision, author, date, comment):
+    def __init__(self, revision, author, email, date, comment):
         self.revision = revision
         self.author = author
+        self.email = email
         self.date = date
         self.comment = comment
+
+    def getgitauthor(self):
+        authorrepresentation = "%s <%s>" % (self.author, self.email)
+        return shell.quote(authorrepresentation)
 
 
 class ComponentBaseLineEntry:
