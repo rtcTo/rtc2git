@@ -152,6 +152,10 @@ class ChangeEntry:
         self.date = date
         self.comment = comment
 
+    def getgitauthor(self):
+        authorrepresentation = "%s <%s>" % (self.author, self.email)
+        return shell.quote(authorrepresentation)
+
 
 class ComponentBaseLineEntry:
     def __init__(self, component, baseline, componentname, baselinename):
