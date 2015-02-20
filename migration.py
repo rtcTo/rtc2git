@@ -34,7 +34,7 @@ def startmigration():
         changeentries = []
         for componentBaseLineEntry in componentbaselineentries:
             changeentries.append(rtc.getchangeentries(componentBaseLineEntry.baseline))
-        sorted(changeentries, key=lambda change: change.date)
+        changeentries.sort(key=lambda change: change.date)
         rtc.acceptchangesintoworkspace(changeentries)
         shouter.shout("All changes of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
