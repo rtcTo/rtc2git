@@ -101,6 +101,13 @@ class ImportHandler:
 
             shouter.shout("Revision '" + revision + "' accepted")
 
+    def getchangeentriesofstream(self, componentbaselineentries):
+        changeentries = []
+        for componentBaseLineEntry in componentbaselineentries:
+            changeentries.append(self.getchangeentries(componentBaseLineEntry.baseline))
+        changeentries.sort(key=lambda change: change.date)
+        return changeentries
+
     def getchangeentries(self, baselinetocompare):
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
         shell.execute(

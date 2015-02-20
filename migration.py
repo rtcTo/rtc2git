@@ -31,11 +31,7 @@ def startmigration():
         streamname = config.streamnames[streamuuids.index(streamuuid)]
         git.branch(streamname)
         componentbaselineentries = rtc.getbaselinesfromstream(streamuuid)
-        changeentries = []
-        for componentBaseLineEntry in componentbaselineentries:
-            changeentries.append(rtc.getchangeentries(componentBaseLineEntry.baseline))
-        changeentries.sort(key=lambda change: change.date)
-        rtc.acceptchangesintoworkspace(changeentries)
+        rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(componentbaselineentries))
         shouter.shout("All changes of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
         rtc.recreateworkspace(streamuuid)
