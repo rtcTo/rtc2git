@@ -6,6 +6,7 @@ It uses the CLI of RTC to gather the required informations
 <ul>
 <li> RTC Version 5.0+ (Was tested using 5.0.1) </li> 
 <li> Working RTC CLI aka "SCM Tools"  --> (e.g Command "lscm help" should work in console) </li>
+<li> Python 3 </li>
 </ul>
 
 ## Usage
