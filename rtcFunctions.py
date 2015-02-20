@@ -104,7 +104,7 @@ class ImportHandler:
     def getchangeentriesofstream(self, componentbaselineentries):
         changeentries = []
         for componentBaseLineEntry in componentbaselineentries:
-            changeentries.append(self.getchangeentries(componentBaseLineEntry.baseline))
+            changeentries.extend(self.getchangeentries(componentBaseLineEntry.baseline))
         changeentries.sort(key=lambda change: change.date)
         return changeentries
 
