@@ -98,19 +98,7 @@ class ImportHandler:
                     islinewithcomponent += 1
         return componentbaselinesentries
 
-    def acceptchangesfrombaseline(self, componentbaselineentry):
-        startcomponentmigrationmessage = "Start accepting changes in component '%s' from baseline '%s'" % \
-                                         (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shoutwithdate(startcomponentmigrationmessage)
-
-        self.acceptchangesintoworkspace(componentbaselineentry.baseline)
-
-        componentmigratedmessage = "All changes in component '%s' from baseline '%s' are accepted" % \
-                                   (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shout(componentmigratedmessage)
-
-    def acceptchangesintoworkspace(self, baselinetocompare):
-        changeentries = self.getchangeentries(baselinetocompare)
+    def acceptchangesintoworkspace(self, changeentries):
         for changeEntry in changeentries:
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
@@ -121,6 +109,13 @@ class ImportHandler:
             self.git.addandcommit(changeEntry)
 
             shouter.shout("Revision '" + revision + "' accepted")
+
+    def getchangeentriesofstream(self, componentbaselineentries):
+        changeentries = []
+        for componentBaseLineEntry in componentbaselineentries:
+            changeentries.extend(self.getchangeentries(componentBaseLineEntry.baseline))
+        changeentries.sort(key=lambda change: change.date)
+        return changeentries
 
     def getchangeentries(self, baselinetocompare):
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
