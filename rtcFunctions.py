@@ -111,6 +111,7 @@ class ImportHandler:
             shouter.shout("Revision '" + revision + "' accepted")
 
     def getchangeentriesofstream(self, componentbaselineentries):
+        shouter.shout("Start collecting changeentries")
         changeentries = []
         for componentBaseLineEntry in componentbaselineentries:
             changeentries.extend(self.getchangeentries(componentBaseLineEntry.baseline))
