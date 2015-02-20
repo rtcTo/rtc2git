@@ -60,15 +60,17 @@ class ImportHandler:
         shouter.shout("Start reloading/replacing current workspace")
         shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
 
-    def getbaselinesfromstream(self, stream):
+    def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
         shell.execute("lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
                       filename)
         componentbaselinesentries = []
         skippedfirstrow = False
         islinewithcomponent = 2
-        component = None
-        baseline = None
+        component = ""
+        baseline = ""
+        componentname = ""
+        baselinename = ""
         with open(filename, 'r') as file:
             for line in file:
                 cleanedline = line.strip()
@@ -76,16 +78,22 @@ class ImportHandler:
                     if not skippedfirstrow:
                         skippedfirstrow = True
                         continue
-                    splittedlines = line.split("\"")[0].split(" ")
+                    splittedinformationline = line.split("\"")
+                    uuidpart = splittedinformationline[0].split(" ")
                     if islinewithcomponent % 2 is 0:
-                        component = splittedlines[3].strip()[1:-1]
+                        component = uuidpart[3].strip()[1:-1]
+                        componentname = splittedinformationline[1]
                     else:
-                        baseline = splittedlines[5].strip()[1:-1]
+                        baseline = uuidpart[5].strip()[1:-1]
+                        baselinename = splittedinformationline[1]
 
-                    if baseline is not None and component is not None:
-                        componentbaselinesentries.append(self.createcomponentbaselineentry(component, baseline))
-                        baseline = None
-                        component = None
+                    if baseline and component:
+                        componentbaselinesentries.append(
+                            ComponentBaseLineEntry(component, baseline, componentname, baselinename))
+                        baseline = ""
+                        component = ""
+                        componentname = ""
+                        baselinename = ""
                     islinewithcomponent += 1
         return componentbaselinesentries
 
@@ -132,28 +140,6 @@ class ImportHandler:
                     changeentry = ChangeEntry(revision, author, date, comment)
                     changeentries.append(changeentry)
         return changeentries
-
-    def createcomponentbaselineentry(self, component, baseline):
-        componentname = self.getcomponentname(component)
-        baselinename = self.getbaselinename(baseline)
-        return ComponentBaseLineEntry(component, baseline, componentname, baselinename)
-
-    def getcomponentname(self, componentuuid):
-        shouter.shout("Determine componentname of " + componentuuid)
-        componentname = ""
-        lines = shell.getoutput("lscm --show-alias n show attributes -C %s -r %s" % (componentuuid, self.config.repo))
-        if lines:
-            componentname = lines[0].strip()[1:-1]
-        return componentname
-
-    def getbaselinename(self, baselineuuid):
-        shouter.shout("Determine baselinename of " + baselineuuid)
-        baselinename = ""
-        lines = shell.getoutput("lscm --show-alias n show attributes -b %s -r %s" % (baselineuuid, self.config.repo))
-        if lines:
-            splittedlines = lines[0].strip().split("\"")
-            baselinename = splittedlines[1].strip()
-        return baselinename
 
 
 class ChangeEntry:
