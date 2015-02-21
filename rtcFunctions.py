@@ -111,7 +111,7 @@ class ImportHandler:
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
             git.addandcommit(changeEntry)
 
-            shouter.shout("Accepted change %s/%s") % (amountofacceptedchanges, amountofchanges)
+            shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
 
     def getchangeentriesofstream(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
