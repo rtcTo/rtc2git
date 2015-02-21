@@ -4,9 +4,6 @@ import shouter
 
 
 class ImportHandler:
-    dateFormat = "yyyy-MM-dd HH:mm:ss"
-    informationSeparator = "@@"
-
     def __init__(self, config):
         self.config = config
         self.git = Commiter()
@@ -123,9 +120,11 @@ class ImportHandler:
         return changeentries
 
     def getchangeentries(self, baselinetocompare):
+        dateformat = "yyyy-MM-dd HH:mm:ss"
+        informationseparator = "@@"
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
         comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, baselinetocompare, self.config.repo, self.dateFormat)
+                         % (self.config.workspace, baselinetocompare, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         changeentries = []
         with open(outputfilename, 'r') as file:
