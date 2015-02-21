@@ -3,24 +3,25 @@ from gitFunctions import Commiter
 import shouter
 
 
-class ImportHandler:
-    def __init__(self, config):
-        self.config = config
-        self.git = Commiter()
-
-    def initialize(self):
-        config = self.config
+class Initializer:
+    @staticmethod
+    def initialize(config):
         repo = config.repo
-        self.loginandcollectstreams()
+        Initializer.loginandcollectstreams()
         shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
 
-    def loginandcollectstreams(self):
-        config = self.config
+    @staticmethod
+    def loginandcollectstreams(config):
         shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
         config.collectstreamuuids()
+
+
+class ImportHandler:
+    def __init__(self, config):
+        self.config = config
 
     def recreateworkspace(self, stream):
         workspace = self.config.workspace
@@ -96,6 +97,7 @@ class ImportHandler:
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):
+        git = Commiter
         amountofchanges = len(changeentries)
         shouter.shout("Start accepting %s changes" % amountofchanges)
         amountofacceptedchanges = 0
@@ -107,7 +109,7 @@ class ImportHandler:
             shouter.shout(acceptingmsg)
             acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
-            self.git.addandcommit(changeEntry)
+            git.addandcommit(changeEntry)
 
             shouter.shout("Accepted change %s/%s") % (amountofacceptedchanges, amountofchanges)
 
