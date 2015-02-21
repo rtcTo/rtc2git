@@ -101,7 +101,9 @@ class ImportHandler:
     def acceptchangesintoworkspace(self, changeentries):
         amountofchanges = len(changeentries)
         shouter.shout("Start accepting %s changes" % amountofchanges)
+        amountofacceptedchanges = 0
         for changeEntry in changeentries:
+            amountofacceptedchanges += 1
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
                            + changeEntry.author + " Revision: " + revision + ")"
@@ -110,7 +112,7 @@ class ImportHandler:
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
             self.git.addandcommit(changeEntry)
 
-            shouter.shout("Accepted change %s/%s" % changeentries.index(changeEntry), amountofchanges)
+            shouter.shout("Accepted change %s/%s") % (amountofacceptedchanges, amountofchanges)
 
     def getchangeentriesofstream(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
