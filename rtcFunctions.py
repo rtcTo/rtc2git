@@ -26,28 +26,22 @@ class WorkspaceHandler:
         shell.execute("lscm load -r %s %s" % (self.repo, self.workspacename))
         shouter.shout("Initial load of workspace finished")
 
-    def recreate(self, stream):
-        shouter.shout("Recreating workspace")
-        shell.execute("lscm delete workspace " + self.workspacename)
-        shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
-
     def reload(self):
         shouter.shout("Start reloading/replacing current workspace")
         shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspacename))
 
-    def resetcomponentstobaseline(self, componentbaselineentries, stream):
-        for componentbaselineentry in componentbaselineentries:
-            shouter.shout("Set component '%s' to baseline '%s'"
-                          % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
+    def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
+        self.setnewflowtargets(streamuuid)
+        for entry in componentbaselineentries:
+            shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.repo, componentbaselineentry.baseline, self.workspace,
-                              stream, componentbaselineentry.component)
+                             (self.repo, entry.baseline, self.workspacename, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Replacing Flowtargets")
-        WorkspaceHandler.removedefaultflowtarget(self.workspace, self.repo)
+        self.removedefaultflowtarget()
         shell.execute("lscm add flowtarget -r %s %s %s"
                       % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
