@@ -3,33 +3,37 @@ from gitFunctions import Commiter
 import shouter
 
 
-class ImportHandler:
-    dateFormat = "yyyy-MM-dd HH:mm:ss"
-    informationSeparator = "@@"
+class Initializer:
+    @staticmethod
+    def initialize(config):
+        Initializer.loginandcollectstreams()
+        WorkspaceHandler(config).createandload(config.earlieststreamname)
 
-    def __init__(self, config):
-        self.config = config
-        self.git = Commiter()
-
-    def initialize(self):
-        config = self.config
-        repo = config.repo
-        self.loginandcollectstreams()
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
-        shouter.shout("Starting initial load of workspace")
-        shell.execute("lscm load -r %s %s" % (repo, config.workspace))
-        shouter.shout("Initial load of workspace finished")
-
-    def loginandcollectstreams(self):
-        config = self.config
+    @staticmethod
+    def loginandcollectstreams(config):
         shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
         config.collectstreamuuids()
 
-    def recreateworkspace(self, stream):
-        workspace = self.config.workspace
+
+class WorkspaceHandler:
+    def __init__(self, config):
+        self.workspacename = config.workspace
+        self.repo = config.repo
+
+    def createandload(self, stream):
+        shell.execute("lscm create workspace -r %s -s %s %s" % (self.repo, stream, self.workspacename))
+        shouter.shout("Starting initial load of workspace")
+        shell.execute("lscm load -r %s %s" % (self.repo, self.workspacename))
+        shouter.shout("Initial load of workspace finished")
+
+    def recreate(self, stream):
         shouter.shout("Recreating workspace")
-        shell.execute("lscm delete workspace " + workspace)
-        shell.execute("lscm create workspace -s %s %s" % (stream, workspace))
+        shell.execute("lscm delete workspace " + self.workspacename)
+        shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
+
+    def reload(self):
+        shouter.shout("Start reloading/replacing current workspace")
+        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspacename))
 
     def resetcomponentstobaseline(self, componentbaselineentries, stream):
         for componentbaselineentry in componentbaselineentries:
@@ -37,34 +41,34 @@ class ImportHandler:
                           % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                             (self.repo, componentbaselineentry.baseline, self.workspace,
                               stream, componentbaselineentry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
+        WorkspaceHandler.removedefaultflowtarget(self.workspace, self.repo)
         shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
+                      % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
+                      % (self.repo, self.workspace, streamuuid))
 
     def removedefaultflowtarget(self):
         flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.config.repo, self.config.workspace))[0]
+                                         % (self.repo, self.workspace))[0]
         flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, flowtargetnametoremove))
+                      % (self.repo, self.workspace.workspace, flowtargetnametoremove))
 
-    def reloadworkspace(self):
-        shouter.shout("Start reloading/replacing current workspace")
-        shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
+
+class ImportHandler:
+    def __init__(self, config):
+        self.config = config
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
         shell.execute(
-            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-            filename)
+            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
         islinewithcomponent = 2
@@ -99,6 +103,7 @@ class ImportHandler:
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):
+        git = Commiter
         amountofchanges = len(changeentries)
         shouter.shout("Start accepting %s changes" % amountofchanges)
         amountofacceptedchanges = 0
@@ -110,7 +115,7 @@ class ImportHandler:
             shouter.shout(acceptingmsg)
             acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
-            self.git.addandcommit(changeEntry)
+            git.addandcommit(changeEntry)
 
             shouter.shout("Accepted change %s/%s") % (amountofacceptedchanges, amountofchanges)
 
@@ -123,9 +128,11 @@ class ImportHandler:
         return changeentries
 
     def getchangeentries(self, baselinetocompare):
+        dateformat = "yyyy-MM-dd HH:mm:ss"
+        informationseparator = "@@"
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
         comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, baselinetocompare, self.config.repo, self.dateFormat)
+                         % (self.config.workspace, baselinetocompare, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         changeentries = []
         with open(outputfilename, 'r') as file:
@@ -139,8 +146,7 @@ class ImportHandler:
                     email = splittedlines[2].strip()
                     comment = splittedlines[3].strip()
                     date = splittedlines[4].strip()
-                    changeentry = ChangeEntry(revision, author, email, date, comment)
-                    changeentries.append(changeentry)
+                    changeentries.append(ChangeEntry(revision, author, email, date, comment))
         return changeentries
 
 
