@@ -34,7 +34,7 @@ def startmigration():
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
 
-    initialize(config.workDirectory)
+    initialize(config)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
         streamname = config.streamnames[streamuuids.index(streamuuid)]
