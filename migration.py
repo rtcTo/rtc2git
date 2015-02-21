@@ -8,23 +8,28 @@ import configuration
 import shouter
 
 
-def initialize(directory):
+def initialize(config, rtc):
+    directory = config.workDirectory
     if os.path.exists(directory):
         shutil.rmtree(directory)
     os.mkdir(directory)
     os.chdir(directory)
-    gitInitializer.initalize()
+    git = Initializer(config)
+    git.initalize()
     rtc.initialize()
-    gitInitializer.initialcommitandpush()
+    git.initialcommitandpush()
 
 
-def resume(directory):
-    os.chdir(directory)
-    os.chdir(gitInitializer.clonedRepoName)
+def resume(config, rtc):
+    os.chdir(config.workDirectory)
+    os.chdir(config.clonedGitRepoName)
     rtc.loginandcollectstreams()
 
 
 def startmigration():
+    config = configuration.readconfig()
+    rtc = ImportHandler(config)
+    git = Commiter
     initialize(config.workDirectory)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
@@ -38,9 +43,4 @@ def startmigration():
         rtc.resetcomponentstobaseline(componentbaselineentries, streamuuid)
         rtc.reloadworkspace()
 
-
-config = configuration.readconfig()
-rtc = ImportHandler(config)
-gitInitializer = Initializer(config)
-git = Commiter()
 startmigration()
