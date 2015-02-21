@@ -16,7 +16,6 @@ class ImportHandler:
         repo = config.repo
         self.loginandcollectstreams()
         shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
-        # implement logic here for replacing components by oldest baseline - scm set components
         shouter.shout("Starting initial load of workspace")
         shell.execute("lscm load -r %s %s" % (repo, config.workspace))
         shouter.shout("Initial load of workspace finished")
@@ -26,19 +25,21 @@ class ImportHandler:
         shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
         config.collectstreamuuids()
 
-    def acceptchangesfromstreams(self):
-        streamuuids = self.config.streamuuids
-        for streamuuid in streamuuids:
-            streamname = self.config.streamnames[streamuuids.index(streamuuid)]
-            self.git.branch(streamname)
-            componentbaselineentries = self.getbaselinesfromstream(streamuuid)
-            for componentBaseLineEntry in componentbaselineentries:
-                self.acceptchangesfrombaseline(componentBaseLineEntry)
-            shouter.shout("All changes of stream '%s' accepted" % streamname)
-            self.git.pushbranch(streamname)
-            self.setcomponentsofnextstreamtoworkspace(componentbaselineentries)
-            self.setnewflowtargets(streamuuid)
-            self.reloadworkspace()
+    def recreateworkspace(self, stream):
+        workspace = self.config.workspace
+        shouter.shout("Recreating workspace")
+        shell.execute("lscm delete workspace " + workspace)
+        shell.execute("lscm create workspace -s %s %s" % (stream, workspace))
+
+    def resetcomponentstobaseline(self, componentbaselineentries, stream):
+        for componentbaselineentry in componentbaselineentries:
+            shouter.shout("Set component '%s' to baseline '%s'"
+                          % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
+
+            replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
+                             (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                              stream, componentbaselineentry.component)
+            shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Replacing Flowtargets")
@@ -55,29 +56,22 @@ class ImportHandler:
         shell.execute("lscm remove flowtarget -r %s %s %s"
                       % (self.config.repo, self.config.workspace, flowtargetnametoremove))
 
-    def setcomponentsofnextstreamtoworkspace(self, componentbaselineentries):
-        for componentbaselineentry in componentbaselineentries:
-            shouter.shout("Set component '%s' to baseline '%s'"
-                          % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
-
-            replacecommand = "lscm set component -r %s -b % s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
-                              self.config.mainStream, componentbaselineentry.component)
-            shell.execute(replacecommand)
-
     def reloadworkspace(self):
         shouter.shout("Start reloading/replacing current workspace")
         shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
 
-    def getbaselinesfromstream(self, stream):
+    def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        shell.execute("lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-                      filename)
+        shell.execute(
+            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
+            filename)
         componentbaselinesentries = []
         skippedfirstrow = False
         islinewithcomponent = 2
-        component = None
-        baseline = None
+        component = ""
+        baseline = ""
+        componentname = ""
+        baselinename = ""
         with open(filename, 'r') as file:
             for line in file:
                 cleanedline = line.strip()
@@ -85,32 +79,26 @@ class ImportHandler:
                     if not skippedfirstrow:
                         skippedfirstrow = True
                         continue
-                    splittedlines = line.split("\"")[0].split(" ")
+                    splittedinformationline = line.split("\"")
+                    uuidpart = splittedinformationline[0].split(" ")
                     if islinewithcomponent % 2 is 0:
-                        component = splittedlines[3].strip()[1:-1]
+                        component = uuidpart[3].strip()[1:-1]
+                        componentname = splittedinformationline[1]
                     else:
-                        baseline = splittedlines[5].strip()[1:-1]
+                        baseline = uuidpart[5].strip()[1:-1]
+                        baselinename = splittedinformationline[1]
 
-                    if baseline is not None and component is not None:
-                        componentbaselinesentries.append(self.createcomponentbaselineentry(component, baseline))
-                        baseline = None
-                        component = None
+                    if baseline and component:
+                        componentbaselinesentries.append(
+                            ComponentBaseLineEntry(component, baseline, componentname, baselinename))
+                        baseline = ""
+                        component = ""
+                        componentname = ""
+                        baselinename = ""
                     islinewithcomponent += 1
         return componentbaselinesentries
 
-    def acceptchangesfrombaseline(self, componentbaselineentry):
-        startcomponentmigrationmessage = "Start accepting changes in component '%s' from baseline '%s'" % \
-                                         (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shoutwithdate(startcomponentmigrationmessage)
-
-        self.acceptchangesintoworkspace(componentbaselineentry.baseline)
-
-        componentmigratedmessage = "All changes in component '%s' from baseline '%s' are accepted" % \
-                                   (componentbaselineentry.componentname, componentbaselineentry.baselinename)
-        shouter.shout(componentmigratedmessage)
-
-    def acceptchangesintoworkspace(self, baselinetocompare):
-        changeentries = self.getchangeentries(baselinetocompare)
+    def acceptchangesintoworkspace(self, changeentries):
         for changeEntry in changeentries:
             revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
@@ -122,11 +110,19 @@ class ImportHandler:
 
             shouter.shout("Revision '" + revision + "' accepted")
 
+    def getchangeentriesofstream(self, componentbaselineentries):
+        shouter.shout("Start collecting changeentries")
+        changeentries = []
+        for componentBaseLineEntry in componentbaselineentries:
+            changeentries.extend(self.getchangeentries(componentBaseLineEntry.baseline))
+        changeentries.sort(key=lambda change: change.date)
+        return changeentries
+
     def getchangeentries(self, baselinetocompare):
         outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
-        shell.execute(
-            "lscm --show-alias n --show-uuid y compare ws " + self.config.workspace + " baseline " + baselinetocompare + " -r " + self.config.repo + " -I sw -C @@{name}@@ --flow-directions i -D @@\"" + self.dateFormat + "\"@@",
-            outputfilename)
+        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.workspace, baselinetocompare, self.config.repo, self.dateFormat)
+        shell.execute(comparecommand, outputfilename)
         changeentries = []
         with open(outputfilename, 'r') as file:
             for line in file:
@@ -136,39 +132,25 @@ class ImportHandler:
                     revisionwithbrackets = splittedlines[0].strip()
                     revision = revisionwithbrackets[1:-1]
                     author = splittedlines[1].strip()
-                    comment = splittedlines[2].strip()
-                    date = splittedlines[3].strip()
-                    changeentry = ChangeEntry(revision, author, date, comment)
+                    email = splittedlines[2].strip()
+                    comment = splittedlines[3].strip()
+                    date = splittedlines[4].strip()
+                    changeentry = ChangeEntry(revision, author, email, date, comment)
                     changeentries.append(changeentry)
         return changeentries
 
-    def createcomponentbaselineentry(self, component, baseline):
-        componentname = self.getcomponentname(component)
-        baselinename = self.getbaselinename(baseline)
-        return ComponentBaseLineEntry(component, baseline, componentname, baselinename)
-
-    def getcomponentname(self, componentuuid):
-        componentname = ""
-        lines = shell.getoutput("lscm --show-alias n show attributes -C %s -r %s" % (componentuuid, self.config.repo))
-        if lines:
-            componentname = lines[0].strip()[1:-1]
-        return componentname
-
-    def getbaselinename(self, baselineuuid):
-        baselinename = ""
-        lines = shell.getoutput("lscm --show-alias n show attributes -b %s -r %s" % (baselineuuid, self.config.repo))
-        if lines:
-            splittedlines = lines[0].strip().split("\"")
-            baselinename = splittedlines[1].strip()
-        return baselinename
-
 
 class ChangeEntry:
-    def __init__(self, revision, author, date, comment):
+    def __init__(self, revision, author, email, date, comment):
         self.revision = revision
         self.author = author
+        self.email = email
         self.date = date
         self.comment = comment
+
+    def getgitauthor(self):
+        authorrepresentation = "%s <%s>" % (self.author, self.email)
+        return shell.quote(authorrepresentation)
 
 
 class ComponentBaseLineEntry:
