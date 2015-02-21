@@ -133,7 +133,7 @@ class ImportHandler:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
-                    splittedlines = cleanedline.split(self.informationSeparator)
+                    splittedlines = cleanedline.split(informationseparator)
                     revisionwithbrackets = splittedlines[0].strip()
                     revision = revisionwithbrackets[1:-1]
                     author = splittedlines[1].strip()
