@@ -6,12 +6,8 @@ import shouter
 class Initializer:
     @staticmethod
     def initialize(config):
-        repo = config.repo
         Initializer.loginandcollectstreams()
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, config.earlieststreamname, config.workspace))
-        shouter.shout("Starting initial load of workspace")
-        shell.execute("lscm load -r %s %s" % (repo, config.workspace))
-        shouter.shout("Initial load of workspace finished")
+        WorkspaceHandler.createandload(config.workspace, config.earlieststreamname, config.repo)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -19,50 +15,62 @@ class Initializer:
         config.collectstreamuuids()
 
 
-class ImportHandler:
-    def __init__(self, config):
-        self.config = config
+class WorkspaceHandler:
+    @staticmethod
+    def createandload(workspacename, stream, repo):
+        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, stream, workspacename))
+        shouter.shout("Starting initial load of workspace")
+        shell.execute("lscm load -r %s %s" % (repo, workspacename))
+        shouter.shout("Initial load of workspace finished")
 
-    def recreateworkspace(self, stream):
-        workspace = self.config.workspace
+    @staticmethod
+    def recreate(workspacename, stream):
         shouter.shout("Recreating workspace")
-        shell.execute("lscm delete workspace " + workspace)
-        shell.execute("lscm create workspace -s %s %s" % (stream, workspace))
+        shell.execute("lscm delete workspace " + workspacename)
+        shell.execute("lscm create workspace -s %s %s" % (stream, workspacename))
 
-    def resetcomponentstobaseline(self, componentbaselineentries, stream):
+    @staticmethod
+    def reload(workspacename, repo):
+        shouter.shout("Start reloading/replacing current workspace")
+        shell.execute("lscm load -r %s %s --force" % (repo, workspacename))
+
+    @staticmethod
+    def resetcomponentstobaseline(componentbaselineentries, stream, config):
         for componentbaselineentry in componentbaselineentries:
             shouter.shout("Set component '%s' to baseline '%s'"
                           % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.config.repo, componentbaselineentry.baseline, self.config.workspace,
+                             (config.repo, componentbaselineentry.baseline, config.workspace,
                               stream, componentbaselineentry.component)
             shell.execute(replacecommand)
 
-    def setnewflowtargets(self, streamuuid):
+    @staticmethod
+    def setnewflowtargets(config, streamuuid):
         shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
+        WorkspaceHandler.removedefaultflowtarget(config.workspace, config.repo)
         shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
+                      % (config.repo, config.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
-                      % (self.config.repo, self.config.workspace, streamuuid))
+                      % (config.repo, config.workspace, streamuuid))
 
-    def removedefaultflowtarget(self):
+    @staticmethod
+    def removedefaultflowtarget(workspace, repo):
         flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.config.repo, self.config.workspace))[0]
+                                         % (repo, workspace))[0]
         flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.config.repo, self.config.workspace, flowtargetnametoremove))
+                      % (repo, workspace.workspace, flowtargetnametoremove))
 
-    def reloadworkspace(self):
-        shouter.shout("Start reloading/replacing current workspace")
-        shell.execute("lscm load -r %s %s --force" % (self.config.repo, self.config.workspace))
+
+class ImportHandler:
+    def __init__(self, config):
+        self.config = config
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
         shell.execute(
-            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream,
-            filename)
+            "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
         islinewithcomponent = 2
