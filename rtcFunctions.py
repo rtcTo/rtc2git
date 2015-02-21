@@ -3,10 +3,10 @@ from gitFunctions import Commiter
 import shouter
 
 
-class Initializer:
+class RTCInitializer:
     @staticmethod
     def initialize(config):
-        Initializer.loginandcollectstreams()
+        RTCInitializer.loginandcollectstreams()
         WorkspaceHandler(config).createandload(config.earlieststreamname)
 
     @staticmethod
