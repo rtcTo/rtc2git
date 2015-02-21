@@ -138,8 +138,7 @@ class ImportHandler:
                     email = splittedlines[2].strip()
                     comment = splittedlines[3].strip()
                     date = splittedlines[4].strip()
-                    changeentry = ChangeEntry(revision, author, email, date, comment)
-                    changeentries.append(changeentry)
+                    changeentries.append(ChangeEntry(revision, author, email, date, comment))
         return changeentries
 
 
