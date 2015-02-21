@@ -30,7 +30,7 @@ def resume(config, rtc):
 def startmigration():
     config = configuration.readconfig()
     rtc = ImportHandler(config)
-    rtcworkspace = WorkspaceHandler
+    rtcworkspace = WorkspaceHandler(config)
     git = Commiter
 
     initialize(config.workDirectory)
@@ -42,8 +42,8 @@ def startmigration():
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(componentbaselineentries))
         shouter.shout("All changes of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
-        rtcworkspace.recreate(config.workspace, streamuuid)
-        rtcworkspace.resetcomponentstobaseline(componentbaselineentries, streamuuid, config)
-        rtcworkspace.reload(config.workspace, config.repo)
+        rtcworkspace.recreate(streamuuid)
+        rtcworkspace.resetcomponentstobaseline(componentbaselineentries, streamuuid)
+        rtcworkspace.reload()
 
 startmigration()

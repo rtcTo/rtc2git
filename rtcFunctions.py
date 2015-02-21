@@ -7,7 +7,7 @@ class Initializer:
     @staticmethod
     def initialize(config):
         Initializer.loginandcollectstreams()
-        WorkspaceHandler.createandload(config.workspace, config.earlieststreamname, config.repo)
+        WorkspaceHandler(config).createandload(config.earlieststreamname)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -16,51 +16,49 @@ class Initializer:
 
 
 class WorkspaceHandler:
-    @staticmethod
-    def createandload(workspacename, stream, repo):
-        shell.execute("lscm create workspace -r %s -s %s %s" % (repo, stream, workspacename))
+    def __init__(self, config):
+        self.workspacename = config.workspace
+        self.repo = config.repo
+
+    def createandload(self, stream):
+        shell.execute("lscm create workspace -r %s -s %s %s" % (self.repo, stream, self.workspacename))
         shouter.shout("Starting initial load of workspace")
-        shell.execute("lscm load -r %s %s" % (repo, workspacename))
+        shell.execute("lscm load -r %s %s" % (self.repo, self.workspacename))
         shouter.shout("Initial load of workspace finished")
 
-    @staticmethod
-    def recreate(workspacename, stream):
+    def recreate(self, stream):
         shouter.shout("Recreating workspace")
-        shell.execute("lscm delete workspace " + workspacename)
-        shell.execute("lscm create workspace -s %s %s" % (stream, workspacename))
+        shell.execute("lscm delete workspace " + self.workspacename)
+        shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
 
-    @staticmethod
-    def reload(workspacename, repo):
+    def reload(self):
         shouter.shout("Start reloading/replacing current workspace")
-        shell.execute("lscm load -r %s %s --force" % (repo, workspacename))
+        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspacename))
 
-    @staticmethod
-    def resetcomponentstobaseline(componentbaselineentries, stream, config):
+    def resetcomponentstobaseline(self, componentbaselineentries, stream):
         for componentbaselineentry in componentbaselineentries:
             shouter.shout("Set component '%s' to baseline '%s'"
                           % (componentbaselineentry.componentname, componentbaselineentry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (config.repo, componentbaselineentry.baseline, config.workspace,
+                             (self.repo, componentbaselineentry.baseline, self.workspace,
                               stream, componentbaselineentry.component)
             shell.execute(replacecommand)
 
-    @staticmethod
-    def setnewflowtargets(config, streamuuid):
+    def setnewflowtargets(self, streamuuid):
         shouter.shout("Replacing Flowtargets")
-        WorkspaceHandler.removedefaultflowtarget(config.workspace, config.repo)
+        WorkspaceHandler.removedefaultflowtarget(self.workspace, self.repo)
         shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (config.repo, config.workspace, streamuuid))
+                      % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
-                      % (config.repo, config.workspace, streamuuid))
+                      % (self.repo, self.workspace, streamuuid))
 
-    @staticmethod
-    def removedefaultflowtarget(workspace, repo):
+    def removedefaultflowtarget(self):
         flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (repo, workspace))[0]
+                                         % (self.repo, self.workspace))[0]
         flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (repo, workspace.workspace, flowtargetnametoremove))
+                      % (self.repo, self.workspace.workspace, flowtargetnametoremove))
 
 
 class ImportHandler:
