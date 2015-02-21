@@ -30,6 +30,7 @@ def startmigration():
     config = configuration.readconfig()
     rtc = ImportHandler(config)
     git = Commiter
+
     initialize(config.workDirectory)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
