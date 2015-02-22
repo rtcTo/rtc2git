@@ -12,7 +12,7 @@ Directory = \temp\myWorkingDirectory
 # This can be multiple or just one stream
 StreamsToMigrate = Stream_Version1, Stream_Version2, HeadDevelopmentStream
 
-# Earliest/Oldest Stream
+# Earliest/Oldest Stream, where the migration starts
 # Referenced by Name or UUID
 OldestStream = Stream_Version1
 
