@@ -29,7 +29,7 @@ def readconfig():
             componentbaseline = entry.split("=")
             component = componentbaseline[0].strip()
             baseline = componentbaseline[1].strip()
-            initialcomponentbaselines.append(ComponentBaseLineEntry("", "", component, baseline))
+            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
     return ConfigObject(user, password, repositoryurl, workspace, workdirectory, initialcomponentbaselines, streamnames,
                         gitreponame, oldeststream)
@@ -51,8 +51,9 @@ class ConfigObject:
         self.repo = repo
         self.workspace = workspace
         self.workDirectory = workdirectory
+        self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
-        self.earlieststreamname = streamnames[0]
+        self.earlieststreamname = oldeststream
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.logFolder = os.getcwd()
