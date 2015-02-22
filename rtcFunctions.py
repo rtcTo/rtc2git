@@ -23,7 +23,7 @@ class WorkspaceHandler:
 
     def createandload(self, stream, componentbaselineentries=[], create=True):
         if create:
-            shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
+            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspacename))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
