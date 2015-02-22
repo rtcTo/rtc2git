@@ -21,8 +21,9 @@ class WorkspaceHandler:
         self.workspacename = config.workspace
         self.repo = config.repo
 
-    def createandload(self, stream, componentbaselineentries=[]):
-        shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
+    def createandload(self, stream, componentbaselineentries=[], create=True):
+        if create:
+            shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
@@ -60,8 +61,7 @@ class WorkspaceHandler:
                       % (self.repo, self.workspace.workspace, flowtargetnametoremove))
 
     def recreateoldestworkspace(self):
-        shell.execute("lscm delete workspace " + self.workspacename)
-        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines)
+        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
 
 
 class ImportHandler:
