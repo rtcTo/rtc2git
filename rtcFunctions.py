@@ -6,7 +6,7 @@ import shouter
 class RTCInitializer:
     @staticmethod
     def initialize(config):
-        RTCInitializer.loginandcollectstreams()
+        RTCInitializer.loginandcollectstreams(config)
         WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
 
     @staticmethod
