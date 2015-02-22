@@ -143,6 +143,7 @@ class ImportHandler:
         return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
 
     def getchangeentriesofstream(self, streamtocompare):
+        shouter.shout("Start collecting changes since baseline creation")
         return self.getchangeentriesbytypeandvalue("stream", streamtocompare)
 
     def getchangeentriesbytypeandvalue(self, comparetype, value):
