@@ -140,18 +140,16 @@ class ImportHandler:
         return changeentries
 
     def getchangeentriesofbaseline(self, baselinetocompare):
-        dateformat = "yyyy-MM-dd HH:mm:ss"
-        outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
-        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, baselinetocompare, self.config.repo, dateformat)
-        shell.execute(comparecommand, outputfilename)
-        return ImportHandler.getchangeentriesfromfile(outputfilename)
+        return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
 
     def getchangeentriesofstream(self, streamtocompare):
+        return self.getchangeentriesbytypeandvalue("stream", streamtocompare)
+
+    def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
-        outputfilename = self.config.getlogpath("CompareStream_" + streamtocompare + ".txt")
-        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s stream %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, streamtocompare, self.config.repo, dateformat)
+        outputfilename = self.config.getlogpath("Compare" + comparetype + "_" + value + ".txt")
+        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.workspace, comparetype, value, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
