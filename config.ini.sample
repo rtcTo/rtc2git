@@ -2,7 +2,6 @@
 Repo=https://rtc.mySite.com
 User=USR
 Password=secret
-Stream=HeadDevelopmentStream
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 ## Will be created or emptied on initialization
@@ -19,6 +18,4 @@ OldestStream = Stream_Version1
 
 # Optional, can be defined additionally to set the workspace to a specific baseline, even before the oldest stream was created
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
-# To get to the uuid of your baseline you can use following command:
-# "scm --show-uuid y list baselines --components "YourComponent" -r Repo --max 20000"
-InitialBaseLine = ComponentName = "MyInitialBaseLineCommit", AnotherComponentName="AnotherInitialBaselineCommit"
+InitialBaseLines = ComponentName = "MyInitialBaseLineCommit", AnotherComponentName="AnotherInitialBaselineCommit"
