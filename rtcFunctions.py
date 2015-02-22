@@ -113,21 +113,17 @@ class ImportHandler:
 
             shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
 
-    def getchangeentriesofstream(self, componentbaselineentries):
+    def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
         changeentries = []
         for componentBaseLineEntry in componentbaselineentries:
-            changeentries.extend(self.getchangeentries(componentBaseLineEntry.baseline))
+            changeentries.extend(self.getchangeentriesofbaseline(componentBaseLineEntry.baseline))
         changeentries.sort(key=lambda change: change.date)
         return changeentries
 
-    def getchangeentries(self, baselinetocompare):
-        dateformat = "yyyy-MM-dd HH:mm:ss"
+    @staticmethod
+    def getchangeentriesfromfile(outputfilename):
         informationseparator = "@@"
-        outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
-        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, baselinetocompare, self.config.repo, dateformat)
-        shell.execute(comparecommand, outputfilename)
         changeentries = []
         with open(outputfilename, 'r') as file:
             for line in file:
@@ -143,6 +139,21 @@ class ImportHandler:
                     changeentries.append(ChangeEntry(revision, author, email, date, comment))
         return changeentries
 
+    def getchangeentriesofbaseline(self, baselinetocompare):
+        dateformat = "yyyy-MM-dd HH:mm:ss"
+        outputfilename = self.config.getlogpath("Compare_" + baselinetocompare + ".txt")
+        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s baseline %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.workspace, baselinetocompare, self.config.repo, dateformat)
+        shell.execute(comparecommand, outputfilename)
+        return ImportHandler.getchangeentriesfromfile(outputfilename)
+
+    def getchangeentriesofstream(self, streamtocompare):
+        dateformat = "yyyy-MM-dd HH:mm:ss"
+        outputfilename = self.config.getlogpath("CompareStream_" + streamtocompare + ".txt")
+        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s stream %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.workspace, streamtocompare, self.config.repo, dateformat)
+        shell.execute(comparecommand, outputfilename)
+        return ImportHandler.getchangeentriesfromfile(outputfilename)
 
 class ChangeEntry:
     def __init__(self, revision, author, email, date, comment):
