@@ -54,6 +54,13 @@ class WorkspaceHandler:
         shell.execute("lscm remove flowtarget -r %s %s %s"
                       % (self.repo, self.workspace.workspace, flowtargetnametoremove))
 
+    def recreateoldestworkspace(self):
+        stream = self.config.earlieststreamname
+        shell.execute("lscm delete workspace " + self.workspacename)
+        shell.execute("lscm create workspace -s %s %s" % (stream, self.workspacename))
+        self.setcomponentstobaseline(ImportHandler(self.config).getcomponentbaselineentriesfromstream(stream), stream)
+        self.reload()
+
 
 class ImportHandler:
     def __init__(self, config):

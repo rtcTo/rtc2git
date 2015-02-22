@@ -34,7 +34,7 @@ def startmigration():
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
 
-    initialize(config)
+    resume(config)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
         streamname = config.streamnames[streamuuids.index(streamuuid)]
@@ -49,5 +49,6 @@ def startmigration():
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(streamuuid))
         git.pushbranch(streamname)
         shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
+        rtcworkspace.recreateoldestworkspace()
 
 startmigration()
