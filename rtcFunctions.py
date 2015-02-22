@@ -18,12 +18,12 @@ class RTCInitializer:
 class WorkspaceHandler:
     def __init__(self, config):
         self.config = config
-        self.workspacename = config.workspace
+        self.workspace = config.workspace
         self.repo = config.repo
 
     def createandload(self, stream, componentbaselineentries=[], create=True):
         if create:
-            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspacename))
+            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
@@ -33,7 +33,7 @@ class WorkspaceHandler:
 
     def load(self):
         shouter.shout("Start (re)loading current workspace")
-        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspacename))
+        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspace))
         shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
@@ -42,7 +42,7 @@ class WorkspaceHandler:
             shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.repo, entry.baseline, self.workspacename, streamuuid, entry.component)
+                             (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
