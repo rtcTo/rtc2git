@@ -61,7 +61,7 @@ class WorkspaceHandler:
 
     def recreateoldestworkspace(self):
         shell.execute("lscm delete workspace " + self.workspacename)
-        self.createandload(self.config.earlieststreamname)
+        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines)
 
 
 class ImportHandler:
