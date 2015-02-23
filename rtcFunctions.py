@@ -6,8 +6,8 @@ import shouter
 class RTCInitializer:
     @staticmethod
     def initialize(config):
-        RTCInitializer.loginandcollectstreams()
-        WorkspaceHandler(config).createandload(config.earlieststreamname)
+        RTCInitializer.loginandcollectstreams(config)
+        WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -17,18 +17,24 @@ class RTCInitializer:
 
 class WorkspaceHandler:
     def __init__(self, config):
-        self.workspacename = config.workspace
+        self.config = config
+        self.workspace = config.workspace
         self.repo = config.repo
 
-    def createandload(self, stream):
-        shell.execute("lscm create workspace -r %s -s %s %s" % (self.repo, stream, self.workspacename))
-        shouter.shout("Starting initial load of workspace")
-        shell.execute("lscm load -r %s %s" % (self.repo, self.workspacename))
-        shouter.shout("Initial load of workspace finished")
+    def createandload(self, stream, componentbaselineentries=[], create=True):
+        if create:
+            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspace))
+        if componentbaselineentries:
+            self.setcomponentstobaseline(componentbaselineentries, stream)
+        else:
+            self.setcomponentstobaseline(ImportHandler(self.config).getcomponentbaselineentriesfromstream(stream),
+                                         stream)
+        self.load()
 
-    def reload(self):
-        shouter.shout("Start reloading/replacing current workspace")
-        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspacename))
+    def load(self):
+        shouter.shout("Start (re)loading current workspace")
+        shell.execute("lscm load -r %s %s --force" % (self.repo, self.workspace))
+        shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
         self.setnewflowtargets(streamuuid)
@@ -36,7 +42,7 @@ class WorkspaceHandler:
             shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.repo, entry.baseline, self.workspacename, streamuuid, entry.component)
+                             (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
@@ -52,7 +58,10 @@ class WorkspaceHandler:
                                          % (self.repo, self.workspace))[0]
         flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace.workspace, flowtargetnametoremove))
+                      % (self.repo, self.workspace, flowtargetnametoremove))
+
+    def recreateoldestworkspace(self):
+        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
 
 
 class ImportHandler:

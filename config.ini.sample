@@ -2,15 +2,21 @@
 Repo=https://rtc.mySite.com
 User=USR
 Password=secret
-Stream=HeadDevelopmentStream
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 ## Will be created or emptied on initialization
 Directory = \temp\myWorkingDirectory
 
 [Migration]
-# Streams referenced by Name or UUID, separated by ",".
-# They should follow the order the way you like your branches, beginning from the oldest and ending with your most current stream
-Streams=Stream_Version1, Stream_Version2, HeadDevelopmentStream
+# Streams to be migrated,  referenced by Name or UUID, separated by ",".
+# This can be either multiple streams or just one stream
+StreamsToMigrate = Stream_Version1, Stream_Version2, HeadDevelopmentStream
 
+# Earliest/Oldest Stream, where the migration should start
+# Referenced by Name or UUID
+OldestStream = Stream_Version1
 
+# Optional, can be defined additionally to set the workspace to a earlier specific baseline
+# (baseline which were created earlier than the baselines of the oldest stream)
+# Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
+InitialBaseLines =
