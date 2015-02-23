@@ -58,7 +58,7 @@ class WorkspaceHandler:
                                          % (self.repo, self.workspace))[0]
         flowtargetnametoremove = flowtargetline.split("\"")[1]
         shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace.workspace, flowtargetnametoremove))
+                      % (self.repo, self.workspace, flowtargetnametoremove))
 
     def recreateoldestworkspace(self):
         self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
