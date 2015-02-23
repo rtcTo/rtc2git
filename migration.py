@@ -49,6 +49,9 @@ def startmigration():
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(streamuuid))
         git.pushbranch(streamname)
         shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
-        rtcworkspace.recreateoldestworkspace()
+
+        morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
+        if morestreamstomigrate:
+            rtcworkspace.recreateoldestworkspace()
 
 startmigration()
