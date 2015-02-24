@@ -56,11 +56,15 @@ class ConfigObject:
         self.earlieststreamname = oldeststream
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
-        self.logFolder = os.getcwd()
+        self.logFolder = os.getcwd() + os.sep + "Logs"
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuids = []
 
     def getlogpath(self, filename):
-        return "%s\%s" % (self.logFolder, filename)
+        if not self.hasCreatedLogFolder:
+            os.makedirs(self.logFolder)
+            self.hasCreatedLogFolder = True
+        return self.logFolder + os.sep + filename
 
     def collectstreamuuids(self):
         shouter.shout("Get UUID's of configured streamnames")
