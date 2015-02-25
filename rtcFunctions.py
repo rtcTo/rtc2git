@@ -1,3 +1,5 @@
+import sys
+
 import shell
 from gitFunctions import Commiter
 import shouter
@@ -117,7 +119,9 @@ class ImportHandler:
                            + changeEntry.author + " Revision: " + revision + ")"
             shouter.shout(acceptingmsg)
             acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
-            shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a")
+            acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
+            if not acceptedsuccesfully:
+                sys.exit("Change wasnt succesfully accepted into workspace, please check the output")
             git.addandcommit(changeEntry)
 
             shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
