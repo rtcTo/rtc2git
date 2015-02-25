@@ -43,6 +43,7 @@ class Commiter:
     @staticmethod
     def addandcommit(changeentry):
         comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
+        Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
         shell.execute("git commit -m %s --date %s --author=%s"
                       % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor()))
@@ -63,6 +64,11 @@ class Commiter:
             if replacingstring in word:
                 word = word.replace(replacingstring, replacedwith)
         return word
+
+    @staticmethod
+    def replaceauthor(author, email):
+        shell.execute("git config --replace-all user.name " + shell.quote(author))
+        shell.execute("git config --replace-all user.email " + email)
 
     @staticmethod
     def branch(branchname):
