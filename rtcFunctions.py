@@ -121,7 +121,8 @@ class ImportHandler:
             acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
             if not acceptedsuccesfully:
-                sys.exit("Change wasnt succesfully accepted into workspace, please check the output")
+                sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
+                         "rerun programm with resume")
             git.addandcommit(changeEntry)
 
             shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
