@@ -26,3 +26,6 @@ It uses the CLI of RTC to gather the required informations (You can find the CLI
 <li>The corresponding git command will be executed to do the same change in the git-repository</li>
 </ol>
 
+
+## Wiki
+For more details [visit our wiki] (https://github.com/WtfJoke/rtc2git/wiki)
