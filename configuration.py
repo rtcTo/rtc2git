@@ -1,6 +1,7 @@
 import os
 import configparser
 
+from rtcFunctions import ComponentBaseLineEntry
 import shell
 import shouter
 
@@ -13,23 +14,25 @@ def readconfig():
     password = generalsection['Password']
     workspace = generalsection['WorkspaceName']
     repositoryurl = generalsection['Repo']
-    mainstream = generalsection['Stream']
     workdirectory = generalsection['Directory']
     if not workdirectory:
         workdirectory = "."
     migrationsection = config['Migration']
-    streamsfromconfig = migrationsection['Streams']
+    oldeststream = migrationsection['OldestStream']
+    streamsfromconfig = migrationsection['StreamsToMigrate']
     streamnames = getstreamnames(streamsfromconfig)
     initialcomponentbaselines = []
-    definedbaselines = ""  # migrationsection['InitialBaseLine']
-    # if definedbaselines:
-    #     componentbaselines = definedbaselines.split(",")
-    #     for entry in componentbaselines:
-    #         componentbaseline = entry.split("=")
-    #         component = componentbaseline[0].strip()
-    #         baseline = componentbaseline[1].strip()
+    definedbaselines = migrationsection['InitialBaseLines']
+    if definedbaselines:
+        componentbaselines = definedbaselines.split(",")
+        for entry in componentbaselines:
+            componentbaseline = entry.split("=")
+            component = componentbaseline[0].strip()
+            baseline = componentbaseline[1].strip()
+            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
-    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, mainstream, streamnames, gitreponame)
+    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, initialcomponentbaselines, streamnames,
+                        gitreponame, oldeststream)
 
 
 def getstreamnames(streamsfromconfig):
@@ -41,22 +44,27 @@ def getstreamnames(streamsfromconfig):
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, workspace, workdirectory, mainstream, streamnames, gitreponame):
+    def __init__(self, user, password, repo, workspace, workdirectory, initialcomponentbaselines, streamnames,
+                 gitreponame, oldeststream):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
         self.workDirectory = workdirectory
-        self.mainStream = mainstream
+        self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
-        self.earlieststreamname = streamnames[0]
+        self.earlieststreamname = oldeststream
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
-        self.logFolder = os.getcwd()
+        self.logFolder = os.getcwd() + os.sep + "Logs"
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuids = []
 
     def getlogpath(self, filename):
-        return "%s\%s" % (self.logFolder, filename)
+        if not self.hasCreatedLogFolder:
+            os.makedirs(self.logFolder)
+            self.hasCreatedLogFolder = True
+        return self.logFolder + os.sep + filename
 
     def collectstreamuuids(self):
         shouter.shout("Get UUID's of configured streamnames")

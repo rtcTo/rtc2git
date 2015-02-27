@@ -1,11 +1,11 @@
 # rtc2git
-A tool made for migrating code from an existing RTC SCM repository into a Git repository
-It uses the CLI of RTC to gather the required informations
+A tool made for migrating code from an existing [RTC] (https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
+It uses the CLI of RTC to gather the required informations (You can find the CLI under the name "SCM Tools" [here] (https://jazz.net/downloads/rational-team-concert/releases/5.0.1?p=allDownloads))
 
 ## Prerequirements
 <ul>
 <li> RTC Version 5.0+ (Was tested using 5.0.1) </li> 
-<li> Working RTC CLI aka "SCM Tools"  --> (e.g Command "lscm help" should work in console) </li>
+<li> RTC CLI --> (e.g Command "lscm help" should work in console) </li>
 <li> Python 3 </li>
 </ul>
 
@@ -26,3 +26,6 @@ It uses the CLI of RTC to gather the required informations
 <li>The corresponding git command will be executed to do the same change in the git-repository</li>
 </ol>
 
+
+## Wiki
+For more details [visit our wiki] (https://github.com/WtfJoke/rtc2git/wiki)
