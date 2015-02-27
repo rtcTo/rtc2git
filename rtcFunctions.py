@@ -110,7 +110,7 @@ class ImportHandler:
     def acceptchangesintoworkspace(self, changeentries):
         git = Commiter
         amountofchanges = len(changeentries)
-        shouter.shout("Start accepting %s changesets" % amountofchanges)
+        shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
