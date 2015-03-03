@@ -52,6 +52,7 @@ class Commiter:
             shouter.shout("30 Commits happend, push current branch to avoid out of memory")
             Commiter.pushbranch("")
             Commiter.commitcounter = 0
+        shouter.shout("Commited change in local git repository")
 
 
     @staticmethod
