@@ -26,6 +26,7 @@ def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
     RTCInitializer.loginandcollectstreams(config)
+    WorkspaceHandler(config).load()
 
 
 def startmigration():
