@@ -124,9 +124,8 @@ class ImportHandler:
                 shouter.shout("Last executed command: " + acceptcommand)
                 sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                          "rerun programm with resume")
-            git.addandcommit(changeEntry)
-
             shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
+            git.addandcommit(changeEntry)
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
