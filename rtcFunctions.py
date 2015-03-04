@@ -49,17 +49,22 @@ class WorkspaceHandler:
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
-        shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace, streamuuid))
+        if not self.hasflowtarget(streamuuid):
+            shell.execute("lscm add flowtarget -r %s %s %s"
+                          % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
                       % (self.repo, self.workspace, streamuuid))
 
-    def removedefaultflowtarget(self):
-        flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.repo, self.workspace))[0]
-        flowtargetnametoremove = flowtargetline.split("\"")[1]
-        shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace, flowtargetnametoremove))
+    def hasflowtarget(self, streamuuid):
+        flowtargetlines = shell.getoutput("lscm --show-uuid y --show-alias n list flowtargets -r %s %s"
+                                          % (self.repo, self.workspace))
+        for flowtargetline in flowtargetlines:
+            splittedinformationline = flowtargetline.split("\"")
+            uuidpart = splittedinformationline[0].split(" ")
+            flowtargetuuid = uuidpart[0].strip()[1:-1]
+            if streamuuid in flowtargetline:
+                return True
+        return False
 
     def recreateoldestworkspace(self):
         self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
