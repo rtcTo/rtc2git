@@ -11,6 +11,7 @@ class RTCInitializer:
         RTCInitializer.loginandcollectstreams(config)
         workspace = WorkspaceHandler(config)
         if workspace.isexistingworkspace():
+            shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
             workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
