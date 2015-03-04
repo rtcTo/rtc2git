@@ -13,7 +13,7 @@ class RTCInitializer:
         if workspace.isexistingworkspace():
             workspace.load()
         else:
-            WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
+            workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
 
     @staticmethod
     def loginandcollectstreams(config):
