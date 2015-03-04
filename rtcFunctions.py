@@ -9,7 +9,11 @@ class RTCInitializer:
     @staticmethod
     def initialize(config):
         RTCInitializer.loginandcollectstreams(config)
-        WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
+        workspace = WorkspaceHandler(config)
+        if workspace.isexistingworkspace():
+            workspace.load()
+        else:
+            WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -46,6 +50,10 @@ class WorkspaceHandler:
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
+
+    def isexistingworkspace(self):
+        return shell.execute("lscm show attributes -w %s -r %s" % (self.config.workspace, self.config.repo)) is 0
+
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
