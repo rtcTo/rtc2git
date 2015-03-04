@@ -48,8 +48,7 @@ class WorkspaceHandler:
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
-        shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
+        shouter.shout("Set new Flowtargets")
         shell.execute("lscm add flowtarget -r %s %s %s"
                       % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
