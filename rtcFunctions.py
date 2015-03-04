@@ -62,7 +62,7 @@ class WorkspaceHandler:
             splittedinformationline = flowtargetline.split("\"")
             uuidpart = splittedinformationline[0].split(" ")
             flowtargetuuid = uuidpart[0].strip()[1:-1]
-            if streamuuid in flowtargetline:
+            if streamuuid in flowtargetuuid:
                 return True
         return False
 
