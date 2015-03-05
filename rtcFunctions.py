@@ -10,7 +10,7 @@ class RTCInitializer:
     def initialize(config):
         RTCInitializer.loginandcollectstreams(config)
         workspace = WorkspaceHandler(config)
-        if workspace.isexistingworkspace():
+        if config.useexistingworkspace:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
@@ -51,9 +51,6 @@ class WorkspaceHandler:
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
-
-    def isexistingworkspace(self):
-        return shell.execute("lscm show attributes -w %s -r %s" % (self.config.workspace, self.config.repo)) is 0
 
 
     def setnewflowtargets(self, streamuuid):
