@@ -29,8 +29,8 @@ def resume(config):
     WorkspaceHandler(config).load()
 
 
-def startmigration():
-    config = configuration.readconfig()
+def migrate():
+    config = configuration.read()
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
@@ -38,23 +38,26 @@ def startmigration():
     initialize(config)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
-        streamname = config.streamnames[streamuuids.index(streamuuid)]
-        git.branch(streamname)
-        rtcworkspace.setnewflowtargets(streamuuid)
         componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
+        streamname = config.streamnames[streamuuids.index(streamuuid)]
+        rtcworkspace.setnewflowtargets(streamuuid)
+
+        git.branch(streamname)
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstreamcomponents(componentbaselineentries))
         shouter.shout("All changes of components of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
 
         rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
         rtcworkspace.load()
+
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(streamuuid))
         git.pushbranch(streamname)
         shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
         morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
         if morestreamstomigrate:
-            rtcworkspace.recreateoldestworkspace()
             git.checkout("master")
+            rtcworkspace.recreateoldestworkspace()
 
-startmigration()
+
+migrate()
