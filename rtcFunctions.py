@@ -178,6 +178,7 @@ class ImportHandler:
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
+
 class ChangeEntry:
     def __init__(self, revision, author, email, date, comment):
         self.revision = revision
