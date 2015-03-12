@@ -52,7 +52,6 @@ class WorkspaceHandler:
                              (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
-
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
         if not self.hasflowtarget(streamuuid):
