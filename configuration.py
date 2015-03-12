@@ -6,7 +6,7 @@ import shell
 import shouter
 
 
-def readconfig():
+def read():
     config = configparser.ConfigParser()
     config.read("config.ini")
     generalsection = config['General']
