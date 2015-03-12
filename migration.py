@@ -55,5 +55,6 @@ def startmigration():
         morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
         if morestreamstomigrate:
             rtcworkspace.recreateoldestworkspace()
+            git.checkout("master")
 
 startmigration()

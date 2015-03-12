@@ -75,7 +75,7 @@ class Commiter:
     def branch(branchname):
         branchexist = shell.execute("git show-ref --verify --quiet refs/heads/" + branchname)
         if branchexist is 0:
-            shell.execute("git checkout " + branchname)
+            Commiter.checkout("git checkout " + branchname)
         else:
             shell.execute("git checkout -b " + branchname)
 
@@ -84,3 +84,7 @@ class Commiter:
         if branchname:
             shouter.shout("Final push of branch " + branchname)
         shell.execute("git push origin " + branchname)
+
+    @staticmethod
+    def checkout(branchname):
+        shell.execute("git checkout " + branchname)
