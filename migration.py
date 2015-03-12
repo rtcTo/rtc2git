@@ -1,5 +1,5 @@
 import os
-import shutil
+import sys
 
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
@@ -13,7 +13,7 @@ import shouter
 def initialize(config):
     directory = config.workDirectory
     if os.path.exists(directory):
-        shutil.rmtree(directory)
+        sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
     os.mkdir(directory)
     os.chdir(directory)
     git = Initializer(config)
