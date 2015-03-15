@@ -44,7 +44,6 @@ class WorkspaceHandler:
         shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
-        self.setnewflowtargets(streamuuid)
         for entry in componentbaselineentries:
             shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
 
