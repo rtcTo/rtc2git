@@ -9,7 +9,12 @@ class RTCInitializer:
     @staticmethod
     def initialize(config):
         RTCInitializer.loginandcollectstreams(config)
-        WorkspaceHandler(config).createandload(config.earlieststreamname, config.initialcomponentbaselines)
+        workspace = WorkspaceHandler(config)
+        if config.useexistingworkspace:
+            shouter.shout("Use existing workspace to start migration")
+            workspace.load()
+        else:
+            workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -39,7 +44,6 @@ class WorkspaceHandler:
         shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
-        self.setnewflowtargets(streamuuid)
         for entry in componentbaselineentries:
             shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
 
@@ -48,19 +52,23 @@ class WorkspaceHandler:
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
-        shouter.shout("Replacing Flowtargets")
-        self.removedefaultflowtarget()
-        shell.execute("lscm add flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace, streamuuid))
+        shouter.shout("Set new Flowtargets")
+        if not self.hasflowtarget(streamuuid):
+            shell.execute("lscm add flowtarget -r %s %s %s"
+                          % (self.repo, self.workspace, streamuuid))
         shell.execute("lscm set flowtarget -r %s %s --default --current %s"
                       % (self.repo, self.workspace, streamuuid))
 
-    def removedefaultflowtarget(self):
-        flowtargetline = shell.getoutput("lscm --show-alias n list flowtargets -r %s %s"
-                                         % (self.repo, self.workspace))[0]
-        flowtargetnametoremove = flowtargetline.split("\"")[1]
-        shell.execute("lscm remove flowtarget -r %s %s %s"
-                      % (self.repo, self.workspace, flowtargetnametoremove))
+    def hasflowtarget(self, streamuuid):
+        flowtargetlines = shell.getoutput("lscm --show-uuid y --show-alias n list flowtargets -r %s %s"
+                                          % (self.repo, self.workspace))
+        for flowtargetline in flowtargetlines:
+            splittedinformationline = flowtargetline.split("\"")
+            uuidpart = splittedinformationline[0].split(" ")
+            flowtargetuuid = uuidpart[0].strip()[1:-1]
+            if streamuuid in flowtargetuuid:
+                return True
+        return False
 
     def recreateoldestworkspace(self):
         self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
@@ -121,11 +129,11 @@ class ImportHandler:
             acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
             if not acceptedsuccesfully:
+                shouter.shout("Last executed command: " + acceptcommand)
                 sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                          "rerun programm with resume")
+            shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
-
-            shouter.shout("Accepted change %s/%s" % (amountofacceptedchanges, amountofchanges))
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
@@ -167,6 +175,7 @@ class ImportHandler:
                          % (self.config.workspace, comparetype, value, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
+
 
 class ChangeEntry:
     def __init__(self, revision, author, email, date, comment):

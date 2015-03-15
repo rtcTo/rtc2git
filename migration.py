@@ -1,5 +1,5 @@
 import os
-import shutil
+import sys
 
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
@@ -13,7 +13,7 @@ import shouter
 def initialize(config):
     directory = config.workDirectory
     if os.path.exists(directory):
-        shutil.rmtree(directory)
+        sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
     os.mkdir(directory)
     os.chdir(directory)
     git = Initializer(config)
@@ -26,10 +26,11 @@ def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
     RTCInitializer.loginandcollectstreams(config)
+    WorkspaceHandler(config).load()
 
 
-def startmigration():
-    config = configuration.readconfig()
+def migrate():
+    config = configuration.read()
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
@@ -37,21 +38,26 @@ def startmigration():
     initialize(config)
     streamuuids = config.streamuuids
     for streamuuid in streamuuids:
-        streamname = config.streamnames[streamuuids.index(streamuuid)]
-        git.branch(streamname)
         componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
+        streamname = config.streamnames[streamuuids.index(streamuuid)]
+        rtcworkspace.setnewflowtargets(streamuuid)
+
+        git.branch(streamname)
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstreamcomponents(componentbaselineentries))
         shouter.shout("All changes of components of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
 
         rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
         rtcworkspace.load()
+
         rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(streamuuid))
         git.pushbranch(streamname)
         shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
         morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
         if morestreamstomigrate:
+            git.checkout("master")
             rtcworkspace.recreateoldestworkspace()
 
-startmigration()
+
+migrate()

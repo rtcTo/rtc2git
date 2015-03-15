@@ -6,13 +6,14 @@ import shell
 import shouter
 
 
-def readconfig():
+def read():
     config = configparser.ConfigParser()
     config.read("config.ini")
     generalsection = config['General']
     user = generalsection['User']
     password = generalsection['Password']
     workspace = generalsection['WorkspaceName']
+    useexistingworkspace = generalsection['useExistingWorkspace']
     repositoryurl = generalsection['Repo']
     workdirectory = generalsection['Directory']
     if not workdirectory:
@@ -31,7 +32,8 @@ def readconfig():
             baseline = componentbaseline[1].strip()
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
-    return ConfigObject(user, password, repositoryurl, workspace, workdirectory, initialcomponentbaselines, streamnames,
+    return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
+                        initialcomponentbaselines, streamnames,
                         gitreponame, oldeststream)
 
 
@@ -44,12 +46,14 @@ def getstreamnames(streamsfromconfig):
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, workspace, workdirectory, initialcomponentbaselines, streamnames,
+    def __init__(self, user, password, repo, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
+                 streamnames,
                  gitreponame, oldeststream):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
+        self.useexistingworkspace = useexistingworkspace is "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames

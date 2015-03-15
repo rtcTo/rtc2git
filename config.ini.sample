@@ -4,7 +4,9 @@ User=USR
 Password=secret
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
-## Will be created or emptied on initialization
+# If this value is set to True, the workspace referred with workspacename will just be loaded instead of newly created
+useExistingWorkspace = False
+# Folder to be created
 Directory = \temp\myWorkingDirectory
 
 [Migration]
