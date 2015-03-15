@@ -1,13 +1,13 @@
-def getFirstEntryFromEachKeyAsMap(changeentrymap):
-    firstEntries = {}
+def getfirstentryfromeachkeyasmap(changeentrymap):
+    firstentries = {}
     for key in changeentrymap.keys():
         changeentries = changeentrymap.get(key)
         if changeentries:
-            firstEntries[key] = changeentries[0]
-    return firstEntries
+            firstentries[key] = changeentries[0]
+    return firstentries
 
 
-def deleteEntry(changeentrymap, changeentrytodelete):
+def deleteentry(changeentrymap, changeentrytodelete):
     for key in changeentrymap.keys():
         changeentries = changeentrymap.get(key)
         if changeentries and changeentrytodelete.revision is changeentries[0].revision:
@@ -20,21 +20,21 @@ def tosortedlist(changeentrymap):
     expectedlistsize = len(aslist(changeentrymap))
 
     while len(sortedlist) < expectedlistsize:
-        firstentryfromeachkey = getFirstEntryFromEachKeyAsMap(changeentrymap)
-        changeentrytoAdd = getChangeEntryWithLowestDate(firstentryfromeachkey)
-        deleteEntry(changeentrymap, changeentrytoAdd)
+        firstentryfromeachkey = getfirstentryfromeachkeyasmap(changeentrymap)
+        changeentrytoAdd = getchangeentrywithearliestdate(firstentryfromeachkey)
+        deleteentry(changeentrymap, changeentrytoAdd)
         sortedlist.append(changeentrytoAdd)
 
     return sortedlist;
 
 
-def getChangeEntryWithLowestDate(changeentries):
-    changeentryWithEarliestDate = None
+def getchangeentrywithearliestdate(changeentries):
+    changeentrywithearliestdate = None
     for key in changeentries.keys():
         changeentry = changeentries.get(key)
-        if not changeentryWithEarliestDate or changeentry.date < changeentryWithEarliestDate.date:
-            changeentryWithEarliestDate = changeentry
-    return changeentryWithEarliestDate
+        if not changeentrywithearliestdate or changeentry.date < changeentrywithearliestdate.date:
+            changeentrywithearliestdate = changeentry
+    return changeentrywithearliestdate
 
 
 def aslist(anymap):
