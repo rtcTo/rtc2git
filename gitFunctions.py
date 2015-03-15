@@ -75,7 +75,7 @@ class Commiter:
     def branch(branchname):
         branchexist = shell.execute("git show-ref --verify --quiet refs/heads/" + branchname)
         if branchexist is 0:
-            Commiter.checkout("git checkout " + branchname)
+            Commiter.checkout(branchname)
         else:
             shell.execute("git checkout -b " + branchname)
 
