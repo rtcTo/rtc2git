@@ -21,9 +21,9 @@ def tosortedlist(changeentrymap):
 
     while len(sortedlist) < expectedlistsize:
         firstentryfromeachkey = getfirstentryfromeachkeyasmap(changeentrymap)
-        changeentrytoAdd = getchangeentrywithearliestdate(firstentryfromeachkey)
-        deleteentry(changeentrymap, changeentrytoAdd)
-        sortedlist.append(changeentrytoAdd)
+        changesetwithearliestdate = getchangeentrywithearliestdate(firstentryfromeachkey)
+        deleteentry(changeentrymap, changesetwithearliestdate)
+        sortedlist.append(changesetwithearliestdate)
 
     return sortedlist;
 
