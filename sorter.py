@@ -1,4 +1,17 @@
-def getfirstentryfromeachkeyasmap(changeentrymap):
+def tosortedlist(changeentrymap):
+    sortedlist = []
+    expectedlistsize = len(__aslist(changeentrymap))
+
+    while len(sortedlist) < expectedlistsize:
+        firstentryfromeachkey = __getfirstentryfromeachkeyasmap(changeentrymap)
+        changesetwithearliestdate = __getchangeentrywithearliestdate(firstentryfromeachkey)
+        __deleteentry(changeentrymap, changesetwithearliestdate)
+        sortedlist.append(changesetwithearliestdate)
+
+    return sortedlist
+
+
+def __getfirstentryfromeachkeyasmap(changeentrymap):
     firstentries = {}
     for key in changeentrymap.keys():
         changeentries = changeentrymap.get(key)
@@ -7,7 +20,7 @@ def getfirstentryfromeachkeyasmap(changeentrymap):
     return firstentries
 
 
-def deleteentry(changeentrymap, changeentrytodelete):
+def __deleteentry(changeentrymap, changeentrytodelete):
     for key in changeentrymap.keys():
         changeentries = changeentrymap.get(key)
         if changeentries and changeentrytodelete.revision is changeentries[0].revision:
@@ -15,20 +28,7 @@ def deleteentry(changeentrymap, changeentrytodelete):
             break
 
 
-def tosortedlist(changeentrymap):
-    sortedlist = []
-    expectedlistsize = len(aslist(changeentrymap))
-
-    while len(sortedlist) < expectedlistsize:
-        firstentryfromeachkey = getfirstentryfromeachkeyasmap(changeentrymap)
-        changesetwithearliestdate = getchangeentrywithearliestdate(firstentryfromeachkey)
-        deleteentry(changeentrymap, changesetwithearliestdate)
-        sortedlist.append(changesetwithearliestdate)
-
-    return sortedlist;
-
-
-def getchangeentrywithearliestdate(changeentries):
+def __getchangeentrywithearliestdate(changeentries):
     changeentrywithearliestdate = None
     for key in changeentries.keys():
         changeentry = changeentries.get(key)
@@ -37,7 +37,7 @@ def getchangeentrywithearliestdate(changeentries):
     return changeentrywithearliestdate
 
 
-def aslist(anymap):
+def __aslist(anymap):
     resultlist = []
     for key in anymap.keys():
         for changeentry in anymap.get(key):
