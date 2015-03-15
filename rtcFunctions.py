@@ -1,5 +1,6 @@
 import sys
 
+import sorter
 import shell
 from gitFunctions import Commiter
 import shouter
@@ -138,13 +139,11 @@ class ImportHandler:
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start collecting changeentries")
-        changeentries = []
         changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
             changeentriesbycomponentbaselineentry[componentBaseLineEntry.componentname] = \
                 self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
-        changeentries.extend(self.getchangeentriesofbaseline(componentBaseLineEntry.baseline))
-        changeentries.sort(key=lambda change: change.date)
+        changeentries = sorter.tosortedlist(changeentriesbycomponentbaselineentry)
         return changeentries
 
     @staticmethod
