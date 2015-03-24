@@ -208,7 +208,7 @@ class ImportHandler:
     def gethistory(self, componentuuid, componentname, streamuuid):
         outputfilename = self.config.getlogpath("History_" + componentuuid + "_" + componentname + ".txt")
         fetchhistorycommand = "lscm --show-uuid y --show-alias n show history -m 100000 -r %s -w %s -c %s" % (
-        self.config.repo, streamuuid, componentuuid)
+            self.config.repo, streamuuid, componentuuid)
         shell.execute(fetchhistorycommand, outputfilename)
         return ImportHandler.gethistoryfromfile(outputfilename)
 
