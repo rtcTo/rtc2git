@@ -53,7 +53,7 @@ class ConfigObject:
         self.password = password
         self.repo = repo
         self.workspace = workspace
-        self.useexistingworkspace = useexistingworkspace is "True"
+        self.useexistingworkspace = useexistingworkspace == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
