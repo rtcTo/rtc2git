@@ -108,7 +108,7 @@ class ImportHandler:
 
                     if baseline and component:
                         componentbaselinesentries.append(
-                            ComponentBaseLineEntry(component, baseline, componentname, baselinename))
+                            ComponentBaseLineEntry(component, baseline, componentname, baselinename, stream))
                         baseline = ""
                         component = ""
                         componentname = ""
@@ -137,13 +137,22 @@ class ImportHandler:
             git.addandcommit(changeEntry)
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
-        shouter.shout("Start collecting changeentries")
+        shouter.shout("Start comparing current workspace with baselines")
         changeentriesbycomponentbaselineentry = {}
+
         for componentBaseLineEntry in componentbaselineentries:
             changeentriesbycomponentbaselineentry[componentBaseLineEntry.componentname] = \
                 self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
         changeentries = sorter.tosortedlist(changeentriesbycomponentbaselineentry)
         return changeentries
+
+    def collecthistory(self, componentbaselineentries):
+        historyuuids = []
+        for componentBaseLineEntry in componentbaselineentries:
+            shouter.shout("Collecting history of " + componentBaseLineEntry.componentname)
+            historyuuids.append(self.gethistory(componentBaseLineEntry.component, componentBaseLineEntry.componentname,
+                                                componentBaseLineEntry.stream))
+        return historyuuids;
 
     @staticmethod
     def getchangeentriesfromfile(outputfilename):
@@ -163,6 +172,24 @@ class ImportHandler:
                     changeentries.append(ChangeEntry(revision, author, email, date, comment))
         return changeentries
 
+    @staticmethod
+    def gethistoryfromfile(outputfilename):
+        skippedfirstrow = False
+        revisions = []
+        with open(outputfilename, 'r') as file:
+            for line in file:
+                cleanedline = line.strip()
+                if cleanedline:
+                    if not skippedfirstrow:
+                        skippedfirstrow = True
+                        continue
+                    splittedlines = cleanedline.split(")")
+                    revision = splittedlines[0][1:]
+                    revisions.append(revision)
+
+        revisions.reverse()  # to begin by the oldest
+        return revisions
+
     def getchangeentriesofbaseline(self, baselinetocompare):
         return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
 
@@ -177,6 +204,14 @@ class ImportHandler:
                          % (self.config.workspace, comparetype, value, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
+
+    def gethistory(self, componentuuid, componentname, streamuuid):
+        outputfilename = self.config.getlogpath("History_" + componentuuid + "_" + componentname + ".txt")
+        fetchhistorycommand = "lscm --show-uuid y --show-alias n show history -m 100000 -r %s -w %s -c %s" % (
+        self.config.repo, streamuuid, componentuuid)
+        shell.execute(fetchhistorycommand, outputfilename)
+        return ImportHandler.gethistoryfromfile(outputfilename)
+
 
 
 class ChangeEntry:
@@ -193,8 +228,9 @@ class ChangeEntry:
 
 
 class ComponentBaseLineEntry:
-    def __init__(self, component, baseline, componentname, baselinename):
+    def __init__(self, component, baseline, componentname, baselinename, streamuuid):
         self.component = component
         self.baseline = baseline
         self.componentname = componentname
         self.baselinename = baselinename
+        self.stream = streamuuid
