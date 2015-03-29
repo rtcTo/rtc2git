@@ -165,8 +165,8 @@ class ImportHandler:
 
     def readhistory(self, componentbaselineentries):
         historyuuids = {}
+        shouter.shout("Start reading history files")
         for componentBaseLineEntry in componentbaselineentries:
-            shouter.shout("Start reading history file of " + componentBaseLineEntry.componentname)
             history = self.gethistory(componentBaseLineEntry.component, componentBaseLineEntry.componentname,
                                       componentBaseLineEntry.stream)
             historyuuids[componentBaseLineEntry.component] = history
