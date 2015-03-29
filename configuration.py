@@ -30,7 +30,8 @@ def read():
             componentbaseline = entry.split("=")
             component = componentbaseline[0].strip()
             baseline = componentbaseline[1].strip()
-            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
+            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline,
+                                                                    oldeststream))
     gitreponame = generalsection['GIT-Reponame']
     return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,
@@ -53,7 +54,7 @@ class ConfigObject:
         self.password = password
         self.repo = repo
         self.workspace = workspace
-        self.useexistingworkspace = useexistingworkspace is "True"
+        self.useexistingworkspace = useexistingworkspace == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
