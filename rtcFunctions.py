@@ -236,7 +236,7 @@ class ImportHandler:
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
     def gethistory(self, componentuuid, componentname, streamuuid):
-        outputfilename = self.config.getlogpath("History_" + componentname + ".txt")
+        outputfilename = self.config.gethistorypath("History_" + componentname + ".txt")
         return ImportHandler.getsimplehistoryfromfile(outputfilename)
 
 
