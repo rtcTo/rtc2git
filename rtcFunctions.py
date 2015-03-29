@@ -141,9 +141,9 @@ class ImportHandler:
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
         if nextindex is not len(changeentries):
-            shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
             nextchangeentry = changeentries.__getitem__(nextindex)
             if changeentry.author == nextchangeentry.author:  # most likely merge changeset
+                shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
                 acceptcommand += " " + nextchangeentry.revision
                 successfull = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
 
