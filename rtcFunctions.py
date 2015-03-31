@@ -122,9 +122,13 @@ class ImportHandler:
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
+        skipnextchangeset = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
             revision = changeEntry.revision
+            if skipnextchangeset:
+                skipnextchangeset = False
+                continue
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + ", Author: " \
                            + changeEntry.author + ", Revision: " + revision + ")"
             shouter.shout(acceptingmsg)
@@ -132,26 +136,36 @@ class ImportHandler:
             acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
             if not acceptedsuccesfully:
                 self.retryacceptincludingnextchangeset(changeEntry, changeentries, acceptcommand)
+                skipnextchangeset = True
 
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
 
     def retryacceptincludingnextchangeset(self, changeentry, changeentries, acceptcommand):
-        shouter.shout("Change wasnt succesfully accepted into workspace")
+        shouter.shout("Change wasnt succesfully accepted into workspace, trying to discard last change")
+        self.discardchanges(changeentry.revision)
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
         if nextindex is not len(changeentries):
-            nextchangeentry = changeentries.__getitem__(nextindex)
+            nextchangeentry = changeentries[nextindex]
             if changeentry.author == nextchangeentry.author:  # most likely merge changeset
                 shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
                 acceptcommand += " " + nextchangeentry.revision
                 successfull = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
+                if not successfull:
+                    self.discardchanges(changeentry, nextchangeentry)
 
         if not successfull:
             shouter.shout("Last executed command: " + acceptcommand)
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
 
+    @staticmethod
+    def discardchanges(*changeentries):
+        idstodiscard = ""
+        for changeentry in changeentries:
+            idstodiscard += " " + changeentry.revision
+        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start comparing current workspace with baselines")
