@@ -143,7 +143,7 @@ class ImportHandler:
 
     def retryacceptincludingnextchangeset(self, changeentry, changeentries, acceptcommand):
         shouter.shout("Change wasnt succesfully accepted into workspace, trying to discard last change")
-        self.discardchanges(changeentry.revision)
+        self.discardchanges(changeentry)
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
         if nextindex is not len(changeentries):
