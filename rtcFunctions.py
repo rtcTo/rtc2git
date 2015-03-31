@@ -125,10 +125,10 @@ class ImportHandler:
         skipnextchangeset = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            revision = changeEntry.revision
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
+            revision = changeEntry.revision
             acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + ", Author: " \
                            + changeEntry.author + ", Revision: " + revision + ")"
             shouter.shout(acceptingmsg)
