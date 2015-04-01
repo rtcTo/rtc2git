@@ -77,25 +77,24 @@ class WorkspaceHandler:
 
 
 class Changes:
+    latest_accept_command = ""
 
     @staticmethod
     def discard(*changeentries):
-        idstodiscard = ""
-        for changeentry in changeentries:
-            idstodiscard += " " + changeentry.revision
+        idstodiscard = Changes._collectids(changeentries)
         shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
 
     @staticmethod
     def accept(*changeentries, logpath):
-        revisions = Changes.__collectids(changeentries)
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
-        acceptcommand = "lscm accept --overwrite-uncommitted --changes " + revisions
-        acceptedsuccesfully = shell.execute(acceptcommand, logpath, "a") is 0
+        revisions = Changes._collectids(changeentries)
+        latest_accept_command = "lscm accept --overwrite-uncommitted --changes " + revisions
+        acceptedsuccesfully = shell.execute(latest_accept_command, logpath, "a") is 0
         return acceptedsuccesfully
 
     @staticmethod
-    def __collectids(*changeentries):
+    def _collectids(*changeentries):
         ids = ""
         for changeentry in changeentries:
             ids += " " + changeentry.revision
@@ -154,24 +153,21 @@ class ImportHandler:
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
-            revision = changeEntry.revision
-            acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + ", Author: " \
-                           + changeEntry.author + ", Revision: " + revision + ")"
-            shouter.shout(acceptingmsg)
-            acceptcommand = "lscm accept --overwrite-uncommitted --changes " + revision
-            acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
+            shouter.shout("Accepting: " + changeEntry.tostring())
+
+            acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.config.getlogpath("accept.txt")) is 0
             if not acceptedsuccesfully:
-                self.retryacceptincludingnextchangeset(changeEntry, changeentries, acceptcommand)
+                self.retryacceptincludingnextchangeset(changeEntry, changeentries)
                 skipnextchangeset = True
 
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
 
-    def retryacceptincludingnextchangeset(self, changeentry, changeentries, acceptcommand):
+    def retryacceptincludingnextchangeset(self, changeentry, changeentries):
         shouter.shout("Change wasnt succesfully accepted into workspace")
         if input("Press Enter to try to accept it with next changeset together"):
             return
-        WorkspaceHandler.discardchanges(changeentry)
+        Changes.discard(changeentry)
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
         if nextindex is not len(changeentries):
@@ -179,13 +175,13 @@ class ImportHandler:
             if changeentry.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower():
                 # most likely merge changeset
                 shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
-                acceptcommand += " " + nextchangeentry.revision
-                successfull = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
+                acceptlogfile = self.config.getlogpath("accept.txt")
+                successfull = Changes.accept(changeentry.revision, nextchangeentry.revision, logpath=acceptlogfile) is 0
                 if not successfull:
-                    self.discardchanges(changeentry, nextchangeentry)
+                    Changes.discard(changeentry, nextchangeentry)
 
         if not successfull:
-            shouter.shout("Last executed command: " + acceptcommand)
+            shouter.shout("Last executed command: " + Changes.latest_accept_command)
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
 
