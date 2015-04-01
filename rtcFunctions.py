@@ -1,5 +1,4 @@
 import sys
-import os
 
 import sorter
 import shell
@@ -109,7 +108,7 @@ class ImportHandler:
 
                     if baseline and component:
                         componentbaselinesentries.append(
-                            ComponentBaseLineEntry(component, baseline, componentname, baselinename, stream))
+                            ComponentBaseLineEntry(component, baseline, componentname, baselinename))
                         baseline = ""
                         component = ""
                         componentname = ""
@@ -122,90 +121,34 @@ class ImportHandler:
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        skipnextchangeset = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if skipnextchangeset:
-                skipnextchangeset = False
-                continue
             revision = changeEntry.revision
-            acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + ", Author: " \
-                           + changeEntry.author + ", Revision: " + revision + ")"
+            acceptingmsg = "Accepting: " + changeEntry.comment + " (Date: " + changeEntry.date + " Author: " \
+                           + changeEntry.author + " Revision: " + revision + ")"
             shouter.shout(acceptingmsg)
-            acceptcommand = "lscm accept --overwrite-uncommitted --changes " + revision
+            acceptcommand = "lscm accept --changes " + revision + " --overwrite-uncommitted"
             acceptedsuccesfully = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
             if not acceptedsuccesfully:
-                self.retryacceptincludingnextchangeset(changeEntry, changeentries, acceptcommand)
-                skipnextchangeset = True
-
+                shouter.shout("Last executed command: " + acceptcommand)
+                sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
+                         "rerun programm with resume")
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
 
-    def retryacceptincludingnextchangeset(self, changeentry, changeentries, acceptcommand):
-        shouter.shout("Change wasnt succesfully accepted into workspace, trying to discard last change")
-        self.discardchanges(changeentry.revision)
-        nextindex = changeentries.index(changeentry) + 1
-        successfull = False
-        if nextindex is not len(changeentries):
-            nextchangeentry = changeentries[nextindex]
-            if changeentry.author == nextchangeentry.author:  # most likely merge changeset
-                shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
-                acceptcommand += " " + nextchangeentry.revision
-                successfull = shell.execute(acceptcommand, self.config.getlogpath("accept.txt"), "a") is 0
-                if not successfull:
-                    self.discardchanges(changeentry, nextchangeentry)
-
-        if not successfull:
-            shouter.shout("Last executed command: " + acceptcommand)
-            sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
-                     "rerun programm with resume")
-
-    @staticmethod
-    def discardchanges(*changeentries):
-        idstodiscard = ""
-        for changeentry in changeentries:
-            idstodiscard += " " + changeentry.revision
-        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
-
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
-        shouter.shout("Start comparing current workspace with baselines")
-        missingchangeentries = {}
-
+        shouter.shout("Start collecting changeentries")
+        changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
-            changeentries = self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
-            for changeentry in changeentries:
-                missingchangeentries[changeentry.revision] = changeentry
-        return missingchangeentries
-
-    def readhistory(self, componentbaselineentries):
-        historyuuids = {}
-        shouter.shout("Start reading history files")
-        for componentBaseLineEntry in componentbaselineentries:
-            history = self.gethistory(componentBaseLineEntry.component, componentBaseLineEntry.componentname,
-                                      componentBaseLineEntry.stream)
-            historyuuids[componentBaseLineEntry.component] = history
-        return historyuuids
-
-    @staticmethod
-    def getchangeentriestoaccept(history, missingchangeentries):
-        historywithchangeentryobject = {}
-        for key in history.keys():
-            currentuuids = history.get(key)
-            changeentries = []
-            for uuid in currentuuids:
-                changeentry = missingchangeentries.get(uuid)
-                if changeentry:
-                    changeentries.append(changeentry)
-            historywithchangeentryobject[key] = changeentries
-        changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
-        return changeentriestoaccept
-
+            changeentriesbycomponentbaselineentry[componentBaseLineEntry.componentname] = \
+                self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
+        changeentries = sorter.tosortedlist(changeentriesbycomponentbaselineentry)
+        return changeentries
 
     @staticmethod
     def getchangeentriesfromfile(outputfilename):
         informationseparator = "@@"
         changeentries = []
-
         with open(outputfilename, 'r') as file:
             for line in file:
                 cleanedline = line.strip()
@@ -219,20 +162,6 @@ class ImportHandler:
                     date = splittedlines[4].strip()
                     changeentries.append(ChangeEntry(revision, author, email, date, comment))
         return changeentries
-
-    @staticmethod
-    def getsimplehistoryfromfile(outputfilename):
-        revisions = []
-        if not os.path.isfile(outputfilename):
-            shouter.shout("History file not found: " + outputfilename)
-            shouter.shout("Skipping this part of history")
-            return revisions
-
-        with open(outputfilename, 'r') as file:
-            for line in file:
-                revisions.append(line.strip())
-        revisions.reverse()  # to begin by the oldest
-        return revisions
 
     def getchangeentriesofbaseline(self, baselinetocompare):
         return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
@@ -249,10 +178,6 @@ class ImportHandler:
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
-    def gethistory(self, componentuuid, componentname, streamuuid):
-        outputfilename = self.config.gethistorypath("History_" + componentname + ".txt")
-        return ImportHandler.getsimplehistoryfromfile(outputfilename)
-
 
 class ChangeEntry:
     def __init__(self, revision, author, email, date, comment):
@@ -268,9 +193,8 @@ class ChangeEntry:
 
 
 class ComponentBaseLineEntry:
-    def __init__(self, component, baseline, componentname, baselinename, streamuuid):
+    def __init__(self, component, baseline, componentname, baselinename):
         self.component = component
         self.baseline = baseline
         self.componentname = componentname
         self.baselinename = baselinename
-        self.stream = streamuuid
