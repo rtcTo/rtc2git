@@ -90,11 +90,10 @@ class Changes:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
         latest_accept_command = "lscm accept --overwrite-uncommitted --changes " + revisions
-        acceptedsuccesfully = shell.execute(latest_accept_command, logpath, "a") is 0
-        return acceptedsuccesfully
+        return shell.execute(latest_accept_command, logpath, "a") is 0
 
     @staticmethod
-    def _collectids(*changeentries):
+    def _collectids(changeentries):
         ids = ""
         for changeentry in changeentries:
             ids += " " + changeentry.revision
