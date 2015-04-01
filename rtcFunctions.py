@@ -142,7 +142,9 @@ class ImportHandler:
             git.addandcommit(changeEntry)
 
     def retryacceptincludingnextchangeset(self, changeentry, changeentries, acceptcommand):
-        shouter.shout("Change wasnt succesfully accepted into workspace, trying to discard last change")
+        shouter.shout("Change wasnt succesfully accepted into workspace")
+        if input("Press Enter to try to accept it with next changeset together"):
+            return
         self.discardchanges(changeentry)
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
