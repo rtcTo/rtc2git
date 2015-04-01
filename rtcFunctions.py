@@ -154,8 +154,6 @@ class ImportHandler:
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
-            shouter.shout("Accepting: " + changeEntry.tostring())
-
             acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.acceptlogpath) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
