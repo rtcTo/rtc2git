@@ -181,7 +181,8 @@ class ImportHandler:
                     Changes.discard(change, nextchangeentry)
 
         if not successfull:
-            shouter.shout("Last executed command: " + Changes.latest_accept_command)
+            shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+            shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
 
