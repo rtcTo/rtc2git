@@ -43,7 +43,7 @@ def migrate():
         rtcworkspace.setnewflowtargets(streamuuid)
         git.branch(streamname)
 
-        history = rtc.readhistory(componentbaselineentries)
+        history = rtc.readhistory(componentbaselineentries, streamname)
         changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
 
         rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(history, changeentries))
