@@ -303,4 +303,3 @@ class ComponentBaseLineEntry:
         self.baseline = baseline
         self.componentname = componentname
         self.baselinename = baselinename
-        self.stream = streamuuid
