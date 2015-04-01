@@ -292,8 +292,7 @@ class ChangeEntry:
         return shell.quote(authorrepresentation)
 
     def tostring(self):
-        return self.comment + " (Date: " + self.date + ", Author: "
-        self.author + ", Revision: " + self.revision + ")"
+        return self.comment + " (Date: " + self.date + ", Author: " + self.author + ", Revision: " + self.revision + ")"
 
 
 class ComponentBaseLineEntry:
