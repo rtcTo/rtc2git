@@ -76,6 +76,32 @@ class WorkspaceHandler:
         self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
 
 
+class Changes:
+
+    @staticmethod
+    def discard(*changeentries):
+        idstodiscard = ""
+        for changeentry in changeentries:
+            idstodiscard += " " + changeentry.revision
+        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
+
+    @staticmethod
+    def accept(*changeentries, logpath):
+        revisions = Changes.__collectids(changeentries)
+        for changeEntry in changeentries:
+            shouter.shout("Accepting: " + changeEntry.tostring())
+        acceptcommand = "lscm accept --overwrite-uncommitted --changes " + revisions
+        acceptedsuccesfully = shell.execute(acceptcommand, logpath, "a") is 0
+        return acceptedsuccesfully
+
+    @staticmethod
+    def __collectids(*changeentries):
+        ids = ""
+        for changeentry in changeentries:
+            ids += " " + changeentry.revision
+        return ids
+
+
 class ImportHandler:
     def __init__(self, config):
         self.config = config
@@ -145,7 +171,7 @@ class ImportHandler:
         shouter.shout("Change wasnt succesfully accepted into workspace")
         if input("Press Enter to try to accept it with next changeset together"):
             return
-        self.discardchanges(changeentry)
+        WorkspaceHandler.discardchanges(changeentry)
         nextindex = changeentries.index(changeentry) + 1
         successfull = False
         if nextindex is not len(changeentries):
@@ -162,13 +188,6 @@ class ImportHandler:
             shouter.shout("Last executed command: " + acceptcommand)
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
-
-    @staticmethod
-    def discardchanges(*changeentries):
-        idstodiscard = ""
-        for changeentry in changeentries:
-            idstodiscard += " " + changeentry.revision
-        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start comparing current workspace with baselines")
@@ -268,6 +287,10 @@ class ChangeEntry:
     def getgitauthor(self):
         authorrepresentation = "%s <%s>" % (self.author, self.email)
         return shell.quote(authorrepresentation)
+
+    def tostring(self):
+        return self.comment + " (Date: " + self.date + ", Author: "
+        self.author + ", Revision: " + self.revision + ")"
 
 
 class ComponentBaseLineEntry:
