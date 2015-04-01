@@ -30,8 +30,7 @@ def read():
             componentbaseline = entry.split("=")
             component = componentbaseline[0].strip()
             baseline = componentbaseline[1].strip()
-            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline,
-                                                                    oldeststream))
+            initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
     return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,

@@ -135,7 +135,7 @@ class ImportHandler:
 
                     if baseline and component:
                         componentbaselinesentries.append(
-                            ComponentBaseLineEntry(component, baseline, componentname, baselinename, stream))
+                            ComponentBaseLineEntry(component, baseline, componentname, baselinename))
                         baseline = ""
                         component = ""
                         componentname = ""
@@ -298,7 +298,7 @@ class ChangeEntry:
 
 
 class ComponentBaseLineEntry:
-    def __init__(self, component, baseline, componentname, baselinename, streamuuid):
+    def __init__(self, component, baseline, componentname, baselinename):
         self.component = component
         self.baseline = baseline
         self.componentname = componentname
