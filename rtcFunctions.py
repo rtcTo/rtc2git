@@ -104,6 +104,7 @@ class Changes:
 class ImportHandler:
     def __init__(self, config):
         self.config = config
+        self.acceptlogpath = config.getlogpath("accept.txt")
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
@@ -155,35 +156,43 @@ class ImportHandler:
                 continue
             shouter.shout("Accepting: " + changeEntry.tostring())
 
-            acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.config.getlogpath("accept.txt")) is 0
+            acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.acceptlogpath) is 0
             if not acceptedsuccesfully:
+                shouter.shout("Change wasnt succesfully accepted into workspace")
                 self.retryacceptincludingnextchangeset(changeEntry, changeentries)
                 skipnextchangeset = True
 
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
 
-    def retryacceptincludingnextchangeset(self, changeentry, changeentries):
-        shouter.shout("Change wasnt succesfully accepted into workspace")
-        if input("Press Enter to try to accept it with next changeset together"):
+    def retryacceptincludingnextchangeset(self, change, changes):
+        if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
+                 " changeset and continue"):
             return
-        Changes.discard(changeentry)
-        nextindex = changeentries.index(changeentry) + 1
+
+        Changes.discard(change)
         successfull = False
-        if nextindex is not len(changeentries):
-            nextchangeentry = changeentries[nextindex]
-            if changeentry.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower():
-                # most likely merge changeset
+        nextchangeentry = self.getnextchangeset(change, changes)
+        if nextchangeentry:
+            if change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower():
                 shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
-                acceptlogfile = self.config.getlogpath("accept.txt")
-                successfull = Changes.accept(changeentry.revision, nextchangeentry.revision, logpath=acceptlogfile) is 0
+                successfull = Changes.accept(change.revision, nextchangeentry.revision, logpath=self.acceptlogpath) is 0
                 if not successfull:
-                    Changes.discard(changeentry, nextchangeentry)
+                    Changes.discard(change, nextchangeentry)
 
         if not successfull:
             shouter.shout("Last executed command: " + Changes.latest_accept_command)
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
+
+    @staticmethod
+    def getnextchangeset(currentchangeentry, changeentries):
+        nextchangeentry = None
+        nextindex = changeentries.index(currentchangeentry) + 1
+        has_next_changeset = nextindex is not len(changeentries)
+        if has_next_changeset:
+            nextchangeentry = changeentries[nextindex]
+        return nextchangeentry
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         shouter.shout("Start comparing current workspace with baselines")
