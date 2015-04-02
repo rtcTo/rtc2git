@@ -156,8 +156,7 @@ class ImportHandler:
             acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.acceptlogpath) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
-                self.retryacceptincludingnextchangeset(changeEntry, changeentries)
-                skipnextchangeset = True
+                skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
 
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             git.addandcommit(changeEntry)
@@ -165,7 +164,7 @@ class ImportHandler:
     def retryacceptincludingnextchangeset(self, change, changes):
         if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
                  " changeset and continue"):
-            return
+            return False
 
         Changes.discard(change)
         successfull = False
@@ -182,6 +181,7 @@ class ImportHandler:
             shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
             sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
                      "rerun programm with resume")
+        return True
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
