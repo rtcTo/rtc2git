@@ -23,6 +23,11 @@ OldestStream = Stream_Version1
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
 InitialBaseLines =
 
+# False - Rely on order of changeset provided by the rtc cli compare command (due wrong order, more likely to cause merge-conflicts
+# True - (Component)History needs to be provided in a separate file by the user
+# For more information read https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files
+UseProvidedHistory = False
+
 
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line
