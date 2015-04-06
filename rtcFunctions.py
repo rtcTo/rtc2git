@@ -162,26 +162,24 @@ class ImportHandler:
             git.addandcommit(changeEntry)
 
     def retryacceptincludingnextchangeset(self, change, changes):
-        if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
-                 " changeset and continue"):
-            return False
-
-        Changes.discard(change)
         successfull = False
         nextchangeentry = self.getnextchangeset(change, changes)
-        if nextchangeentry:
-            if change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower():
-                shouter.shout("Trying to accept next changeset (might be a solved merge-conflict)")
-                successfull = Changes.accept(change.revision, nextchangeentry.revision, logpath=self.acceptlogpath) is 0
-                if not successfull:
-                    Changes.discard(change, nextchangeentry)
+        if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
+            shouter.shout("Next changeset: " + nextchangeentry.tostring())
+            if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
+                     " changeset and continue"):
+                return False
+            Changes.discard(change)
+            successfull = Changes.accept(change, nextchangeentry, logpath=self.acceptlogpath) is 0
+            if not successfull:
+                Changes.discard(change, nextchangeentry)
 
         if not successfull:
             shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
             shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-            sys.exit("Change wasnt succesfully accepted into workspace, please check the output and "
-                     "rerun programm with resume")
-        return True
+            if not input("Press Enter to continue or any other key to exit the program and rerun it with resume"):
+                sys.exit("Please check the output and rerun programm with resume")
+        return successfull
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
@@ -263,7 +261,11 @@ class ImportHandler:
 
     def getchangeentriesofstream(self, streamtocompare):
         shouter.shout("Start collecting changes since baseline creation")
-        return self.getchangeentriesbytypeandvalue("stream", streamtocompare)
+        missingchangeentries = {}
+        changeentries = self.getchangeentriesbytypeandvalue("stream", streamtocompare)
+        for changeentry in changeentries:
+            missingchangeentries[changeentry.revision] = changeentry
+        return missingchangeentries
 
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
