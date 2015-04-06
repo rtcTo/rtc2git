@@ -9,7 +9,7 @@ logcommands = False
 
 
 def execute(command, outputfile=None, openmode="w"):
-    shout_command_to_log(command)
+    shout_command_to_log(command, outputfile)
     if not outputfile:
         return call(command, shell=True)
     else:
@@ -35,6 +35,10 @@ def quote(stringtoquote):
     return quotedstring
 
 
-def shout_command_to_log(command):
+def shout_command_to_log(command, outputfile=None):
     if logcommands:
-        shouter.shout("Executed Command: " + command)
+        logmessage = "Executed Command: " + command
+        if outputfile:
+            shouter.shout(logmessage + " --> " + outputfile)
+        else:
+            shouter.shout(logmessage)

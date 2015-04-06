@@ -32,9 +32,7 @@ class WorkspaceHandler:
 
     def createandload(self, stream, componentbaselineentries=[], create=True):
         if create:
-            command = "lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspace)
-            shouter.shout(command)
-            shell.execute(command)
+            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
@@ -46,7 +44,6 @@ class WorkspaceHandler:
         command = "lscm load -r %s %s --force" % (self.repo, self.workspace)
         shouter.shout("Start (re)loading current workspace: " + command)
         shell.execute(command)
-        input("Press Enter to continue...")
         shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
@@ -55,23 +52,18 @@ class WorkspaceHandler:
 
             replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
-            shouter.shout(replacecommand)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
         if not self.hasflowtarget(streamuuid):
-            command = "lscm add flowtarget -r %s %s %s" % (self.repo, self.workspace, streamuuid)
-            shouter.shout(command)
-            shell.execute(command)
+            shell.execute("lscm add flowtarget -r %s %s %s" % (self.repo, self.workspace, streamuuid))
 
         command = "lscm set flowtarget -r %s %s --default --current %s" % (self.repo, self.workspace, streamuuid)
-        shouter.shout(command)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
         command = "lscm --show-uuid y --show-alias n list flowtargets -r %s %s" % (self.repo, self.workspace)
-        shouter.shout(command)
         flowtargetlines = shell.getoutput(command)
         for flowtargetline in flowtargetlines:
             splittedinformationline = flowtargetline.split("\"")
@@ -117,7 +109,6 @@ class ImportHandler:
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
         command = "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream
-        shouter.shout(command)
         shell.execute(command, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
@@ -290,7 +281,6 @@ class ImportHandler:
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
         comparecommand = "lscm --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
                          % (self.config.workspace, comparetype, value, self.config.repo, dateformat)
-        shouter.shout(comparecommand + " --> " + outputfilename)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
