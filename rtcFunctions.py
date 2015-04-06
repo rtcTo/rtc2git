@@ -210,6 +210,11 @@ class ImportHandler:
         return missingchangeentries
 
     def readhistory(self, componentbaselineentries, streamname):
+        if not self.config.useprovidedhistory:
+            warning = "Warning - UseProvidedHistory is set to false, merge-conflicts are more likely to happen. \n " \
+                      "For more information see https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files"
+            shouter.shout(warning)
+            return None
         historyuuids = {}
         shouter.shout("Start reading history files")
         for componentBaseLineEntry in componentbaselineentries:
@@ -218,17 +223,24 @@ class ImportHandler:
         return historyuuids
 
     @staticmethod
-    def getchangeentriestoaccept(history, missingchangeentries):
-        historywithchangeentryobject = {}
-        for key in history.keys():
-            currentuuids = history.get(key)
-            changeentries = []
-            for uuid in currentuuids:
-                changeentry = missingchangeentries.get(uuid)
-                if changeentry:
-                    changeentries.append(changeentry)
-            historywithchangeentryobject[key] = changeentries
-        changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
+    def getchangeentriestoaccept(missingchangeentries, history):
+        changeentriestoaccept = []
+        if history:
+            historywithchangeentryobject = {}
+            for key in history.keys():
+                currentuuids = history.get(key)
+                changeentries = []
+                for uuid in currentuuids:
+                    changeentry = missingchangeentries.get(uuid)
+                    if changeentry:
+                        changeentries.append(changeentry)
+                historywithchangeentryobject[key] = changeentries
+            changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
+        else:
+            for changeentry in missingchangeentries.values():
+                changeentriestoaccept.extend(missingchangeentries)
+            # simple sort by date - same as returned by compare command
+            changeentriestoaccept.sort(key=lambda change: change.date)
         return changeentriestoaccept
 
     @staticmethod
