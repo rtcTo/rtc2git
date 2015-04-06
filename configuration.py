@@ -32,6 +32,7 @@ def read():
             baseline = componentbaseline[1].strip()
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
+    shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
     return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,
                         gitreponame, oldeststream)
