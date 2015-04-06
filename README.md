@@ -11,7 +11,6 @@ It uses the CLI of RTC to gather the required informations (You can find the CLI
 
 ## Usage
 - Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" as reference
-- Collect the component history (for details please see the [wiki-entry] (https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files#how-i-get-the-complete-component-history))
 - Execute migration.py
 
 
