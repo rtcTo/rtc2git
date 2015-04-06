@@ -42,11 +42,9 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
-        comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
-        shell.execute("git commit -m %s --date %s --author=%s"
-                      % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor()))
+        shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
         if Commiter.commitcounter is 30:
             shouter.shout("30 Commits happend, push current branch to avoid out of memory")
@@ -54,6 +52,11 @@ class Commiter:
             Commiter.commitcounter = 0
         shouter.shout("Commited change in local git repository")
 
+    @staticmethod
+    def getcommitcommand(changeentry):
+        comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
+        return "git commit -m %s --date %s --author=%s" \
+               % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor())
 
     @staticmethod
     def replacegitcreatingfilesymbol(comment):

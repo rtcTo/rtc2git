@@ -32,9 +32,11 @@ def read():
             baseline = componentbaseline[1].strip()
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
+    useprovidedhistory = migrationsection['UseProvidedHistory']
+    shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
     return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,
-                        gitreponame, oldeststream)
+                        gitreponame, oldeststream, useprovidedhistory)
 
 
 def getstreamnames(streamsfromconfig):
@@ -48,18 +50,20 @@ def getstreamnames(streamsfromconfig):
 class ConfigObject:
     def __init__(self, user, password, repo, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
                  streamnames,
-                 gitreponame, oldeststream):
+                 gitreponame, oldeststream, useprovidedhistory):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
-        self.useexistingworkspace = useexistingworkspace is "True"
+        self.useexistingworkspace = useexistingworkspace == "True"
+        self.useprovidedhistory = useprovidedhistory == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
         self.earlieststreamname = oldeststream
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
+        self.rootFolder = os.getcwd()
         self.logFolder = os.getcwd() + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuids = []
@@ -69,6 +73,10 @@ class ConfigObject:
             os.makedirs(self.logFolder)
             self.hasCreatedLogFolder = True
         return self.logFolder + os.sep + filename
+
+    def gethistorypath(self, filename):
+        historypath = self.rootFolder + os.sep + "History"
+        return historypath + os.sep + filename
 
     def collectstreamuuids(self):
         shouter.shout("Get UUID's of configured streamnames")

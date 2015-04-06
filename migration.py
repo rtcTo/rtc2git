@@ -41,16 +41,20 @@ def migrate():
         componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
         streamname = config.streamnames[streamuuids.index(streamuuid)]
         rtcworkspace.setnewflowtargets(streamuuid)
-
         git.branch(streamname)
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstreamcomponents(componentbaselineentries))
+
+        history = rtc.readhistory(componentbaselineentries, streamname)
+        changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
+
+        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
         shouter.shout("All changes of components of stream '%s' accepted" % streamname)
         git.pushbranch(streamname)
 
         rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
         rtcworkspace.load()
 
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriesofstream(streamuuid))
+        changeentries = rtc.getchangeentriesofstream(streamuuid)
+        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
         git.pushbranch(streamname)
         shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
