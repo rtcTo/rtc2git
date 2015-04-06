@@ -1,4 +1,5 @@
 import sys
+import os
 
 import sorter
 import shell
@@ -259,6 +260,20 @@ class ImportHandler:
 
         return changeentries
 
+    @staticmethod
+    def getsimplehistoryfromfile(outputfilename):
+        revisions = []
+        if not os.path.isfile(outputfilename):
+            shouter.shout("History file not found: " + outputfilename)
+            shouter.shout("Skipping this part of history")
+            return revisions
+
+        with open(outputfilename, 'r') as file:
+            for line in file:
+                revisions.append(line.strip())
+        revisions.reverse()  # to begin by the oldest
+        return revisions
+
     def getchangeentriesofbaseline(self, baselinetocompare):
         return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
 
@@ -282,6 +297,7 @@ class ImportHandler:
     def gethistory(self, componentname, streamname):
         outputfilename = self.config.gethistorypath("History_%s_%s.txt" % (componentname, streamname))
         return ImportHandler.getsimplehistoryfromfile(outputfilename)
+
 
 class ChangeEntry:
     def __init__(self, revision, author, email, date, comment):
