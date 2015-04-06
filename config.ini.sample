@@ -22,3 +22,8 @@ OldestStream = Stream_Version1
 # (baseline which were created earlier than the baselines of the oldest stream)
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
 InitialBaseLines =
+
+
+[Miscellaneous]
+# Set to true if you want to see which commands are sent to command line
+LogShellCommands = False
