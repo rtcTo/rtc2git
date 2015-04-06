@@ -237,8 +237,7 @@ class ImportHandler:
                 historywithchangeentryobject[key] = changeentries
             changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
         else:
-            for changeentry in missingchangeentries.values():
-                changeentriestoaccept.extend(missingchangeentries)
+            changeentriestoaccept.extend(missingchangeentries.values())
             # simple sort by date - same as returned by compare command
             changeentriestoaccept.sort(key=lambda change: change.date)
         return changeentriestoaccept
