@@ -37,7 +37,7 @@ def quote(stringtoquote):
 
 def shout_command_to_log(command, outputfile=None):
     if logcommands:
-        logmessage = "Executed Command: " + command
+        logmessage = "Executed Command: " + quote(command)
         if outputfile:
             shouter.shout(logmessage + " --> " + outputfile)
         else:
