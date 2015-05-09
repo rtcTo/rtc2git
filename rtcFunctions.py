@@ -87,11 +87,11 @@ class Changes:
         shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
 
     @staticmethod
-    def accept(*changeentries, workspace, repo, logpath):
+    def accept(*changeentries, workspace, logpath):
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        latest_accept_command = "lscm accept -v --overwrite-uncommitted --changes " + revisions + " --target " + workspace + " -r " + repo
+        latest_accept_command = "lscm accept -v --overwrite-uncommitted -t " + workspace + " --changes " + revisions
         return shell.execute(latest_accept_command, logpath, "a")
 
     @staticmethod
@@ -156,7 +156,8 @@ class ImportHandler:
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
-            acceptedsuccesfully = Changes.accept(changeEntry, workspace=self.config.workspace, repo=self.config.repo, logpath=self.acceptlogpath) is 0
+            acceptedsuccesfully = Changes.accept(changeEntry, workspace=self.config.workspace,
+                                                 logpath=self.acceptlogpath) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
@@ -180,7 +181,8 @@ class ImportHandler:
                      " changeset and continue"):
                 return False
             Changes.discard(change)
-            successfull = Changes.accept(change, nextchangeentry, workspace=self.config.workspace, repo=self.config.repo, logpath=self.acceptlogpath) is 0
+            successfull = Changes.accept(change, nextchangeentry, workspace=self.config.workspace,
+                                         logpath=self.acceptlogpath) is 0
             if not successfull:
                 Changes.discard(change, nextchangeentry)
 
