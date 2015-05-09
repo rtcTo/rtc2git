@@ -82,9 +82,9 @@ class Changes:
     latest_accept_command = ""
 
     @staticmethod
-    def discard(*changeentries):
+    def discard(*changeentries, workspace):
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
+        shell.execute("lscm discard -w " + workspace + " --overwrite-uncommitted " + idstodiscard)
 
     @staticmethod
     def accept(*changeentries, workspace, logpath):
@@ -180,11 +180,11 @@ class ImportHandler:
             if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
                      " changeset and continue"):
                 return False
-            Changes.discard(change)
+            Changes.discard(change, self.config.workspace)
             successfull = Changes.accept(change, nextchangeentry, workspace=self.config.workspace,
                                          logpath=self.acceptlogpath) is 0
             if not successfull:
-                Changes.discard(change, nextchangeentry)
+                Changes.discard(change, nextchangeentry, self.config.workspace)
 
         if not successfull:
             shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
