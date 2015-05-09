@@ -82,12 +82,12 @@ class Changes:
     latest_accept_command = ""
 
     @staticmethod
-    def discard(*changeentries, workspace):
+    def discard(workspace, *changeentries):
         idstodiscard = Changes._collectids(changeentries)
         shell.execute("lscm discard -w " + workspace + " --overwrite-uncommitted " + idstodiscard)
 
     @staticmethod
-    def accept(*changeentries, workspace, logpath):
+    def accept(workspace, logpath, *changeentries):
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
@@ -156,8 +156,7 @@ class ImportHandler:
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
-            acceptedsuccesfully = Changes.accept(changeEntry, workspace=self.config.workspace,
-                                                 logpath=self.acceptlogpath) is 0
+            acceptedsuccesfully = Changes.accept(self.config.workspace, self.acceptlogpath, changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
@@ -180,11 +179,10 @@ class ImportHandler:
             if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
                      " changeset and continue"):
                 return False
-            Changes.discard(change, self.config.workspace)
-            successfull = Changes.accept(change, nextchangeentry, workspace=self.config.workspace,
-                                         logpath=self.acceptlogpath) is 0
+            Changes.discard(self.config.workspace, change)
+            successfull = Changes.accept(self.config.workspace, self.acceptlogpath, change, nextchangeentry) is 0
             if not successfull:
-                Changes.discard(change, nextchangeentry, self.config.workspace)
+                Changes.discard(self.config.workspace, change, nextchangeentry)
 
         if not successfull:
             shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
