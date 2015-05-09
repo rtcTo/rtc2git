@@ -84,14 +84,14 @@ class Changes:
     @staticmethod
     def discard(workspace, *changeentries):
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute("lscm discard -w " + workspace + " --overwrite-uncommitted " + idstodiscard)
+        shell.execute("lscm discard -w " + workspace + " --overwrite-uncommitted" + idstodiscard)
 
     @staticmethod
     def accept(workspace, logpath, *changeentries):
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        latest_accept_command = "lscm accept -v --overwrite-uncommitted -t " + workspace + " --changes " + revisions
+        latest_accept_command = "lscm accept -v --overwrite-uncommitted -t " + workspace + " --changes" + revisions
         return shell.execute(latest_accept_command, logpath, "a")
 
     @staticmethod
