@@ -10,11 +10,11 @@ class ShellTest(unittest.TestCase):
     def testWhenLoggingShellComandsIsDisabled_ExpectNoOutput(self, subprocess_call_mock, shouter_mock):
         shell.logcommands = False
         shell.execute("doSomething")
-        assert not shouter_mock.called
+        assert not shouter_mock.shout.called
 
     @patch('shell.shouter')
     @patch('shell.call')
     def testWhenLoggingShellComandsIsEnabled_ExpectCommandIsLoggedToOutput(self, subprocess_call_mock, shouter_mock):
         shell.logcommands = True
         shell.execute("doSomething")
-        assert not shouter_mock.called
+        assert shouter_mock.shout.called
