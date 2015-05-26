@@ -156,7 +156,8 @@ class ImportHandler:
             if skipnextchangeset:
                 skipnextchangeset = False
                 continue
-            acceptedsuccesfully = Changes.accept(self.config.workspace, self.config.repo, self.acceptlogpath) is 0
+            acceptedsuccesfully = Changes.accept(self.config.workspace, self.config.repo, self.acceptlogpath,
+                                                 changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
