@@ -19,7 +19,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         anyurl = "anyUrl"
         Changes.accept(self.workspace, anyurl, self.apath, self.createChangeEntry(revision1),
                        self.createChangeEntry(revision2))
-        expected_accept_command = "lscm accept -v -o -t %s -r %s --changes %s %s" % (self.workspace, anyurl, revision1,
+        expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
                                                                                      revision2)
         appendlogfileshortcut = "a"
         shell_mock.execute.assert_called_once_with(expected_accept_command, self.apath, appendlogfileshortcut)
