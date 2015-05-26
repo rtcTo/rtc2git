@@ -1,4 +1,0 @@
-(someUUID)@@Jon Doe@@Jon.Doe@rtc2git.rocks@@My first commit in rtc! :D@@2015-05-26 10:40:00
-
-(someotherUUID)@@Jon Doe@@Jon.Doe@rtc2git.rocks@@I want to commit on my flight to Riga :(
-This is a new line@@2015-05-26 10:42:00
