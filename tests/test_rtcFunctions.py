@@ -2,8 +2,9 @@ __author__ = 'Manuel'
 
 import unittest
 from unittest.mock import patch
+import os
 
-from rtcFunctions import Changes, ChangeEntry
+from rtcFunctions import Changes, ChangeEntry, ImportHandler
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -34,3 +35,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
     def createChangeEntry(self, revision):
         return ChangeEntry(revision, "anyAuthor", "anyEmail", "anyDate", "anyComment")
 
+    def test_ReadChangesetInformationFromFile_WithoutLineBreak_ShouldBeSuccessful(self):
+        samplefilepath = os.path.realpath(__file__) + "_SampleCompareOutputWithoutLineBreaks.txt"
+        for change in ImportHandler.getchangeentriesfromfile(samplefilepath):
+            self.assertIsNotNone(change)
