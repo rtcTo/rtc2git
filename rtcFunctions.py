@@ -246,21 +246,32 @@ class ImportHandler:
     @staticmethod
     def getchangeentriesfromfile(outputfilename):
         informationseparator = "@@"
+        numberofexpectedinformationseparators = 5
         changeentries = []
 
         with open(outputfilename, 'r') as file:
+            currentline = ""
+            currentinformationpresent = 0
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
-                    splittedlines = cleanedline.split(informationseparator)
-                    revisionwithbrackets = splittedlines[0].strip()
-                    revision = revisionwithbrackets[1:-1]
-                    author = splittedlines[1].strip()
-                    email = splittedlines[2].strip()
-                    comment = splittedlines[3].strip()
-                    date = splittedlines[4].strip()
-                    changeentries.append(ChangeEntry(revision, author, email, date, comment))
+                    currentinformationpresent += cleanedline.count(informationseparator)
+                    if currentline:
+                        currentline += os.linesep
+                    currentline += cleanedline
+                    if currentinformationpresent >= numberofexpectedinformationseparators:
+                        splittedlines = currentline.split(informationseparator)
+                        revisionwithbrackets = splittedlines[0].strip()
+                        revision = revisionwithbrackets[1:-1]
+                        author = splittedlines[1].strip()
+                        email = splittedlines[2].strip()
+                        comment = splittedlines[3].strip()
+                        date = splittedlines[4].strip()
 
+                        changeentries.append(ChangeEntry(revision, author, email, date, comment))
+
+                        currentinformationpresent = 0
+                        currentline = ""
         return changeentries
 
     @staticmethod
