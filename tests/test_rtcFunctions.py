@@ -35,7 +35,24 @@ class RtcFunctionsTestCase(unittest.TestCase):
     def createChangeEntry(self, revision):
         return ChangeEntry(revision, "anyAuthor", "anyEmail", "anyDate", "anyComment")
 
-    def test_ReadChangesetInformationFromFile_WithoutLineBreak_ShouldBeSuccessful(self):
+    def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
         samplefilepath = os.path.realpath(__file__) + "_SampleCompareOutputWithoutLineBreaks.txt"
-        for change in ImportHandler.getchangeentriesfromfile(samplefilepath):
-            self.assertIsNotNone(change)
+        changeentries = ImportHandler.getchangeentriesfromfile(samplefilepath)
+        self.assertEqual(2, len(changeentries))
+        self.assert_Change_Entry(changeentries[0], "Jon Doe", "Jon.Doe@rtc2git.rocks", "My first commit in rtc! :D",
+                                 "2015-05-26 10:40:00")
+        self.assert_Change_Entry(changeentries[1],"Jon Doe", "Jon.Doe@rtc2git.rocks", "I want to commit on my flight to Riga :(",
+                                 "2015-05-26 10:42:00")
+
+    def test_ReadChangesetInformationFromFile_WithLineBreakInComment_ShouldBeSuccesful(self):
+        samplefilepath = os.path.realpath(__file__) + "_SampleCompareOutputWithLineBreaks.txt"
+        changeentries = ImportHandler.getchangeentriesfromfile(samplefilepath)
+        self.assertEqual(2, len(changeentries))
+
+
+    def assert_Change_Entry(self, change, author, email, comment, date):
+        self.assertIsNotNone(change)
+        self.assertEqual(author, change.author)
+        self.assertEqual(email, change.email)
+        self.assertEqual(comment, change.comment)
+        self.assertEqual(date, change.date)
