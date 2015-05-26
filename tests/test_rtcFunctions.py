@@ -2,8 +2,9 @@ __author__ = 'Manuel'
 
 import unittest
 from unittest.mock import patch
+import os
 
-from rtcFunctions import Changes, ChangeEntry
+from rtcFunctions import Changes, ChangeEntry, ImportHandler
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -34,3 +35,36 @@ class RtcFunctionsTestCase(unittest.TestCase):
     def createChangeEntry(self, revision):
         return ChangeEntry(revision, "anyAuthor", "anyEmail", "anyDate", "anyComment")
 
+    def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithoutLineBreaks.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
+        self.assertEqual(2, len(changeentries))
+        author = "Jon Doe"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "My first commit in rtc! :D", "2015-05-26 10:40:00")
+        self.assert_Change_Entry(changeentries[1], author, mail, "I want to commit on my flight to Riga :(",
+                                 "2015-05-26 10:42:00")
+
+    def test_ReadChangesetInformationFromFile_WithLineBreakInComment_ShouldBeSuccesful(self):
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithLineBreaks.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
+        self.assertEqual(2, len(changeentries))
+        author = "Jon Doe"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "My first commit in rtc! :D", "2015-05-26 10:40:00")
+        expectedcomment = "I want to commit on my flight to Riga :(" + os.linesep + "This is a new line"
+        self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
+
+    def get_Sample_File_Path(self, filename):
+        testpath = os.path.realpath(__file__)
+        testdirectory = os.path.dirname(testpath)
+        testfilename = os.path.splitext(os.path.basename(testpath))[0]
+        sample_file_path = testdirectory + os.sep + "resources" + os.sep + testfilename + "_" + filename
+        return sample_file_path
+
+    def assert_Change_Entry(self, change, author, email, comment, date):
+        self.assertIsNotNone(change)
+        self.assertEqual(author, change.author)
+        self.assertEqual(email, change.email)
+        self.assertEqual(comment, change.comment)
+        self.assertEqual(date, change.date)
