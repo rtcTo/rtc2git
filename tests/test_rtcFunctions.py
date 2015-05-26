@@ -36,19 +36,31 @@ class RtcFunctionsTestCase(unittest.TestCase):
         return ChangeEntry(revision, "anyAuthor", "anyEmail", "anyDate", "anyComment")
 
     def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
-        samplefilepath = os.path.realpath(__file__) + "_SampleCompareOutputWithoutLineBreaks.txt"
-        changeentries = ImportHandler.getchangeentriesfromfile(samplefilepath)
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithoutLineBreaks.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
         self.assertEqual(2, len(changeentries))
-        self.assert_Change_Entry(changeentries[0], "Jon Doe", "Jon.Doe@rtc2git.rocks", "My first commit in rtc! :D",
-                                 "2015-05-26 10:40:00")
-        self.assert_Change_Entry(changeentries[1],"Jon Doe", "Jon.Doe@rtc2git.rocks", "I want to commit on my flight to Riga :(",
+        author = "Jon Doe"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "My first commit in rtc! :D", "2015-05-26 10:40:00")
+        self.assert_Change_Entry(changeentries[1], author, mail, "I want to commit on my flight to Riga :(",
                                  "2015-05-26 10:42:00")
 
     def test_ReadChangesetInformationFromFile_WithLineBreakInComment_ShouldBeSuccesful(self):
-        samplefilepath = os.path.realpath(__file__) + "_SampleCompareOutputWithLineBreaks.txt"
-        changeentries = ImportHandler.getchangeentriesfromfile(samplefilepath)
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithLineBreaks.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
         self.assertEqual(2, len(changeentries))
+        author = "Jon Doe"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "My first commit in rtc! :D", "2015-05-26 10:40:00")
+        expectedcomment = "I want to commit on my flight to Riga :(" + os.linesep + "This is a new line"
+        self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
 
+    def get_Sample_File_Path(self, filename):
+        testpath = os.path.realpath(__file__)
+        testdirectory = os.path.dirname(testpath)
+        testfilename = os.path.splitext(os.path.basename(testpath))[0]
+        sample_file_path = testdirectory + os.sep + "resources" + os.sep + testfilename + "_" + filename
+        return sample_file_path
 
     def assert_Change_Entry(self, change, author, email, comment, date):
         self.assertIsNotNone(change)
