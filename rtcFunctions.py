@@ -91,8 +91,8 @@ class Changes:
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        latest_accept_command = "lscm accept -v -o -r " + repo + " -t " + workspace + " --changes" + revisions
-        return shell.execute(latest_accept_command, logpath, "a")
+        Changes.latest_accept_command = "lscm accept -v -o -r " + repo + " -t " + workspace + " --changes" + revisions
+        return shell.execute(Changes.latest_accept_command, logpath, "a")
 
     @staticmethod
     def _collectids(changeentries):
