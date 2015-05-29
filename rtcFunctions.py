@@ -1,6 +1,6 @@
 import sys
 import os
-
+import codecs
 import sorter
 import shell
 from gitFunctions import Commiter
@@ -118,7 +118,7 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
-        with open(filename, 'r') as file:
+        with codecs.open(filename, 'r', "utf-8-sig") as file:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
@@ -249,7 +249,7 @@ class ImportHandler:
         numberofexpectedinformationseparators = 5
         changeentries = []
 
-        with open(outputfilename, 'r') as file:
+        with codecs.open(outputfilename, 'r', "utf-8-sig") as file:
             currentline = ""
             currentinformationpresent = 0
             for line in file:
@@ -282,7 +282,7 @@ class ImportHandler:
             shouter.shout("Skipping this part of history")
             return revisions
 
-        with open(outputfilename, 'r') as file:
+        with codecs.open(outputfilename, 'r', "utf-8-sig") as file:
             for line in file:
                 revisions.append(line.strip())
         revisions.reverse()  # to begin by the oldest
