@@ -16,20 +16,22 @@ class RtcFunctionsTestCase(unittest.TestCase):
     def test_Accept_AssertThatCorrectParamaterGetPassedToShell(self, shell_mock):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
-        Changes.accept(self.workspace, self.apath, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
-        expected_accept_command = "lscm accept -v --overwrite-uncommitted -t %s --changes %s %s" % (self.workspace,
-                                                                                                    revision1,
-                                                                                                    revision2)
+        anyurl = "anyUrl"
+        Changes.accept(self.workspace, anyurl, self.apath, self.createChangeEntry(revision1),
+                       self.createChangeEntry(revision2))
+        expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
+                                                                                     revision2)
         appendlogfileshortcut = "a"
         shell_mock.execute.assert_called_once_with(expected_accept_command, self.apath, appendlogfileshortcut)
+        self.assertEqual(expected_accept_command, Changes.latest_accept_command)
 
     @patch('rtcFunctions.shell')
     def test_Discard_AssertThatCorrectParamaterGetPassedToShell(self, shell_mock):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
-        Changes.discard(self.workspace, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
-        expected_discard_command = "lscm discard -w %s --overwrite-uncommitted %s %s" % (self.workspace,
-                                                                                         revision1, revision2)
+        anyurl = "anyUrl"
+        Changes.discard(self.workspace, anyurl, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
     def createChangeEntry(self, revision):
