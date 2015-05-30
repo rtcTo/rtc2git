@@ -23,6 +23,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
                                                                                      revision2)
         appendlogfileshortcut = "a"
         shell_mock.execute.assert_called_once_with(expected_accept_command, self.apath, appendlogfileshortcut)
+        self.assertNotEqual("", Changes.latest_accept_command)
 
     @patch('rtcFunctions.shell')
     def test_Discard_AssertThatCorrectParamaterGetPassedToShell(self, shell_mock):
