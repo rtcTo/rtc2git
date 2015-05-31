@@ -65,13 +65,11 @@ class ConfigObject:
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.rootFolder = os.getcwd()
         self.logFolder = os.getcwd() + os.sep + "Logs"
-        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuids = []
 
     def getlogpath(self, filename):
-        if not self.hasCreatedLogFolder:
+        if not os.path.exists(self.logFolder):
             os.makedirs(self.logFolder)
-            self.hasCreatedLogFolder = True
         return self.logFolder + os.sep + filename
 
     def gethistorypath(self, filename):
