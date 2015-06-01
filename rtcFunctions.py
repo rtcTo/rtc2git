@@ -177,8 +177,7 @@ class ImportHandler:
         nextchangeentry = self.getnextchangeset(change, changes)
         if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
             shouter.shout("Next changeset: " + nextchangeentry.tostring())
-            if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
-                     " changeset and continue"):
+            if (not self.config.useautomaticconflictresolution) and input("Press Enter to try to accept it with next changeset together, press any other key to skip this changeset and continue"):
                 return False
             workspace = self.config.workspace
             Changes.discard(workspace, self.config.repo, change)

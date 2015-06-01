@@ -33,10 +33,11 @@ def read():
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
     useprovidedhistory = migrationsection['UseProvidedHistory']
+    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
     shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
     return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,
-                        gitreponame, oldeststream, useprovidedhistory)
+                        gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution)
 
 
 def getstreamnames(streamsfromconfig):
@@ -50,13 +51,14 @@ def getstreamnames(streamsfromconfig):
 class ConfigObject:
     def __init__(self, user, password, repo, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
                  streamnames,
-                 gitreponame, oldeststream, useprovidedhistory):
+                 gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution):
         self.user = user
         self.password = password
         self.repo = repo
         self.workspace = workspace
         self.useexistingworkspace = useexistingworkspace == "True"
         self.useprovidedhistory = useprovidedhistory == "True"
+        self.useautomaticconflictresolution = useautomaticconflictresolution == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
