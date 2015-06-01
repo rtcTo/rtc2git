@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
@@ -16,6 +17,7 @@ def initialize(config):
         sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
     os.mkdir(directory)
     os.chdir(directory)
+    shutil.rmtree(config.getlogpath(""))  # delete log folder
     git = Initializer(config)
     git.initalize()
     RTCInitializer.initialize(config)
@@ -64,4 +66,5 @@ def migrate():
             rtcworkspace.recreateoldestworkspace()
 
 
-migrate()
+if __name__ == "__main__":
+    migrate()
