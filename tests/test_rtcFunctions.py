@@ -5,6 +5,7 @@ from unittest.mock import patch
 import os
 
 from rtcFunctions import Changes, ChangeEntry, ImportHandler
+from configuration import ConfigObject
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -56,6 +57,21 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assert_Change_Entry(changeentries[0], author, mail, "My first commit in rtc! :D", "2015-05-26 10:40:00")
         expectedcomment = "I want to commit on my flight to Riga :(" + os.linesep + "This is a new line"
         self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
+
+    @patch('rtcFunctions.Changes')
+    @patch('builtins.input', return_value='')
+    @patch('rtcFunctions.ImportHandler')
+    def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, importhandlermock, inputmock, changesmock):
+        changeentry1 = self.createChangeEntry("anyRevId")
+        changeentry2 = self.createChangeEntry("anyOtherRevId")
+        changeentries = [changeentry1, changeentry2]
+        importhandlermock.getnextchangeset.return_value.return_value = changeentry2
+        changesmock.accept.return_value = 0
+
+        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", ""))
+        handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
+
+        changesmock.accept.assert_called_with("", "", handler.acceptlogpath, changeentry1, changeentry2)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)
