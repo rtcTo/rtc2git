@@ -68,7 +68,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         importhandlermock.getnextchangeset.return_value.return_value = changeentry2
         changesmock.accept.return_value = 0
 
-        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", ""))
+        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", "", ""))
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
         changesmock.accept.assert_called_with("", "", handler.acceptlogpath, changeentry1, changeentry2)
