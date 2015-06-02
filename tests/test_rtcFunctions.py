@@ -18,7 +18,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        Changes.accept(self.workspace, anyurl, self.apath, self.createChangeEntry(revision1),
+        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "", "")
+        Changes.accept(config, self.apath, self.createChangeEntry(revision1),
                        self.createChangeEntry(revision2))
         expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
                                                                                      revision2)
@@ -31,7 +32,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        Changes.discard(self.workspace, anyurl, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "", "")
+        Changes.discard(config, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
@@ -68,10 +70,11 @@ class RtcFunctionsTestCase(unittest.TestCase):
         importhandlermock.getnextchangeset.return_value.return_value = changeentry2
         changesmock.accept.return_value = 0
 
-        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", "", ""))
+        config = ConfigObject("", "", "", "lscm", "", "", "", "", "", "", "", "", "")
+        handler = ImportHandler(config)
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
-        changesmock.accept.assert_called_with("", "", handler.acceptlogpath, changeentry1, changeentry2)
+        changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)

@@ -8,6 +8,8 @@ WorkspaceName=ToBeCreatedWorkspaceName
 useExistingWorkspace = False
 # Folder to be created
 Directory = \temp\myWorkingDirectory
+# Scm command to use (lscm or scm)
+ScmCommand = lscm
 
 [Migration]
 # Streams to be migrated,  referenced by Name or UUID, separated by ",".
