@@ -181,7 +181,7 @@ class ImportHandler:
                 return False
             workspace = self.config.workspace
             Changes.discard(workspace, self.config.repo, change)
-            successfull = Changes.accept(workspace, self.config.repo, self.acceptlogpath, nextchangeentry) is 0
+            successfull = Changes.accept(workspace, self.config.repo, self.acceptlogpath, change, nextchangeentry) is 0
             if not successfull:
                 Changes.discard(workspace, self.config.repo, change, nextchangeentry)
 
