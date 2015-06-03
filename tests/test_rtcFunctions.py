@@ -60,6 +60,14 @@ class RtcFunctionsTestCase(unittest.TestCase):
         expectedcomment = "I want to commit on my flight to Riga :(" + os.linesep + "This is a new line"
         self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
 
+    def test_ReadChangesetInformationFromFile_InUtf8_ShouldBeSuccesful(self):
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputInUtf8.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
+        self.assertEqual(1, len(changeentries))
+        author = "John ÆØÅ"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "Comment", "2015-05-26 10:40:00")
+        
     @patch('rtcFunctions.Changes')
     @patch('builtins.input', return_value='')
     @patch('rtcFunctions.ImportHandler')

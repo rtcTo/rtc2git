@@ -1,6 +1,5 @@
 import sys
 import os
-import codecs
 import sorter
 import shell
 from gitFunctions import Commiter
@@ -60,7 +59,7 @@ class WorkspaceHandler:
         if not self.hasflowtarget(streamuuid):
             shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
-        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommad, self.repo, self.workspace, streamuuid)
+        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
@@ -119,7 +118,7 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
-        with codecs.open(filename, 'r', "utf-8-sig") as file:
+        with open(filename, 'r', encoding="utf-8") as file:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
@@ -250,7 +249,7 @@ class ImportHandler:
         numberofexpectedinformationseparators = 5
         changeentries = []
 
-        with codecs.open(outputfilename, 'r', "utf-8-sig") as file:
+        with open(outputfilename, 'r', encoding="utf-8") as file:
             currentline = ""
             currentinformationpresent = 0
             for line in file:
@@ -283,7 +282,7 @@ class ImportHandler:
             shouter.shout("Skipping this part of history")
             return revisions
 
-        with codecs.open(outputfilename, 'r', "utf-8-sig") as file:
+        with open(outputfilename, 'r', encoding="utf-8") as file:
             for line in file:
                 revisions.append(line.strip())
         revisions.reverse()  # to begin by the oldest

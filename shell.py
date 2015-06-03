@@ -1,5 +1,4 @@
 import sys
-import codecs
 from subprocess import call
 from subprocess import check_output
 
@@ -14,7 +13,7 @@ def execute(command, outputfile=None, openmode="w"):
     if not outputfile:
         return call(command, shell=True)
     else:
-        with codecs.open(outputfile, openmode, "utf-8-sig") as file:
+        with open(outputfile, openmode, encoding="utf-8") as file:
             return call(command, stdout=file, shell=True)
 
 
