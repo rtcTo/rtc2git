@@ -13,7 +13,7 @@ def execute(command, outputfile=None, openmode="w"):
     if not outputfile:
         return call(command, shell=True)
     else:
-        with open(outputfile, openmode) as file:
+        with open(outputfile, openmode, encoding="utf-8") as file:
             return call(command, stdout=file, shell=True)
 
 

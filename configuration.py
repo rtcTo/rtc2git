@@ -15,6 +15,7 @@ def read():
     workspace = generalsection['WorkspaceName']
     useexistingworkspace = generalsection['useExistingWorkspace']
     repositoryurl = generalsection['Repo']
+    scmcommand = generalsection['ScmCommand']
     workdirectory = generalsection['Directory']
     if not workdirectory:
         workdirectory = "."
@@ -33,10 +34,11 @@ def read():
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
     useprovidedhistory = migrationsection['UseProvidedHistory']
+    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
     shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
-    return ConfigObject(user, password, repositoryurl, workspace, useexistingworkspace, workdirectory,
+    return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamnames,
-                        gitreponame, oldeststream, useprovidedhistory)
+                        gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution)
 
 
 def getstreamnames(streamsfromconfig):
@@ -48,15 +50,17 @@ def getstreamnames(streamsfromconfig):
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
+    def __init__(self, user, password, repo, scmcommand, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
                  streamnames,
-                 gitreponame, oldeststream, useprovidedhistory):
+                 gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution):
         self.user = user
         self.password = password
         self.repo = repo
+        self.scmcommand = scmcommand
         self.workspace = workspace
         self.useexistingworkspace = useexistingworkspace == "True"
         self.useprovidedhistory = useprovidedhistory == "True"
+        self.useautomaticconflictresolution = useautomaticconflictresolution == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamnames = streamnames
@@ -80,7 +84,7 @@ class ConfigObject:
         shouter.shout("Get UUID's of configured streamnames")
         for streamname in self.streamnames:
             streamname = streamname.strip()
-            showuuidcommand = "lscm --show-alias n --show-uuid y show attributes -r %s -w %s" % (self.repo, streamname)
+            showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (self.scmcommand, self.repo, streamname)
             output = shell.getoutput(showuuidcommand)
             splittedfirstline = output[0].split(" ")
             streamuuid = splittedfirstline[0].strip()[1:-1]

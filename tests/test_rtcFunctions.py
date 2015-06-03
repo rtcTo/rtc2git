@@ -18,7 +18,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        Changes.accept(self.workspace, anyurl, self.apath, self.createChangeEntry(revision1),
+        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "", "")
+        Changes.accept(config, self.apath, self.createChangeEntry(revision1),
                        self.createChangeEntry(revision2))
         expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
                                                                                      revision2)
@@ -31,7 +32,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        Changes.discard(self.workspace, anyurl, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "", "")
+        Changes.discard(config, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
@@ -58,6 +60,14 @@ class RtcFunctionsTestCase(unittest.TestCase):
         expectedcomment = "I want to commit on my flight to Riga :(" + os.linesep + "This is a new line"
         self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
 
+    def test_ReadChangesetInformationFromFile_InUtf8_ShouldBeSuccesful(self):
+        sample_file_path = self.get_Sample_File_Path("SampleCompareOutputInUtf8.txt")
+        changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
+        self.assertEqual(1, len(changeentries))
+        author = "John ÆØÅ"
+        mail = "Jon.Doe@rtc2git.rocks"
+        self.assert_Change_Entry(changeentries[0], author, mail, "Comment", "2015-05-26 10:40:00")
+        
     @patch('rtcFunctions.Changes')
     @patch('builtins.input', return_value='')
     @patch('rtcFunctions.ImportHandler')
@@ -68,10 +78,11 @@ class RtcFunctionsTestCase(unittest.TestCase):
         importhandlermock.getnextchangeset.return_value.return_value = changeentry2
         changesmock.accept.return_value = 0
 
-        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", ""))
+        config = ConfigObject("", "", "", "lscm", "", "", "", "", "", "", "", "", "")
+        handler = ImportHandler(config)
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
-        changesmock.accept.assert_called_with("", "", handler.acceptlogpath, changeentry1, changeentry2)
+        changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)

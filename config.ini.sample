@@ -8,6 +8,8 @@ WorkspaceName=ToBeCreatedWorkspaceName
 useExistingWorkspace = False
 # Folder to be created
 Directory = \temp\myWorkingDirectory
+# Scm command to use (lscm or scm)
+ScmCommand = lscm
 
 [Migration]
 # Streams to be migrated,  referenced by Name or UUID, separated by ",".
@@ -28,6 +30,10 @@ InitialBaseLines =
 # For more information read https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files
 UseProvidedHistory = False
 
+# Determines whether to prompt the user to accept change sets together to resolve accept errors.
+# False - The user is prompted
+# True - The user is not prompted
+UseAutomaticConflictResolution = False
 
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line
