@@ -31,9 +31,8 @@ class WorkspaceHandler:
         self.repo = config.repo
         self.scmcommand = config.scmcommand
 
-    def createandload(self, stream, componentbaselineentries=[], create=True):
-        if create:
-            shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
+    def createandload(self, stream, componentbaselineentries=[]):
+        shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
