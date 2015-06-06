@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 import sorter
 import shell
@@ -36,7 +37,7 @@ class WorkspaceHandler:
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
-            self.setcomponentstobaseline(ImportHandler(self.config).getcomponentbaselineentriesfromstream(stream),
+            self.setcomponentstobaseline(ImportHandler(self.config).determineinitialbaseline(stream),
                                          stream)
         self.load()
 
@@ -106,7 +107,8 @@ class ImportHandler:
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        command = self.config.scmcommand + " --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream
+        command = self.config.scmcommand + " --show-alias n --show-uuid y list components -v -r " + self.config.repo + \
+                  " " + stream
         shell.execute(command, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
@@ -139,6 +141,28 @@ class ImportHandler:
                         componentname = ""
                         baselinename = ""
                     islinewithcomponent += 1
+        return componentbaselinesentries
+
+    def determineinitialbaseline(self, stream):
+        regex = "\(_\w+\)"
+        pattern = re.compile(regex)
+        componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
+        for entry in componentbaselinesentries:
+            for component in entry.component:
+                shouter.shout("Determine initial baseline of " + entry.componentname)
+                # filename = self.config.getlogpath("Baseline_Component_" + componentname + ".txt")
+                command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -m 20000" % \
+                          (component, self.config.repo)  # use always scm, lscm fails when specifying maximum over 10k
+                baselineslines = shell.getoutput(command).reverse()  # reverse to have earliest baseline on top
+
+                for baselineline in baselineslines:
+                    matcher = pattern.search(baselineline)
+                    if matcher:
+                        matchedstring = matcher.group()
+                        uuid = matchedstring[1:-1]
+                        entry.baseline = uuid
+                        entry.baselinename = ""
+                        break
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):
