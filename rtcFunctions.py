@@ -1,5 +1,6 @@
 import sys
 import os
+
 import sorter
 import shell
 from gitFunctions import Commiter
@@ -15,7 +16,7 @@ class RTCInitializer:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
-            workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
+            workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
     @staticmethod
     def loginandcollectstreams(config):
@@ -72,9 +73,6 @@ class WorkspaceHandler:
             if streamuuid in flowtargetuuid:
                 return True
         return False
-
-    def recreateoldestworkspace(self):
-        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
 
 
 class Changes:

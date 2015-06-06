@@ -18,7 +18,7 @@ class MigrationTestCase(unittest.TestCase):
     @patch('migration.os')
     @patch('migration.shutil')
     def testDeletionOfLogFolderOnInitalization(self, shutil_mock, os_mock, rtc_initializer_mock, git_initializer_mock):
-        config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "", "")
+        config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
         os_mock.path.exists.return_value = False
 
         migration.initialize(config)

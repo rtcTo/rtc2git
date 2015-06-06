@@ -36,34 +36,28 @@ def migrate():
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
-
+    streamuuid = config.streamuuid
+    streamname = config.streamname
     initialize(config)
-    streamuuids = config.streamuuids
-    for streamuuid in streamuuids:
-        componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
-        streamname = config.streamnames[streamuuids.index(streamuuid)]
-        rtcworkspace.setnewflowtargets(streamuuid)
-        git.branch(streamname)
 
-        history = rtc.readhistory(componentbaselineentries, streamname)
-        changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
+    componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
+    rtcworkspace.setnewflowtargets(streamuuid)
+    git.branch(streamname)
 
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-        shouter.shout("All changes of components of stream '%s' accepted" % streamname)
-        git.pushbranch(streamname)
+    history = rtc.readhistory(componentbaselineentries, streamname)
+    changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
 
-        rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
-        rtcworkspace.load()
+    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+    shouter.shout("All changes until creation of stream '%s' accepted" % streamname)
+    git.pushbranch(streamname)
 
-        changeentries = rtc.getchangeentriesofstream(streamuuid)
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-        git.pushbranch(streamname)
-        shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
+    rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
+    rtcworkspace.load()
 
-        morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
-        if morestreamstomigrate:
-            git.checkout("master")
-            rtcworkspace.recreateoldestworkspace()
+    changeentries = rtc.getchangeentriesofstream(streamuuid)
+    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+    git.pushbranch(streamname)
+    shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
 
 if __name__ == "__main__":
