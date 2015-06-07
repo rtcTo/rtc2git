@@ -49,7 +49,8 @@ class WorkspaceHandler:
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
         for entry in componentbaselineentries:
-            shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
+            shouter.shout("Set component '%s'(%s) to baseline '%s' (%s)" % (entry.componentname, entry.component,
+                                                                            entry.baselinename, entry.baseline))
 
             replacecommand = "%s set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
@@ -151,7 +152,8 @@ class ImportHandler:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -m 20000" % \
                       (entry.component, self.config.repo)  # use always scm, lscm fails when specifying maximum over 10k
-            baselineslines = shell.getoutput(command).reverse()  # reverse to have earliest baseline on top
+            baselineslines = shell.getoutput(command)
+            baselineslines.reverse()  # reverse to have earliest baseline on top
 
             for baselineline in baselineslines:
                 matcher = pattern.search(baselineline)
@@ -159,7 +161,7 @@ class ImportHandler:
                     matchedstring = matcher.group()
                     uuid = matchedstring[1:-1]
                     entry.baseline = uuid
-                    entry.baselinename = ""
+                    entry.baselinename = "Automatically detected initial baseline"
                     break
         return componentbaselinesentries
 
