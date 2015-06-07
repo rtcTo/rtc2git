@@ -107,8 +107,8 @@ class ImportHandler:
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        command = self.config.scmcommand + " --show-alias n --show-uuid y list components -v -r " + self.config.repo + \
-                  " " + stream
+        command = "%s --show-alias n --show-uuid y list components -v -r %s %s" % (self.config.scmcommand,
+                                                                                   self.config.repo, stream)
         shell.execute(command, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
