@@ -1,0 +1,8 @@
+Komponente: (_tlTxk9TcEeK6mZpOGv5fqw) "COMPONENT"
+  Referenzversion: (_upIoBAvyEeW0j4nm2-WJyw) 16586 "Backup before replace"   ""  Erstellt von: BuildServerSrv (06.06.2015 04:21:24)
+  Referenzversion: (_YmGaMAvoEeW0j4nm2-WJyw) 16585 "Backup before replace"   ""  Erstellt von: BuildServerSrv (06.06.2015 03:07:21)
+  Referenzversion: (_NuIcEtc2EeKYV8dRUTJg5g) 11 "Backup before replace"   ""  Erstellt von: Portmann Thomas (17.06.2013 12:11:02)
+  Referenzversion: (_TgaOp9c0EeKYV8dRUTJg5g) 10 "Backup before replace"   ""  Erstellt von: Chowdhury Raqibul (17.06.2013 11:57:22)
+  Referenzversion: (_hbnt9tXDEeKYV8dRUTJg5g) 8 "Backup before replace"   ""  Erstellt von: BuildServerSrv (15.06.2013 15:57:31)
+  Referenzversion: (_So38u9VSEeK6mZpOGv5fqw) 2 "Initial CVS Import"   "Baseline that was created at the end of an import operation"  Erstellt von: BuildServerSrv (15.06.2013 02:26:58)
+  Referenzversion: (_tlTxodTcEeK6mZpOGv5fqw) 1 "Initial Baseline"   "Initial Baseline of Component BP_Application"  Erstellt von: BuildServerSrv (14.06.2013 12:25:19)

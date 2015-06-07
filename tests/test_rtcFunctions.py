@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 import os
 
-from rtcFunctions import Changes, ChangeEntry, ImportHandler
+from rtcFunctions import Changes, ChangeEntry, ImportHandler, ComponentBaseLineEntry
 from configuration import ConfigObject
 
 
@@ -70,12 +70,10 @@ class RtcFunctionsTestCase(unittest.TestCase):
         
     @patch('rtcFunctions.Changes')
     @patch('builtins.input', return_value='')
-    @patch('rtcFunctions.ImportHandler')
-    def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, importhandlermock, inputmock, changesmock):
+    def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, inputmock, changesmock):
         changeentry1 = self.createChangeEntry("anyRevId")
         changeentry2 = self.createChangeEntry("anyOtherRevId")
         changeentries = [changeentry1, changeentry2]
-        importhandlermock.getnextchangeset.return_value.return_value = changeentry2
         changesmock.accept.return_value = 0
 
         config = ConfigObject("", "", "", "lscm", "", "", "", "", "", "", "", "")
@@ -83,6 +81,28 @@ class RtcFunctionsTestCase(unittest.TestCase):
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
         changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
+
+    @patch('rtcFunctions.shell')
+    @patch('rtcFunctions.ImportHandler')
+    def testReadBaselineOutput(self, importhandlermock, shellmock):
+        entry = ComponentBaseLineEntry("component", "baseline", "componentname", "baselinename")
+        componentbaselinesentries = [entry]
+        importhandlermock.getcomponentbaselineentriesfromstream.return_value = componentbaselinesentries
+        shellmock.getoutput.return_value = self.createBaseLineOutput()
+
+        handler = ImportHandler(ConfigObject("", "", "", "", "", "", "", "", "", "", "", ""))
+        newentries = handler.determineinitialbaseline("astream")
+        self.assertEqual("_tlTxodTcEeK6mZpOGv5fqw", newentries[0].baseline)
+
+    def createBaseLineOutput(self):
+        sample_file_path = self.get_Sample_File_Path("SampleBaselinesOutput.txt")
+        lines = []
+        with open(sample_file_path, 'r', encoding="utf-8") as file:
+            for line in file:
+                clearedline = line.strip()
+                if clearedline:
+                    lines.append(clearedline)
+        return lines
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)
