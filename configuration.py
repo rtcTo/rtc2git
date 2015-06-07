@@ -1,5 +1,6 @@
 import os
 import configparser
+import shutil
 
 from rtcFunctions import ComponentBaseLineEntry
 import shell
@@ -58,12 +59,18 @@ class ConfigObject:
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.rootFolder = os.getcwd()
         self.logFolder = os.getcwd() + os.sep + "Logs"
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuid = ""
 
     def getlogpath(self, filename):
-        if not os.path.exists(self.logFolder):
+        if not self.hasCreatedLogFolder:
             os.makedirs(self.logFolder)
+            self.hasCreatedLogFolder = True
         return self.logFolder + os.sep + filename
+
+    def deletelogfolder(self):
+        if self.hasCreatedLogFolder:
+            shutil.rmtree(self.logFolder)
 
     def gethistorypath(self, filename):
         historypath = self.rootFolder + os.sep + "History"
