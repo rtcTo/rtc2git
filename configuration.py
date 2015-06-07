@@ -71,6 +71,7 @@ class ConfigObject:
     def deletelogfolder(self):
         if self.hasCreatedLogFolder:
             shutil.rmtree(self.logFolder)
+            self.hasCreatedLogFolder = False
 
     def gethistorypath(self, filename):
         historypath = self.rootFolder + os.sep + "History"

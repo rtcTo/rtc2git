@@ -11,6 +11,16 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def test_DeletionOfFolder(self):
         config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
-        self.assertTrue(os.path.exists(config.logFolder))
+        samplepath = os.path.dirname(config.getlogpath("anyPath"))
+        self.assertTrue(os.path.exists(samplepath))
         config.deletelogfolder()
-        self.assertFalse(os.path.exists(config.logFolder))
+        self.assertFalse(os.path.exists(samplepath))
+
+    def test_ReaddingLogFolderAfterDeletion(self):
+        config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
+        samplepath = os.path.dirname(config.getlogpath("anyPath"))
+        self.assertTrue(os.path.exists(samplepath))
+        config.deletelogfolder()
+        self.assertFalse(os.path.exists(samplepath))
+        samplepath = os.path.dirname(config.getlogpath("anyPath"))
+        self.assertTrue(os.path.exists(samplepath))
