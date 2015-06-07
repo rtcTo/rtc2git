@@ -69,7 +69,7 @@ class ConfigObject:
         historypath = self.rootFolder + os.sep + "History"
         return historypath + os.sep + filename
 
-    def collectstreamuuids(self):
+    def collectstreamuuid(self):
         shouter.shout("Get UUID of configured stream")
         showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
             self.scmcommand, self.repo, self.streamname)

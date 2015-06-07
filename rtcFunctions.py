@@ -11,7 +11,7 @@ import shouter
 class RTCInitializer:
     @staticmethod
     def initialize(config):
-        RTCInitializer.loginandcollectstreams(config)
+        RTCInitializer.loginandcollectstreamuuid(config)
         workspace = WorkspaceHandler(config)
         if config.useexistingworkspace:
             shouter.shout("Use existing workspace to start migration")
@@ -20,9 +20,9 @@ class RTCInitializer:
             workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
     @staticmethod
-    def loginandcollectstreams(config):
+    def loginandcollectstreamuuid(config):
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuids()
+        config.collectstreamuuid()
 
 
 class WorkspaceHandler:

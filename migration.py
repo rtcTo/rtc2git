@@ -27,7 +27,7 @@ def initialize(config):
 def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
-    RTCInitializer.loginandcollectstreams(config)
+    RTCInitializer.loginandcollectstreamuuid(config)
     WorkspaceHandler(config).load()
 
 
