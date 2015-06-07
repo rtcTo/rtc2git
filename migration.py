@@ -36,9 +36,9 @@ def migrate():
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
+    initialize(config)
     streamuuid = config.streamuuid
     streamname = config.streamname
-    initialize(config)
 
     componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
     rtcworkspace.setnewflowtargets(streamuuid)
