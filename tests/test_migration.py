@@ -16,12 +16,13 @@ class MigrationTestCase(unittest.TestCase):
     @patch('migration.Initializer')
     @patch('migration.RTCInitializer')
     @patch('migration.os')
-    @patch('migration.shutil')
+    @patch('configuration.shutil')
     def testDeletionOfLogFolderOnInitalization(self, shutil_mock, os_mock, rtc_initializer_mock, git_initializer_mock):
         config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
+        anylogpath = config.getlogpath("testDeletionOfLogFolderOnInitalization")
         os_mock.path.exists.return_value = False
 
         migration.initialize(config)
 
-        expectedlogfolder = self.workdirectory + os.sep + "Logs" + os.sep
+        expectedlogfolder = self.workdirectory + os.sep + "Logs"
         shutil_mock.rmtree.assert_called_once_with(expectedlogfolder)
