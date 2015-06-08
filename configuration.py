@@ -11,19 +11,45 @@ def read():
     config = configparser.ConfigParser()
     config.read("config.ini")
     generalsection = config['General']
+    migrationsection = config['Migration']
+
     user = generalsection['User']
     password = generalsection['Password']
-    workspace = generalsection['WorkspaceName']
-    useexistingworkspace = bool(generalsection['useExistingWorkspace'])
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
-    workdirectory = generalsection['Directory']
+    shell.logcommands = bool(config['Miscellaneous']['LogShellCommands'])
+
+    workspace = generalsection['WorkspaceName']
+    gitreponame = generalsection['GIT-Reponame']
+
+    useexistingworkspace = bool(generalsection['useExistingWorkspace'])
+    useprovidedhistory = bool(migrationsection['UseProvidedHistory'])
+    useautomaticconflictresolution = bool(migrationsection['UseAutomaticConflictResolution'])
+
+    workdirectory = getworkdirectory(generalsection['Directory'])
+    streamname = migrationsection['StreamToMigrate'].strip()
+    baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
+
+    configbuilder = Builder().setuser(user).setpassword(password).setrepo(repositoryurl).setscmcommand(scmcommand)
+    configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
+    configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
+    configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
+    configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
+    return configbuilder.build()
+    #
+    # return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
+    #                     initialcomponentbaselines, streamname,
+    #                     gitreponame, useprovidedhistory, useautomaticconflictresolution)
+
+
+def getworkdirectory(workdirectory):
     if not workdirectory:
         workdirectory = "."
-    migrationsection = config['Migration']
-    streamname = migrationsection['StreamToMigrate'].strip()
+    return workdirectory
+
+
+def getinitialcomponentbaselines(definedbaselines):
     initialcomponentbaselines = []
-    definedbaselines = migrationsection['InitialBaseLines']
     if definedbaselines:
         componentbaselines = definedbaselines.split(",")
         for entry in componentbaselines:
@@ -31,36 +57,30 @@ def read():
             component = componentbaseline[0].strip()
             baseline = componentbaseline[1].strip()
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
-    gitreponame = generalsection['GIT-Reponame']
-    useprovidedhistory = bool(migrationsection['UseProvidedHistory'])
-    useautomaticconflictresolution = bool(migrationsection['UseAutomaticConflictResolution'])
-    shell.logcommands = bool(config['Miscellaneous']['LogShellCommands'])
-    return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
-                        initialcomponentbaselines, streamname,
-                        gitreponame, useprovidedhistory, useautomaticconflictresolution)
+    return initialcomponentbaselines
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, scmcommand, workspace, useexistingworkspace, workdirectory,
+    def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder, streamuuid):
         self.user = user
         self.password = password
-        self.repo = repo
+        self.repo = repourl
         self.scmcommand = scmcommand
         self.workspace = workspace
-        self.useexistingworkspace = useexistingworkspace == "True"
-        self.useprovidedhistory = useprovidedhistory == "True"
-        self.useautomaticconflictresolution = useautomaticconflictresolution == "True"
+        self.useexistingworkspace = useexistingworkspace
+        self.useprovidedhistory = useprovidedhistory
+        self.useautomaticconflictresolution = useautomaticconflictresolution
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamname = streamname
         self.gitRepoName = gitreponame
-        self.clonedGitRepoName = gitreponame[:-4]  # cut .git
-        self.rootFolder = os.getcwd()
-        self.logFolder = self.rootFolder + os.sep + "Logs"
+        self.clonedGitRepoName = clonedgitreponame
+        self.rootFolder = rootfolder
+        self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
-        self.streamuuid = ""
+        self.streamuuid = streamuuid
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -156,10 +176,24 @@ class Builder:
 
     def setgitreponame(self, reponame):
         self.gitreponame = reponame
+        self.clonedgitreponame = reponame[:-4]  # cut .git
+        return self
+
+    def setuseexistingworkspace(self, useexistingworkspace):
+        self.useexistingworkspace = bool(useexistingworkspace)
+        return self
+
+    def setuseprovidedhistory(self, useprovidedhistory):
+        self.useprovidedhistory = bool(useprovidedhistory)
+        return self
+
+    def setuseautomaticconflictresolution(self, useautomaticconflictresolution):
+        self.useautomaticconflictresolution = bool(useautomaticconflictresolution)
         return self
 
     def build(self):
         return ConfigObject(self.user, self.password, self.repo, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
-                            self.useautomaticconflictresolution)
+                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
+                            self.streamuuid)
