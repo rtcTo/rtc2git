@@ -56,52 +56,6 @@ def getinitialcomponentbaselines(definedbaselines):
     return initialcomponentbaselines
 
 
-class ConfigObject:
-    def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
-                 initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder):
-        self.user = user
-        self.password = password
-        self.repo = repourl
-        self.scmcommand = scmcommand
-        self.workspace = workspace
-        self.useexistingworkspace = useexistingworkspace
-        self.useprovidedhistory = useprovidedhistory
-        self.useautomaticconflictresolution = useautomaticconflictresolution
-        self.workDirectory = workdirectory
-        self.initialcomponentbaselines = initialcomponentbaselines
-        self.streamname = streamname
-        self.gitRepoName = gitreponame
-        self.clonedGitRepoName = clonedgitreponame
-        self.rootFolder = rootfolder
-        self.logFolder = rootfolder + os.sep + "Logs"
-        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
-        self.streamuuid = ""
-
-    def getlogpath(self, filename):
-        if not self.hasCreatedLogFolder:
-            os.makedirs(self.logFolder)
-            self.hasCreatedLogFolder = True
-        return self.logFolder + os.sep + filename
-
-    def deletelogfolder(self):
-        if self.hasCreatedLogFolder:
-            shutil.rmtree(self.logFolder)
-            self.hasCreatedLogFolder = False
-
-    def gethistorypath(self, filename):
-        historypath = self.rootFolder + os.sep + "History"
-        return historypath + os.sep + filename
-
-    def collectstreamuuid(self):
-        shouter.shout("Get UUID of configured stream")
-        showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
-            self.scmcommand, self.repo, self.streamname)
-        output = shell.getoutput(showuuidcommand)
-        splittedfirstline = output[0].split(" ")
-        self.streamuuid = splittedfirstline[0].strip()[1:-1]
-
-
 class Builder:
     def __init__(self):
         self.user = ""
@@ -187,3 +141,49 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder)
+
+
+class ConfigObject:
+    def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
+                 initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder):
+        self.user = user
+        self.password = password
+        self.repo = repourl
+        self.scmcommand = scmcommand
+        self.workspace = workspace
+        self.useexistingworkspace = useexistingworkspace
+        self.useprovidedhistory = useprovidedhistory
+        self.useautomaticconflictresolution = useautomaticconflictresolution
+        self.workDirectory = workdirectory
+        self.initialcomponentbaselines = initialcomponentbaselines
+        self.streamname = streamname
+        self.gitRepoName = gitreponame
+        self.clonedGitRepoName = clonedgitreponame
+        self.rootFolder = rootfolder
+        self.logFolder = rootfolder + os.sep + "Logs"
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
+        self.streamuuid = ""
+
+    def getlogpath(self, filename):
+        if not self.hasCreatedLogFolder:
+            os.makedirs(self.logFolder)
+            self.hasCreatedLogFolder = True
+        return self.logFolder + os.sep + filename
+
+    def deletelogfolder(self):
+        if self.hasCreatedLogFolder:
+            shutil.rmtree(self.logFolder)
+            self.hasCreatedLogFolder = False
+
+    def gethistorypath(self, filename):
+        historypath = self.rootFolder + os.sep + "History"
+        return historypath + os.sep + filename
+
+    def collectstreamuuid(self):
+        shouter.shout("Get UUID of configured stream")
+        showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
+            self.scmcommand, self.repo, self.streamname)
+        output = shell.getoutput(showuuidcommand)
+        splittedfirstline = output[0].split(" ")
+        self.streamuuid = splittedfirstline[0].strip()[1:-1]
