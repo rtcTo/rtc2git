@@ -133,7 +133,7 @@ class Builder:
         return self
 
     @staticmethod
-    def isenabled(self, stringwithbooleanexpression):
+    def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
 
     def build(self):
