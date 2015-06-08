@@ -24,3 +24,11 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertFalse(os.path.exists(samplepath))
         samplepath = os.path.dirname(config.getlogpath("anyPath"))
         self.assertTrue(os.path.exists(samplepath))
+
+    def test_sampleBoolConfigEntrySetToFalse_ShouldBeFalse(self):
+        config = Builder().setuseautomaticconflictresolution("False").build()
+        self.assertFalse(config.useautomaticconflictresolution)
+
+    def test_sampleBoolConfigEntrySetToTrue_ShouldBeTrue(self):
+        config = Builder().setuseautomaticconflictresolution("True").build()
+        self.assertTrue(config.useautomaticconflictresolution)

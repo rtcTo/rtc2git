@@ -17,14 +17,14 @@ def read():
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
-    shell.logcommands = bool(config['Miscellaneous']['LogShellCommands'])
+    shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
 
     workspace = generalsection['WorkspaceName']
     gitreponame = generalsection['GIT-Reponame']
 
-    useexistingworkspace = bool(generalsection['useExistingWorkspace'])
-    useprovidedhistory = bool(migrationsection['UseProvidedHistory'])
-    useautomaticconflictresolution = bool(migrationsection['UseAutomaticConflictResolution'])
+    useexistingworkspace = generalsection['useExistingWorkspace']
+    useprovidedhistory = migrationsection['UseProvidedHistory']
+    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
 
     workdirectory = getworkdirectory(generalsection['Directory'])
     streamname = migrationsection['StreamToMigrate'].strip()
@@ -107,10 +107,6 @@ class Builder:
         self.logFolder = logfolder
         return self
 
-    def sethascreatedlogfolder(self, hascreatedlogfolder):
-        self.hasCreatedLogFolder = bool(hascreatedlogfolder)
-        return self
-
     def setinitialcomponentbaselines(self, initialcomponentbaselines):
         self.initialcomponentbaselines = initialcomponentbaselines
         return self
@@ -125,16 +121,20 @@ class Builder:
         return self
 
     def setuseexistingworkspace(self, useexistingworkspace):
-        self.useexistingworkspace = bool(useexistingworkspace)
+        self.useexistingworkspace = self.isenabled(useexistingworkspace)
         return self
 
     def setuseprovidedhistory(self, useprovidedhistory):
-        self.useprovidedhistory = bool(useprovidedhistory)
+        self.useprovidedhistory = self.isenabled(useprovidedhistory)
         return self
 
     def setuseautomaticconflictresolution(self, useautomaticconflictresolution):
-        self.useautomaticconflictresolution = bool(useautomaticconflictresolution)
+        self.useautomaticconflictresolution = self.isenabled(useautomaticconflictresolution)
         return self
+
+    @staticmethod
+    def isenabled(self, stringwithbooleanexpression):
+        return stringwithbooleanexpression == "True"
 
     def build(self):
         return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
