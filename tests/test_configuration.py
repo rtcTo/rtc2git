@@ -1,23 +1,23 @@
 import unittest
 import os
 
-from configuration import ConfigObject
+from configuration import Builder
 
 
 class ConfigurationTestCase(unittest.TestCase):
+
     def setUp(self):
-        testpath = os.path.realpath(__file__)
-        self.workdirectory = os.path.dirname(testpath)
+        self.workdirectory = os.path.dirname(os.path.realpath(__file__))
 
     def test_DeletionOfFolder(self):
-        config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
+        config = Builder().setworkdirectory(self.workdirectory).build()
         samplepath = os.path.dirname(config.getlogpath("anyPath"))
         self.assertTrue(os.path.exists(samplepath))
         config.deletelogfolder()
         self.assertFalse(os.path.exists(samplepath))
 
     def test_ReaddingLogFolderAfterDeletion(self):
-        config = ConfigObject("", "", "", "", "", "", self.workdirectory, "", "", "", "", "")
+        config = Builder().setworkdirectory(self.workdirectory).build()
         samplepath = os.path.dirname(config.getlogpath("anyPath"))
         self.assertTrue(os.path.exists(samplepath))
         config.deletelogfolder()
