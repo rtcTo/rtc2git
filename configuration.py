@@ -36,10 +36,6 @@ def read():
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     return configbuilder.build()
-    #
-    # return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
-    #                     initialcomponentbaselines, streamname,
-    #                     gitreponame, useprovidedhistory, useautomaticconflictresolution)
 
 
 def getworkdirectory(workdirectory):
@@ -63,7 +59,7 @@ def getinitialcomponentbaselines(definedbaselines):
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder, streamuuid):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -80,7 +76,7 @@ class ConfigObject:
         self.rootFolder = rootfolder
         self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
-        self.streamuuid = streamuuid
+        self.streamuuid = ""
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -122,7 +118,6 @@ class Builder:
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.initialcomponentbaselines = ""
         self.streamname = ""
-        self.streamuuid = ""
         self.gitreponame = ""
         self.clonedgitreponame = ""
 
@@ -170,10 +165,6 @@ class Builder:
         self.streamname = streamname
         return self
 
-    def setstreamuuid(self, streamuuid):
-        self.streamuuid = streamuuid
-        return self
-
     def setgitreponame(self, reponame):
         self.gitreponame = reponame
         self.clonedgitreponame = reponame[:-4]  # cut .git
@@ -195,5 +186,4 @@ class Builder:
         return ConfigObject(self.user, self.password, self.repo, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
-                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
-                            self.streamuuid)
+                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder)
