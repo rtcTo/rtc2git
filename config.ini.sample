@@ -12,16 +12,10 @@ Directory = \temp\myWorkingDirectory
 ScmCommand = lscm
 
 [Migration]
-# Streams to be migrated,  referenced by Name or UUID, separated by ",".
-# This can be either multiple streams or just one stream
-StreamsToMigrate = Stream_Version1, Stream_Version2, HeadDevelopmentStream
+# Stream to be migrated,  referenced by Name or UUID
+StreamToMigrate = MyDevelopmentStream
 
-# Earliest/Oldest Stream, where the migration should start
-# Referenced by Name or UUID
-OldestStream = Stream_Version1
-
-# Optional, can be defined additionally to set the workspace to a earlier specific baseline
-# (baseline which were created earlier than the baselines of the oldest stream)
+# Optional, can be defined additionally to set the workspace to a specific baseline
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
 InitialBaseLines =
 

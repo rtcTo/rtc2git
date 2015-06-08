@@ -1,5 +1,7 @@
 import sys
 import os
+import re
+
 import sorter
 import shell
 from gitFunctions import Commiter
@@ -9,18 +11,18 @@ import shouter
 class RTCInitializer:
     @staticmethod
     def initialize(config):
-        RTCInitializer.loginandcollectstreams(config)
+        RTCInitializer.loginandcollectstreamuuid(config)
         workspace = WorkspaceHandler(config)
         if config.useexistingworkspace:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
-            workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
+            workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
     @staticmethod
-    def loginandcollectstreams(config):
+    def loginandcollectstreamuuid(config):
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuids()
+        config.collectstreamuuid()
 
 
 class WorkspaceHandler:
@@ -30,13 +32,12 @@ class WorkspaceHandler:
         self.repo = config.repo
         self.scmcommand = config.scmcommand
 
-    def createandload(self, stream, componentbaselineentries=[], create=True):
-        if create:
-            shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
+    def createandload(self, stream, componentbaselineentries=[]):
+        shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
-            self.setcomponentstobaseline(ImportHandler(self.config).getcomponentbaselineentriesfromstream(stream),
+            self.setcomponentstobaseline(ImportHandler(self.config).determineinitialbaseline(stream),
                                          stream)
         self.load()
 
@@ -48,7 +49,8 @@ class WorkspaceHandler:
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
         for entry in componentbaselineentries:
-            shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
+            shouter.shout("Set component '%s'(%s) to baseline '%s' (%s)" % (entry.componentname, entry.component,
+                                                                            entry.baselinename, entry.baseline))
 
             replacecommand = "%s set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
@@ -72,9 +74,6 @@ class WorkspaceHandler:
             if streamuuid in flowtargetuuid:
                 return True
         return False
-
-    def recreateoldestworkspace(self):
-        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
 
 
 class Changes:
@@ -109,7 +108,8 @@ class ImportHandler:
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        command = self.config.scmcommand + " --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream
+        command = "%s --show-alias n --show-uuid y list components -v -m 30 -r %s %s" % (self.config.scmcommand,
+                                                                                         self.config.repo, stream)
         shell.execute(command, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
@@ -142,6 +142,27 @@ class ImportHandler:
                         componentname = ""
                         baselinename = ""
                     islinewithcomponent += 1
+        return componentbaselinesentries
+
+    def determineinitialbaseline(self, stream):
+        regex = "\(_\w+\)"
+        pattern = re.compile(regex)
+        componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
+        for entry in componentbaselinesentries:
+            shouter.shout("Determine initial baseline of " + entry.componentname)
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -m 20000" % \
+                      (entry.component, self.config.repo)  # use always scm, lscm fails when specifying maximum over 10k
+            baselineslines = shell.getoutput(command)
+            baselineslines.reverse()  # reverse to have earliest baseline on top
+
+            for baselineline in baselineslines:
+                matcher = pattern.search(baselineline)
+                if matcher:
+                    matchedstring = matcher.group()
+                    uuid = matchedstring[1:-1]
+                    entry.baseline = uuid
+                    entry.baselinename = "Automatically detected initial baseline"
+                    break
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):

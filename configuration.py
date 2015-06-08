@@ -1,5 +1,6 @@
 import os
 import configparser
+import shutil
 
 from rtcFunctions import ComponentBaseLineEntry
 import shell
@@ -20,9 +21,7 @@ def read():
     if not workdirectory:
         workdirectory = "."
     migrationsection = config['Migration']
-    oldeststream = migrationsection['OldestStream']
-    streamsfromconfig = migrationsection['StreamsToMigrate']
-    streamnames = getstreamnames(streamsfromconfig)
+    streamname = migrationsection['StreamToMigrate'].strip()
     initialcomponentbaselines = []
     definedbaselines = migrationsection['InitialBaseLines']
     if definedbaselines:
@@ -37,22 +36,14 @@ def read():
     useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
     shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
     return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
-                        initialcomponentbaselines, streamnames,
-                        gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution)
-
-
-def getstreamnames(streamsfromconfig):
-    streamnames = []
-    for streamname in streamsfromconfig.split(","):
-        streamname = streamname.strip()
-        streamnames.append(streamname)
-    return streamnames
+                        initialcomponentbaselines, streamname,
+                        gitreponame, useprovidedhistory, useautomaticconflictresolution)
 
 
 class ConfigObject:
-    def __init__(self, user, password, repo, scmcommand, workspace, useexistingworkspace, workdirectory, initialcomponentbaselines,
-                 streamnames,
-                 gitreponame, oldeststream, useprovidedhistory, useautomaticconflictresolution):
+    def __init__(self, user, password, repo, scmcommand, workspace, useexistingworkspace, workdirectory,
+                 initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
+                 useautomaticconflictresolution):
         self.user = user
         self.password = password
         self.repo = repo
@@ -63,41 +54,33 @@ class ConfigObject:
         self.useautomaticconflictresolution = useautomaticconflictresolution == "True"
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
-        self.streamnames = streamnames
-        self.earlieststreamname = oldeststream
+        self.streamname = streamname
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.rootFolder = os.getcwd()
         self.logFolder = os.getcwd() + os.sep + "Logs"
-        self.streamuuids = []
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
+        self.streamuuid = ""
 
     def getlogpath(self, filename):
-        if not os.path.exists(self.logFolder):
+        if not self.hasCreatedLogFolder:
             os.makedirs(self.logFolder)
+            self.hasCreatedLogFolder = True
         return self.logFolder + os.sep + filename
+
+    def deletelogfolder(self):
+        if self.hasCreatedLogFolder:
+            shutil.rmtree(self.logFolder)
+            self.hasCreatedLogFolder = False
 
     def gethistorypath(self, filename):
         historypath = self.rootFolder + os.sep + "History"
         return historypath + os.sep + filename
 
-    def collectstreamuuids(self):
-        shouter.shout("Get UUID's of configured streamnames")
-        for streamname in self.streamnames:
-            streamname = streamname.strip()
-            showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (self.scmcommand, self.repo, streamname)
-            output = shell.getoutput(showuuidcommand)
-            splittedfirstline = output[0].split(" ")
-            streamuuid = splittedfirstline[0].strip()[1:-1]
-            self.streamuuids.append(streamuuid)
-
-
-
-
-
-
-
-
-
-
-
-
+    def collectstreamuuid(self):
+        shouter.shout("Get UUID of configured stream")
+        showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
+            self.scmcommand, self.repo, self.streamname)
+        output = shell.getoutput(showuuidcommand)
+        splittedfirstline = output[0].split(" ")
+        self.streamuuid = splittedfirstline[0].strip()[1:-1]
