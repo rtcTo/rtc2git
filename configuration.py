@@ -14,7 +14,7 @@ def read():
     user = generalsection['User']
     password = generalsection['Password']
     workspace = generalsection['WorkspaceName']
-    useexistingworkspace = generalsection['useExistingWorkspace']
+    useexistingworkspace = bool(generalsection['useExistingWorkspace'])
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
     workdirectory = generalsection['Directory']
@@ -32,9 +32,9 @@ def read():
             baseline = componentbaseline[1].strip()
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     gitreponame = generalsection['GIT-Reponame']
-    useprovidedhistory = migrationsection['UseProvidedHistory']
-    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
-    shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
+    useprovidedhistory = bool(migrationsection['UseProvidedHistory'])
+    useautomaticconflictresolution = bool(migrationsection['UseAutomaticConflictResolution'])
+    shell.logcommands = bool(config['Miscellaneous']['LogShellCommands'])
     return ConfigObject(user, password, repositoryurl, scmcommand, workspace, useexistingworkspace, workdirectory,
                         initialcomponentbaselines, streamname,
                         gitreponame, useprovidedhistory, useautomaticconflictresolution)
@@ -58,7 +58,7 @@ class ConfigObject:
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = gitreponame[:-4]  # cut .git
         self.rootFolder = os.getcwd()
-        self.logFolder = os.getcwd() + os.sep + "Logs"
+        self.logFolder = self.rootFolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuid = ""
 
@@ -84,3 +84,62 @@ class ConfigObject:
         output = shell.getoutput(showuuidcommand)
         splittedfirstline = output[0].split(" ")
         self.streamuuid = splittedfirstline[0].strip()[1:-1]
+
+
+class Builder:
+    def __init__(self):
+        self.user = ""
+        self.password = ""
+        self.repo = ""
+        self.scmcommand = "lscm"
+        self.workspace = ""
+        self.useexistingworkspace = ""
+        self.useprovidedhistory = ""
+        self.useautomaticconflictresolution = ""
+        self.workdirectory = os.path.dirname(os.path.realpath(__file__))
+        self.rootFolder = self.workdirectory
+        self.logFolder = self.rootFolder + os.sep + "Logs"
+        self.hasCreatedLogFolder = os.path.exists(self.logFolder)
+        self.initialcomponentbaselines = ""
+        self.streamname = ""
+        self.streamuuid = ""
+        self.gitRepoName = self.clonedGitRepoName = ""
+
+    def setuser(self, user):
+        self.user = user
+
+    def setpassword(self, password):
+        self.password = password
+
+    def setrepo(self, repo):
+        self.repo = repo
+
+    def setscmcommand(self, scmcommand):
+        self.scmcommand = scmcommand
+
+    def setworkspace(self, workspace):
+        self.workspace = workspace
+
+    def setrootfolder(self, rootfolder):
+        self.rootFolder = rootfolder
+
+    def setlogfolder(self, logfolder):
+        self.logFolder = logfolder
+
+    def sethascreatedlogfolder(self, hascreatedlogfolder):
+        self.hasCreatedLogFolder = bool(hascreatedlogfolder)
+
+    def setinitialcomponentbaselines(self, initialcomponentbaselines):
+        self.initialcomponentbaselines = initialcomponentbaselines
+
+    def setstreamname(self, streamname):
+        self.streamname = streamname
+
+    def setstreamuuid(self, streamuuid):
+        self.streamuuid = streamuuid
+
+    def build(self):
+        return ConfigObject(self.user, self.password, self.repo, self.scmcommand, self.workspace,
+                            self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
+                            self.streamname, self.gitreponame, self.useprovidedhistory,
+                            self.useautomaticconflictresolution)
