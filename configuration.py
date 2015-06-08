@@ -30,7 +30,7 @@ def read():
     streamname = migrationsection['StreamToMigrate'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
 
-    configbuilder = Builder().setuser(user).setpassword(password).setrepo(repositoryurl).setscmcommand(scmcommand)
+    configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
@@ -60,7 +60,7 @@ class Builder:
     def __init__(self):
         self.user = ""
         self.password = ""
-        self.repo = ""
+        self.repourl = ""
         self.scmcommand = "lscm"
         self.workspace = ""
         self.useexistingworkspace = ""
@@ -83,8 +83,8 @@ class Builder:
         self.password = password
         return self
 
-    def setrepo(self, repo):
-        self.repo = repo
+    def setrepourl(self, repourl):
+        self.repourl = repourl
         return self
 
     def setscmcommand(self, scmcommand):
@@ -137,7 +137,7 @@ class Builder:
         return self
 
     def build(self):
-        return ConfigObject(self.user, self.password, self.repo, self.scmcommand, self.workspace,
+        return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder)
