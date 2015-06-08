@@ -103,40 +103,60 @@ class Builder:
         self.initialcomponentbaselines = ""
         self.streamname = ""
         self.streamuuid = ""
-        self.gitRepoName = self.clonedGitRepoName = ""
+        self.gitreponame = ""
+        self.clonedgitreponame = ""
 
     def setuser(self, user):
         self.user = user
+        return self
 
     def setpassword(self, password):
         self.password = password
+        return self
 
     def setrepo(self, repo):
         self.repo = repo
+        return self
 
     def setscmcommand(self, scmcommand):
         self.scmcommand = scmcommand
+        return self
 
     def setworkspace(self, workspace):
         self.workspace = workspace
+        return self
+
+    def setworkdirectory(self, workdirectory):
+        self.workdirectory = workdirectory
+        return self
 
     def setrootfolder(self, rootfolder):
         self.rootFolder = rootfolder
+        return self
 
     def setlogfolder(self, logfolder):
         self.logFolder = logfolder
+        return self
 
     def sethascreatedlogfolder(self, hascreatedlogfolder):
         self.hasCreatedLogFolder = bool(hascreatedlogfolder)
+        return self
 
     def setinitialcomponentbaselines(self, initialcomponentbaselines):
         self.initialcomponentbaselines = initialcomponentbaselines
+        return self
 
     def setstreamname(self, streamname):
         self.streamname = streamname
+        return self
 
     def setstreamuuid(self, streamuuid):
         self.streamuuid = streamuuid
+        return self
+
+    def setgitreponame(self, reponame):
+        self.gitreponame = reponame
+        return self
 
     def build(self):
         return ConfigObject(self.user, self.password, self.repo, self.scmcommand, self.workspace,
