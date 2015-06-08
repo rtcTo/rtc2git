@@ -5,7 +5,7 @@ from unittest.mock import patch
 import os
 
 from rtcFunctions import Changes, ChangeEntry, ImportHandler
-from configuration import ConfigObject
+from configuration import Builder
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -18,7 +18,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "")
+        config = Builder().setrepourl(anyurl).setscmcommand("lscm").setworkspace(self.workspace).build()
         Changes.accept(config, self.apath, self.createChangeEntry(revision1),
                        self.createChangeEntry(revision2))
         expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
@@ -32,7 +32,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision1 = "anyRevision"
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
-        config = ConfigObject("", "", anyurl, "lscm", self.workspace, "", "", "", "", "", "", "")
+        config = Builder().setrepourl(anyurl).setscmcommand("lscm").setworkspace(self.workspace).build()
         Changes.discard(config, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
@@ -76,7 +76,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         changeentries = [changeentry1, changeentry2]
         changesmock.accept.return_value = 0
 
-        config = ConfigObject("", "", "", "lscm", "", "", "", "", "", "", "", "")
+        config = Builder().setscmcommand("lscm").build()
         handler = ImportHandler(config)
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 

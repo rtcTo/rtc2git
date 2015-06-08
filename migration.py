@@ -14,7 +14,7 @@ def initialize(config):
     directory = config.workDirectory
     if os.path.exists(directory):
         sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
-    os.mkdir(directory)
+    os.makedirs(directory)
     os.chdir(directory)
     config.deletelogfolder()
     git = Initializer(config)
