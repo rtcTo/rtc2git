@@ -118,7 +118,7 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
-        with open(filename, 'r', encoding="utf-8") as file:
+        with open(filename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
@@ -270,7 +270,7 @@ class ImportHandler:
         numberofexpectedinformationseparators = 5
         changeentries = []
 
-        with open(outputfilename, 'r', encoding="utf-8") as file:
+        with open(outputfilename, 'r', encoding=shell.encoding) as file:
             currentline = ""
             currentinformationpresent = 0
             for line in file:
@@ -303,7 +303,7 @@ class ImportHandler:
             shouter.shout("Skipping this part of history")
             return revisions
 
-        with open(outputfilename, 'r', encoding="utf-8") as file:
+        with open(outputfilename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 revisions.append(line.strip())
         revisions.reverse()  # to begin by the oldest
