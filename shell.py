@@ -4,16 +4,15 @@ from subprocess import check_output
 
 import shouter
 
-
 logcommands = False
-
+encoding = None
 
 def execute(command, outputfile=None, openmode="w"):
     shout_command_to_log(command, outputfile)
     if not outputfile:
         return call(command, shell=True)
     else:
-        with open(outputfile, openmode, encoding="utf-8") as file:
+        with open(outputfile, openmode, encoding=encoding) as file:
             return call(command, stdout=file, shell=True)
 
 
@@ -42,3 +41,9 @@ def shout_command_to_log(command, outputfile=None):
             shouter.shout(logmessage + " --> " + outputfile)
         else:
             shouter.shout(logmessage)
+
+
+def setencoding(encodingtobeset):
+    global encoding
+    if encodingtobeset:
+        encoding = encodingtobeset
