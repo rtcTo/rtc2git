@@ -10,8 +10,8 @@ useExistingWorkspace = False
 Directory = \temp\myWorkingDirectory
 # Scm command to use (lscm or scm)
 ScmCommand = lscm
-# Optional - Set encoding of files
-# For example encoding = UTF-8
+# Optional - Set encoding of files (For example encoding = UTF-8)
+# See https://github.com/WtfJoke/rtc2git/wiki/Encoding for further instructions
 encoding =
 
 [Migration]
