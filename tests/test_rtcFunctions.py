@@ -6,6 +6,7 @@ import os
 
 from rtcFunctions import Changes, ChangeEntry, ImportHandler
 from configuration import Builder
+import shell
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -61,6 +62,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assert_Change_Entry(changeentries[1], author, mail, expectedcomment, "2015-05-26 10:42:00")
 
     def test_ReadChangesetInformationFromFile_InUtf8_ShouldBeSuccesful(self):
+        shell.setencoding("UTF-8")
         sample_file_path = self.get_Sample_File_Path("SampleCompareOutputInUtf8.txt")
         changeentries = ImportHandler.getchangeentriesfromfile(sample_file_path)
         self.assertEqual(1, len(changeentries))

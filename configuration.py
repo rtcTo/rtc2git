@@ -18,6 +18,7 @@ def read():
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
     shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
+    shell.setencoding(generalsection['encoding'])
 
     workspace = generalsection['WorkspaceName']
     gitreponame = generalsection['GIT-Reponame']

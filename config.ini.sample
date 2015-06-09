@@ -1,15 +1,18 @@
 [General]
-Repo=https://rtc.mySite.com
+Repo=https://rtc.mySite.com/ccm
 User=USR
 Password=secret
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 # If this value is set to True, the workspace referred with workspacename will just be loaded instead of newly created
 useExistingWorkspace = False
-# Folder to be created
+# Folder to be created - where migration will take place
 Directory = \temp\myWorkingDirectory
 # Scm command to use (lscm or scm)
 ScmCommand = lscm
+# Optional - Set encoding of files (For example encoding = UTF-8)
+# See https://github.com/WtfJoke/rtc2git/wiki/Encoding for further instructions
+encoding =
 
 [Migration]
 # Stream to be migrated,  referenced by Name or UUID
@@ -17,6 +20,7 @@ StreamToMigrate = MyDevelopmentStream
 
 # Optional, can be defined additionally to set the workspace to a specific baseline
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
+# If its not set, it will determine the oldest baseline (takes some time, depending of how much components you have in your stream)
 InitialBaseLines =
 
 # False - Rely on order of changeset provided by the rtc cli compare command (due wrong order, more likely to cause merge-conflicts
