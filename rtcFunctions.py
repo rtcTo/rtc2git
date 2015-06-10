@@ -147,11 +147,13 @@ class ImportHandler:
     def determineinitialbaseline(self, stream):
         regex = "\(_\w+\)"
         pattern = re.compile(regex)
+        config = self.config
         componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
-            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -m 20000" % \
-                      (entry.component, self.config.repo)  # use always scm, lscm fails when specifying maximum over 10k
+            # use always scm, lscm fails when specifying maximum over 10k
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -p %s -m 20000" % \
+                      (entry.component, config.user, config.password, config.repo)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
 
