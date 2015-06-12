@@ -85,14 +85,21 @@ class RtcFunctionsTestCase(unittest.TestCase):
 
         changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
 
-    @patch('rtcFunctions.Changes')
-    def test_CollectChangeSetsToAccept_ShouldCollectThreeChangesets(self, changesmock):
+    def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectThreeChangesets(self):
         mychange1 = self.createChangeEntry("doSomethingOnOldRev")
         mychange2 = self.createChangeEntry("doSomethingElseOnOldRev")
         mymergechange = self.createChangeEntry("anyRev", comment="merge change")
         changefromsomeoneelse = self.createChangeEntry(author="anyOtherAuthor", revision="2", comment="anotherCommit")
 
         changeentries = [mychange1, mychange2, mymergechange, changefromsomeoneelse]
+
+        handler = ImportHandler(self.configBuilder.build())
+        collectedchanges = handler.collect_changes_to_accept_to_avoid_conflicts(mychange1, changeentries)
+        self.assertTrue(mychange1 in collectedchanges)
+        self.assertTrue(mychange2 in collectedchanges)
+        self.assertTrue(mymergechange in collectedchanges)
+        self.assertFalse(changefromsomeoneelse in collectedchanges)
+        self.assertEqual(3, len(collectedchanges))
 
 
 

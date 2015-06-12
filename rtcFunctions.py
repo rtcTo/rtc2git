@@ -100,6 +100,14 @@ class Changes:
             ids += " " + changeentry.revision
         return ids
 
+    @staticmethod
+    def arereleatedmergechangesets(changeentry1, changeentry2):
+        if changeentry1 and changeentry2:
+            if changeentry1.author == changeentry2.author or "merge" in changeentry2.comment.lower():
+                return True
+        return False
+
+
 
 class ImportHandler:
     def __init__(self, config):
@@ -195,8 +203,22 @@ class ImportHandler:
     def is_reloading_necessary():
         return shell.execute("git diff --exit-code") is 0
 
+    @staticmethod
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
+        changestoaccept = [changewhichcantacceptedallone]
+        nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
+
+        while True:
+            if Changes.arereleatedmergechangesets(changewhichcantacceptedallone, nextchange):
+                changestoaccept.append(nextchange)
+                nextchange = ImportHandler.getnextchangeset(nextchange, changes)
+            else:
+                break
+        return changestoaccept
+
     def retryacceptincludingnextchangeset(self, change, changes):
         successfull = False
+        changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
         nextchangeentry = self.getnextchangeset(change, changes)
         if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
             shouter.shout("Next changeset: " + nextchangeentry.tostring())
