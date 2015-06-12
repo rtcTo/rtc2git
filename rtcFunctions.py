@@ -200,8 +200,10 @@ class ImportHandler:
         nextchangeentry = self.getnextchangeset(change, changes)
         if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
             shouter.shout("Next changeset: " + nextchangeentry.tostring())
-            if (not self.config.useautomaticconflictresolution) and input("Press Enter to try to accept it with next changeset together, press any other key to skip this changeset and continue"):
-                return False
+            if not self.config.useautomaticconflictresolution:
+                if input("Press Enter to try to accept it with next changeset together, "
+                         "press any other key to skip this changeset and continue"):
+                    return False
             Changes.discard(self.config, change)
             successfull = Changes.accept(self.config, self.acceptlogpath, change, nextchangeentry) is 0
             if not successfull:
