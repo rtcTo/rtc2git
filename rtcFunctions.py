@@ -90,7 +90,8 @@ class Changes:
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + config.workspace + " --changes" + revisions
+        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
+                                        config.workspace + " --changes" + revisions
         return shell.execute(Changes.latest_accept_command, logpath, "a")
 
     @staticmethod
@@ -191,7 +192,7 @@ class ImportHandler:
                                                  changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
-                skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
+                skipnextchangeset = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
                 if self.is_reloading_necessary():
                     WorkspaceHandler(self.config).load()
@@ -216,21 +217,32 @@ class ImportHandler:
                 break
         return changestoaccept
 
-    def retryacceptincludingnextchangeset(self, change, changes):
+    def retryacceptincludingnextchangesets(self, change, changes):
         successfull = False
         changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
-        nextchangeentry = self.getnextchangeset(change, changes)
-        if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
-            shouter.shout("Next changeset: " + nextchangeentry.tostring())
-            if not self.config.useautomaticconflictresolution:
-                if input("Press Enter to try to accept it with next changeset together, "
-                         "press any other key to skip this changeset and continue"):
-                    return False
-            Changes.discard(self.config, change)
-            successfull = Changes.accept(self.config, self.acceptlogpath, change, nextchangeentry) is 0
-            if not successfull:
-                Changes.discard(self.config, change, nextchangeentry)
+        amountofchangestoaccept = len(changestoaccept)
 
+        if amountofchangestoaccept > 1:
+            for index in range(1, amountofchangestoaccept):
+                toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
+                if Changes.accept(self.config, self.acceptlogpath, toaccept) is 0:
+                    successfull = True
+                    break
+                else:
+                    Changes.discard(self.config, toaccept)  # revert initial state
+        #
+        # nextchangeentry = self.getnextchangeset(change, changes)
+        # if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
+        #     shouter.shout("Next changeset: " + nextchangeentry.tostring())
+        #     if not self.config.useautomaticconflictresolution:
+        #         if input("Press Enter to try to accept it with next changeset together, "
+        #                  "press any other key to skip this changeset and continue"):
+        #             return False
+        #     Changes.discard(self.config, change)
+        #     successfull = Changes.accept(self.config, self.acceptlogpath, change, nextchangeentry) is 0
+        #     if not successfull:
+        #         Changes.discard(self.config, change, nextchangeentry)
+        #
         if not successfull:
             shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
             shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
