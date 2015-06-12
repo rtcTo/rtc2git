@@ -108,6 +108,13 @@ class Changes:
                 return True
         return False
 
+    @staticmethod
+    def tostring(*changes):
+        logmessage = "Changes: \n"
+        for change in changes:
+            logmessage += change.tostring() + "\n"
+        shouter.shout(logmessage)
+
 
 
 class ImportHandler:
@@ -218,37 +225,39 @@ class ImportHandler:
         return changestoaccept
 
     def retryacceptincludingnextchangesets(self, change, changes):
-        successfull = False
+        changestoskip = 0
         changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
         amountofchangestoaccept = len(changestoaccept)
 
         if amountofchangestoaccept > 1:
-            for index in range(1, amountofchangestoaccept):
-                toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
-                if Changes.accept(self.config, self.acceptlogpath, toaccept) is 0:
-                    successfull = True
-                    break
+            Changes.tostring(changestoaccept)
+            if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
+                for index in range(1, amountofchangestoaccept):
+                    toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
+                    if Changes.accept(self.config, self.acceptlogpath, toaccept) is 0:
+                        changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
+                        break
+                    else:
+                        Changes.discard(self.config, toaccept)  # revert initial state
+        return changestoskip
+
+    def is_user_agreeing_to_accept_next_change(self, change):
+        messagetoask = "Press Y for accepting following changes, press N to skip"
+        if not self.config.useautomaticconflictresolution:
+            answer = input(messagetoask).lower()
+            while True:
+                if answer is "y":
+                    return True
+                elif answer is "n":
+                    shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+                    shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+                    reallycontinue = "Do you want to continue? Y for continue, any key for abort"
+                    if input(reallycontinue).lower() is "y":
+                        return False
+                    else:
+                        sys.exit("Please check the output/log and rerun programm with resume")
                 else:
-                    Changes.discard(self.config, toaccept)  # revert initial state
-        #
-        # nextchangeentry = self.getnextchangeset(change, changes)
-        # if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
-        #     shouter.shout("Next changeset: " + nextchangeentry.tostring())
-        #     if not self.config.useautomaticconflictresolution:
-        #         if input("Press Enter to try to accept it with next changeset together, "
-        #                  "press any other key to skip this changeset and continue"):
-        #             return False
-        #     Changes.discard(self.config, change)
-        #     successfull = Changes.accept(self.config, self.acceptlogpath, change, nextchangeentry) is 0
-        #     if not successfull:
-        #         Changes.discard(self.config, change, nextchangeentry)
-        #
-        if not successfull:
-            shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-            shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-            if not input("Press Enter to continue or any other key to exit the program and rerun it with resume"):
-                sys.exit("Please check the output and rerun programm with resume")
-        return successfull
+                    shouter.shout("Please answer with Y/N, input was " + answer)
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
