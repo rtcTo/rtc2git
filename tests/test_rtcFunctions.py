@@ -38,8 +38,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
-    def createChangeEntry(self, revision):
-        return ChangeEntry(revision, "anyAuthor", "anyEmail", "anyDate", "anyComment")
+    def createChangeEntry(self, revision = "anyRevisionId", author = "anyAuthor", email = "anyEmail", comment = "anyComment", date = "anyDate"):
+        return ChangeEntry(revision, author, email, date, comment)
 
     def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
         sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithoutLineBreaks.txt")
@@ -78,11 +78,21 @@ class RtcFunctionsTestCase(unittest.TestCase):
         changeentries = [changeentry1, changeentry2]
         changesmock.accept.return_value = 0
 
-        config = Builder().setscmcommand("lscm").build()
+        config = Builder().build()
         handler = ImportHandler(config)
         handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
         changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
+
+    @patch('rtcFunctions.Changes')
+    def test_CollectChangeSetsToAccept_ShouldCollectThreeChangesets(self, changesmock):
+        mychange1 = self.createChangeEntry("doSomethingOnOldRev")
+        mychange2 = self.createChangeEntry("doSomethingElseOnOldRev")
+        mymergechange = self.createChangeEntry("anyRev", comment="merge change")
+        changefromsomeoneelse = self.createChangeEntry(author="anyOtherAuthor", revision="2", comment="anotherCommit")
+
+        changeentries = [mychange1, mychange2, mymergechange, changefromsomeoneelse]
+
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)
