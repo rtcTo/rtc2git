@@ -184,28 +184,28 @@ class ImportHandler:
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):
-        git = Commiter
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        skipnextchangeset = False
+        changestoskip = 0
         reloaded = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if skipnextchangeset:
-                skipnextchangeset = False
+            if changestoskip > 0:
+                shouter.shout("Skipping " + changeEntry.tostring())
+                changestoskip -= 1
                 continue
             acceptedsuccesfully = Changes.accept(self.config, self.acceptlogpath,
                                                  changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
-                skipnextchangeset = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
+                changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
                 if self.is_reloading_necessary():
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            git.addandcommit(changeEntry)
+            Commiter.addandcommit(changeEntry)
 
     @staticmethod
     def is_reloading_necessary():
