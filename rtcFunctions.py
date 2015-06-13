@@ -368,6 +368,7 @@ class ImportHandler:
         return missingchangeentries
 
     def getchangeentriesbytypeandvalue(self, comparetype, value):
+        shouter.shout("Collect changes of " + comparetype + " " + value)
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
         comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
