@@ -38,7 +38,7 @@ def migrate():
     initialize(config)
     streamuuid = config.streamuuid
     streamname = config.streamname
-    branchname = streamname + "branchpoint"
+    branchname = streamname + "_branchpoint"
 
     componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
     rtcworkspace.setnewflowtargets(streamuuid)
