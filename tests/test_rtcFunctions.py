@@ -70,20 +70,23 @@ class RtcFunctionsTestCase(unittest.TestCase):
         author = "John ÆØÅ"
         mail = "Jon.Doe@rtc2git.rocks"
         self.assert_Change_Entry(changeentries[0], author, mail, "Comment", "2015-05-26 10:40:00")
-        
-    @patch('rtcFunctions.Changes')
+
+    @patch('rtcFunctions.shell')
     @patch('builtins.input', return_value='')
-    def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, inputmock, changesmock):
+    def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, inputmock, shellmock):
         changeentry1 = self.createChangeEntry("anyRevId")
         changeentry2 = self.createChangeEntry("anyOtherRevId")
         changeentries = [changeentry1, changeentry2]
-        changesmock.accept.return_value = 0
 
+        shellmock.execute.return_value = 0
+        self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setworkspace("anyWs")
         config = self.configBuilder.build()
-        handler = ImportHandler(config)
-        handler.retryacceptincludingnextchangeset(changeentry1, changeentries)
 
-        changesmock.accept.assert_called_with(config, handler.acceptlogpath, changeentry1, changeentry2)
+        handler = ImportHandler(config)
+        handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
+
+        expectedshellcommand = 'lscm accept -v -o -r anyurl -t anyWs --changes anyRevId anyOtherRevId'
+        shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectThreeChangesets(self):
         mychange1 = self.createChangeEntry("doSomethingOnOldRev")
@@ -101,7 +104,19 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertFalse(changefromsomeoneelse in collectedchanges)
         self.assertEqual(3, len(collectedchanges))
 
+    @patch('builtins.input', return_value='Y')
+    def test_useragreeing_answeris_y_expecttrue(self, inputmock):
+        handler = ImportHandler(self.configBuilder.build())
+        self.assertTrue(handler.is_user_agreeing_to_accept_next_change(self.createChangeEntry()))
 
+    @patch('builtins.input', return_value='n')
+    def test_useragreeing_answeris_n_expectfalseandexception(self, inputmock):
+        handler = ImportHandler(self.configBuilder.build())
+        try:
+            handler.is_user_agreeing_to_accept_next_change(self.createChangeEntry())
+            self.fail("Should have exit the program")
+        except SystemExit as e:
+            self.assertEqual("Please check the output/log and rerun program with resume", e.code)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)

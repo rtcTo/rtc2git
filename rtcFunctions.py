@@ -230,32 +230,32 @@ class ImportHandler:
         amountofchangestoaccept = len(changestoaccept)
 
         if amountofchangestoaccept > 1:
-            Changes.tostring(changestoaccept)
+            Changes.tostring(*changestoaccept)
             if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
-                    if Changes.accept(self.config, self.acceptlogpath, toaccept) is 0:
+                    if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:
                         changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
                         break
                     else:
-                        Changes.discard(self.config, toaccept)  # revert initial state
+                        Changes.discard(self.config, *toaccept)  # revert initial state
         return changestoskip
 
     def is_user_agreeing_to_accept_next_change(self, change):
         messagetoask = "Press Y for accepting following changes, press N to skip"
         if not self.config.useautomaticconflictresolution:
-            answer = input(messagetoask).lower()
             while True:
-                if answer is "y":
+                answer = input(messagetoask).lower()
+                if answer == "y":
                     return True
-                elif answer is "n":
+                elif answer == "n":
                     shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
                     shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
                     reallycontinue = "Do you want to continue? Y for continue, any key for abort"
-                    if input(reallycontinue).lower() is "y":
+                    if input(reallycontinue).lower() == "y":
                         return False
                     else:
-                        sys.exit("Please check the output/log and rerun programm with resume")
+                        sys.exit("Please check the output/log and rerun program with resume")
                 else:
                     shouter.shout("Please answer with Y/N, input was " + answer)
 
