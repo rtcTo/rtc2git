@@ -226,6 +226,7 @@ class ImportHandler:
 
     def retryacceptincludingnextchangesets(self, change, changes):
         changestoskip = 0
+        issucessful = False
         changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
         amountofchangestoaccept = len(changestoaccept)
 
@@ -236,10 +237,11 @@ class ImportHandler:
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
                     if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:
                         changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
+                        issucessful = True
                         break
                     else:
                         Changes.discard(self.config, *toaccept)  # revert initial state
-        else:
+        if not issucessful:
             self.is_user_aborting(change)
         return changestoskip
 
