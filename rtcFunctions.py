@@ -90,7 +90,8 @@ class Changes:
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + config.workspace + " --changes" + revisions
+        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
+                                        config.workspace + " --changes" + revisions
         return shell.execute(Changes.latest_accept_command, logpath, "a")
 
     @staticmethod
@@ -99,6 +100,21 @@ class Changes:
         for changeentry in changeentries:
             ids += " " + changeentry.revision
         return ids
+
+    @staticmethod
+    def arereleatedmergechangesets(changeentry1, changeentry2):
+        if changeentry1 and changeentry2:
+            if changeentry1.author == changeentry2.author or "merge" in changeentry2.comment.lower():
+                return True
+        return False
+
+    @staticmethod
+    def tostring(*changes):
+        logmessage = "Changes: \n"
+        for change in changes:
+            logmessage += change.tostring() + "\n"
+        shouter.shout(logmessage)
+
 
 
 class ImportHandler:
@@ -168,51 +184,80 @@ class ImportHandler:
         return componentbaselinesentries
 
     def acceptchangesintoworkspace(self, changeentries):
-        git = Commiter
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        skipnextchangeset = False
+        changestoskip = 0
         reloaded = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if skipnextchangeset:
-                skipnextchangeset = False
+            if changestoskip > 0:
+                shouter.shout("Skipping " + changeEntry.tostring())
+                changestoskip -= 1
                 continue
             acceptedsuccesfully = Changes.accept(self.config, self.acceptlogpath,
                                                  changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
-                skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
+                changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
                 if self.is_reloading_necessary():
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            git.addandcommit(changeEntry)
+            Commiter.addandcommit(changeEntry)
 
     @staticmethod
     def is_reloading_necessary():
         return shell.execute("git diff --exit-code") is 0
 
-    def retryacceptincludingnextchangeset(self, change, changes):
-        successfull = False
-        nextchangeentry = self.getnextchangeset(change, changes)
-        if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
-            shouter.shout("Next changeset: " + nextchangeentry.tostring())
-            if (not self.config.useautomaticconflictresolution) and input("Press Enter to try to accept it with next changeset together, press any other key to skip this changeset and continue"):
-                return False
-            Changes.discard(self.config, change)
-            successfull = Changes.accept(self.config, self.acceptlogpath, change, nextchangeentry) is 0
-            if not successfull:
-                Changes.discard(self.config, change, nextchangeentry)
+    @staticmethod
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
+        changestoaccept = [changewhichcantacceptedallone]
+        nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
 
-        if not successfull:
-            shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-            shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-            if not input("Press Enter to continue or any other key to exit the program and rerun it with resume"):
-                sys.exit("Please check the output and rerun programm with resume")
-        return successfull
+        while True:
+            if Changes.arereleatedmergechangesets(changewhichcantacceptedallone, nextchange):
+                changestoaccept.append(nextchange)
+                nextchange = ImportHandler.getnextchangeset(nextchange, changes)
+            else:
+                break
+        return changestoaccept
+
+    def retryacceptincludingnextchangesets(self, change, changes):
+        changestoskip = 0
+        changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
+        amountofchangestoaccept = len(changestoaccept)
+
+        if amountofchangestoaccept > 1:
+            Changes.tostring(*changestoaccept)
+            if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
+                for index in range(1, amountofchangestoaccept):
+                    toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
+                    if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:
+                        changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
+                        break
+                    else:
+                        Changes.discard(self.config, *toaccept)  # revert initial state
+        return changestoskip
+
+    @staticmethod
+    def is_user_agreeing_to_accept_next_change(change):
+        messagetoask = "Press Y for accepting following changes, press N to skip"
+        while True:
+            answer = input(messagetoask).lower()
+            if answer == "y":
+                return True
+            elif answer == "n":
+                shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+                shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+                reallycontinue = "Do you want to continue? Y for continue, any key for abort"
+                if input(reallycontinue).lower() == "y":
+                    return False
+                else:
+                    sys.exit("Please check the output/log and rerun program with resume")
+            else:
+                shouter.shout("Please answer with Y/N, input was " + answer)
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
@@ -228,6 +273,8 @@ class ImportHandler:
         shouter.shout("Start collecting changeentries")
         changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
+            shouter.shout("Collect changes until baseline %s of component %s" %
+                          (componentBaseLineEntry.baselinename, componentBaseLineEntry.componentname))
             changeentries = self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
             for changeentry in changeentries:
                 missingchangeentries[changeentry.revision] = changeentry
