@@ -241,23 +241,23 @@ class ImportHandler:
                         Changes.discard(self.config, *toaccept)  # revert initial state
         return changestoskip
 
-    def is_user_agreeing_to_accept_next_change(self, change):
+    @staticmethod
+    def is_user_agreeing_to_accept_next_change(change):
         messagetoask = "Press Y for accepting following changes, press N to skip"
-        if not self.config.useautomaticconflictresolution:
-            while True:
-                answer = input(messagetoask).lower()
-                if answer == "y":
-                    return True
-                elif answer == "n":
-                    shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-                    shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-                    reallycontinue = "Do you want to continue? Y for continue, any key for abort"
-                    if input(reallycontinue).lower() == "y":
-                        return False
-                    else:
-                        sys.exit("Please check the output/log and rerun program with resume")
+        while True:
+            answer = input(messagetoask).lower()
+            if answer == "y":
+                return True
+            elif answer == "n":
+                shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+                shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+                reallycontinue = "Do you want to continue? Y for continue, any key for abort"
+                if input(reallycontinue).lower() == "y":
+                    return False
                 else:
-                    shouter.shout("Please answer with Y/N, input was " + answer)
+                    sys.exit("Please check the output/log and rerun program with resume")
+            else:
+                shouter.shout("Please answer with Y/N, input was " + answer)
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
