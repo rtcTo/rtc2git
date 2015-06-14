@@ -239,6 +239,8 @@ class ImportHandler:
                         break
                     else:
                         Changes.discard(self.config, *toaccept)  # revert initial state
+        else:
+            self.is_user_aborting(change)
         return changestoskip
 
     @staticmethod
@@ -249,15 +251,19 @@ class ImportHandler:
             if answer == "y":
                 return True
             elif answer == "n":
-                shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-                shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-                reallycontinue = "Do you want to continue? Y for continue, any key for abort"
-                if input(reallycontinue).lower() == "y":
-                    return False
-                else:
-                    sys.exit("Please check the output/log and rerun program with resume")
+                return not ImportHandler.is_user_aborting(change)
             else:
                 shouter.shout("Please answer with Y/N, input was " + answer)
+
+    @staticmethod
+    def is_user_aborting(change):
+        shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+        shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+        reallycontinue = "Do you want to continue? Y for continue, any key for abort"
+        if input(reallycontinue).lower() == "y":
+            return True
+        else:
+            sys.exit("Please check the output/log and rerun program with resume")
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
