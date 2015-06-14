@@ -1,26 +1,26 @@
 [General]
-Repo=https://rtc.mySite.com
+Repo=https://rtc.mySite.com/ccm
 User=USR
 Password=secret
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 # If this value is set to True, the workspace referred with workspacename will just be loaded instead of newly created
 useExistingWorkspace = False
-# Folder to be created
+# Folder to be created - where migration will take place
 Directory = \temp\myWorkingDirectory
+# Scm command to use (lscm or scm)
+ScmCommand = lscm
+# Optional - Set encoding of files (For example encoding = UTF-8)
+# See https://github.com/WtfJoke/rtc2git/wiki/Encoding for further instructions
+encoding =
 
 [Migration]
-# Streams to be migrated,  referenced by Name or UUID, separated by ",".
-# This can be either multiple streams or just one stream
-StreamsToMigrate = Stream_Version1, Stream_Version2, HeadDevelopmentStream
+# Stream to be migrated,  referenced by Name or UUID
+StreamToMigrate = MyDevelopmentStream
 
-# Earliest/Oldest Stream, where the migration should start
-# Referenced by Name or UUID
-OldestStream = Stream_Version1
-
-# Optional, can be defined additionally to set the workspace to a earlier specific baseline
-# (baseline which were created earlier than the baselines of the oldest stream)
+# Optional, can be defined additionally to set the workspace to a specific baseline
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
+# If its not set, it will determine the oldest baseline (takes some time, depending of how much components you have in your stream)
 InitialBaseLines =
 
 # False - Rely on order of changeset provided by the rtc cli compare command (due wrong order, more likely to cause merge-conflicts
@@ -28,6 +28,10 @@ InitialBaseLines =
 # For more information read https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files
 UseProvidedHistory = False
 
+# Determines whether to prompt the user to accept change sets together to resolve accept errors.
+# False - The user is prompted
+# True - The user is not prompted
+UseAutomaticConflictResolution = False
 
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line

@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 import sorter
 import shell
@@ -10,18 +11,18 @@ import shouter
 class RTCInitializer:
     @staticmethod
     def initialize(config):
-        RTCInitializer.loginandcollectstreams(config)
+        RTCInitializer.loginandcollectstreamuuid(config)
         workspace = WorkspaceHandler(config)
         if config.useexistingworkspace:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
-            workspace.createandload(config.earlieststreamname, config.initialcomponentbaselines)
+            workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
     @staticmethod
-    def loginandcollectstreams(config):
-        shell.execute("lscm login -r %s -u %s -P %s" % (config.repo, config.user, config.password))
-        config.collectstreamuuids()
+    def loginandcollectstreamuuid(config):
+        shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
+        config.collectstreamuuid()
 
 
 class WorkspaceHandler:
@@ -29,41 +30,42 @@ class WorkspaceHandler:
         self.config = config
         self.workspace = config.workspace
         self.repo = config.repo
+        self.scmcommand = config.scmcommand
 
-    def createandload(self, stream, componentbaselineentries=[], create=True):
-        if create:
-            shell.execute("lscm create workspace -r %s -s %s %s" % (self.config.repo, stream, self.workspace))
+    def createandload(self, stream, componentbaselineentries=[]):
+        shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
-            self.setcomponentstobaseline(ImportHandler(self.config).getcomponentbaselineentriesfromstream(stream),
+            self.setcomponentstobaseline(ImportHandler(self.config).determineinitialbaseline(stream),
                                          stream)
         self.load()
 
     def load(self):
-        command = "lscm load -r %s %s --force" % (self.repo, self.workspace)
+        command = "%s load -r %s %s --force" % (self.scmcommand, self.repo, self.workspace)
         shouter.shout("Start (re)loading current workspace: " + command)
         shell.execute(command)
         shouter.shout("Load of workspace finished")
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
         for entry in componentbaselineentries:
-            shouter.shout("Set component '%s' to baseline '%s'" % (entry.componentname, entry.baselinename))
+            shouter.shout("Set component '%s'(%s) to baseline '%s' (%s)" % (entry.componentname, entry.component,
+                                                                            entry.baselinename, entry.baseline))
 
-            replacecommand = "lscm set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
-                             (self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
+            replacecommand = "%s set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
+                             (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
         if not self.hasflowtarget(streamuuid):
-            shell.execute("lscm add flowtarget -r %s %s %s" % (self.repo, self.workspace, streamuuid))
+            shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
-        command = "lscm set flowtarget -r %s %s --default --current %s" % (self.repo, self.workspace, streamuuid)
+        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
-        command = "lscm --show-uuid y --show-alias n list flowtargets -r %s %s" % (self.repo, self.workspace)
+        command = "%s --show-uuid y --show-alias n list flowtargets -r %s %s" % (self.scmcommand, self.repo, self.workspace)
         flowtargetlines = shell.getoutput(command)
         for flowtargetline in flowtargetlines:
             splittedinformationline = flowtargetline.split("\"")
@@ -73,25 +75,24 @@ class WorkspaceHandler:
                 return True
         return False
 
-    def recreateoldestworkspace(self):
-        self.createandload(self.config.earlieststreamname, self.config.initialcomponentbaselines, False)
-
 
 class Changes:
+    
     latest_accept_command = ""
 
     @staticmethod
-    def discard(*changeentries):
+    def discard(config, *changeentries):
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute("lscm discard --overwrite-uncommitted " + idstodiscard)
+        shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
 
     @staticmethod
-    def accept(*changeentries, logpath):
+    def accept(config, logpath, *changeentries):
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
-        latest_accept_command = "lscm accept -v --overwrite-uncommitted --changes " + revisions
-        return shell.execute(latest_accept_command, logpath, "a")
+        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
+                                        config.workspace + " --changes" + revisions
+        return shell.execute(Changes.latest_accept_command, logpath, "a")
 
     @staticmethod
     def _collectids(changeentries):
@@ -99,6 +100,21 @@ class Changes:
         for changeentry in changeentries:
             ids += " " + changeentry.revision
         return ids
+
+    @staticmethod
+    def arereleatedmergechangesets(changeentry1, changeentry2):
+        if changeentry1 and changeentry2:
+            if changeentry1.author == changeentry2.author or "merge" in changeentry2.comment.lower():
+                return True
+        return False
+
+    @staticmethod
+    def tostring(*changes):
+        logmessage = "Changes: \n"
+        for change in changes:
+            logmessage += change.tostring() + "\n"
+        shouter.shout(logmessage)
+
 
 
 class ImportHandler:
@@ -108,7 +124,8 @@ class ImportHandler:
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
-        command = "lscm --show-alias n --show-uuid y list components -v -r " + self.config.repo + " " + stream
+        command = "%s --show-alias n --show-uuid y list components -v -m 30 -r %s %s" % (self.config.scmcommand,
+                                                                                         self.config.repo, stream)
         shell.execute(command, filename)
         componentbaselinesentries = []
         skippedfirstrow = False
@@ -117,7 +134,7 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
-        with open(filename, 'r') as file:
+        with open(filename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
@@ -143,52 +160,112 @@ class ImportHandler:
                     islinewithcomponent += 1
         return componentbaselinesentries
 
+    def determineinitialbaseline(self, stream):
+        regex = "\(_\w+\)"
+        pattern = re.compile(regex)
+        config = self.config
+        componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
+        for entry in componentbaselinesentries:
+            shouter.shout("Determine initial baseline of " + entry.componentname)
+            # use always scm, lscm fails when specifying maximum over 10k
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -p %s -m 20000" % \
+                      (entry.component, config.user, config.password, config.repo)
+            baselineslines = shell.getoutput(command)
+            baselineslines.reverse()  # reverse to have earliest baseline on top
+
+            for baselineline in baselineslines:
+                matcher = pattern.search(baselineline)
+                if matcher:
+                    matchedstring = matcher.group()
+                    uuid = matchedstring[1:-1]
+                    entry.baseline = uuid
+                    entry.baselinename = "Automatically detected initial baseline"
+                    break
+        return componentbaselinesentries
+
     def acceptchangesintoworkspace(self, changeentries):
-        git = Commiter
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        skipnextchangeset = False
+        changestoskip = 0
         reloaded = False
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if skipnextchangeset:
-                skipnextchangeset = False
+            if changestoskip > 0:
+                shouter.shout("Skipping " + changeEntry.tostring())
+                changestoskip -= 1
                 continue
-            acceptedsuccesfully = Changes.accept(changeEntry, logpath=self.acceptlogpath) is 0
+            acceptedsuccesfully = Changes.accept(self.config, self.acceptlogpath,
+                                                 changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
-                skipnextchangeset = self.retryacceptincludingnextchangeset(changeEntry, changeentries)
+                changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
                 if self.is_reloading_necessary():
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            git.addandcommit(changeEntry)
+            Commiter.addandcommit(changeEntry)
 
     @staticmethod
     def is_reloading_necessary():
         return shell.execute("git diff --exit-code") is 0
 
-    def retryacceptincludingnextchangeset(self, change, changes):
-        successfull = False
-        nextchangeentry = self.getnextchangeset(change, changes)
-        if nextchangeentry and (change.author == nextchangeentry.author or "merge" in nextchangeentry.comment.lower()):
-            shouter.shout("Next changeset: " + nextchangeentry.tostring())
-            if input("Press Enter to try to accept it with next changeset together, press any other key to skip this"
-                     " changeset and continue"):
-                return False
-            Changes.discard(change)
-            successfull = Changes.accept(change, nextchangeentry, logpath=self.acceptlogpath) is 0
-            if not successfull:
-                Changes.discard(change, nextchangeentry)
+    @staticmethod
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
+        changestoaccept = [changewhichcantacceptedallone]
+        nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
 
-        if not successfull:
-            shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-            shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
-            if not input("Press Enter to continue or any other key to exit the program and rerun it with resume"):
-                sys.exit("Please check the output and rerun programm with resume")
-        return successfull
+        while True:
+            if Changes.arereleatedmergechangesets(changewhichcantacceptedallone, nextchange):
+                changestoaccept.append(nextchange)
+                nextchange = ImportHandler.getnextchangeset(nextchange, changes)
+            else:
+                break
+        return changestoaccept
+
+    def retryacceptincludingnextchangesets(self, change, changes):
+        changestoskip = 0
+        issuccessful = False
+        changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
+        amountofchangestoaccept = len(changestoaccept)
+
+        if amountofchangestoaccept > 1:
+            Changes.tostring(*changestoaccept)
+            if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
+                for index in range(1, amountofchangestoaccept):
+                    toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
+                    if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:
+                        changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
+                        issuccessful = True
+                        break
+                    else:
+                        Changes.discard(self.config, *toaccept)  # revert initial state
+        if not issuccessful:
+            self.is_user_aborting(change)
+        return changestoskip
+
+    @staticmethod
+    def is_user_agreeing_to_accept_next_change(change):
+        messagetoask = "Press Y for accepting following changes, press N to skip"
+        while True:
+            answer = input(messagetoask).lower()
+            if answer == "y":
+                return True
+            elif answer == "n":
+                return not ImportHandler.is_user_aborting(change)
+            else:
+                shouter.shout("Please answer with Y/N, input was " + answer)
+
+    @staticmethod
+    def is_user_aborting(change):
+        shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
+        shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+        reallycontinue = "Do you want to continue? Y for continue, any key for abort"
+        if input(reallycontinue).lower() == "y":
+            return True
+        else:
+            sys.exit("Please check the output/log and rerun program with resume")
 
     @staticmethod
     def getnextchangeset(currentchangeentry, changeentries):
@@ -204,6 +281,8 @@ class ImportHandler:
         shouter.shout("Start collecting changeentries")
         changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
+            shouter.shout("Collect changes until baseline %s of component %s" %
+                          (componentBaseLineEntry.baselinename, componentBaseLineEntry.componentname))
             changeentries = self.getchangeentriesofbaseline(componentBaseLineEntry.baseline)
             for changeentry in changeentries:
                 missingchangeentries[changeentry.revision] = changeentry
@@ -245,21 +324,32 @@ class ImportHandler:
     @staticmethod
     def getchangeentriesfromfile(outputfilename):
         informationseparator = "@@"
+        numberofexpectedinformationseparators = 5
         changeentries = []
 
-        with open(outputfilename, 'r') as file:
+        with open(outputfilename, 'r', encoding=shell.encoding) as file:
+            currentline = ""
+            currentinformationpresent = 0
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
-                    splittedlines = cleanedline.split(informationseparator)
-                    revisionwithbrackets = splittedlines[0].strip()
-                    revision = revisionwithbrackets[1:-1]
-                    author = splittedlines[1].strip()
-                    email = splittedlines[2].strip()
-                    comment = splittedlines[3].strip()
-                    date = splittedlines[4].strip()
-                    changeentries.append(ChangeEntry(revision, author, email, date, comment))
+                    currentinformationpresent += cleanedline.count(informationseparator)
+                    if currentline:
+                        currentline += os.linesep
+                    currentline += cleanedline
+                    if currentinformationpresent >= numberofexpectedinformationseparators:
+                        splittedlines = currentline.split(informationseparator)
+                        revisionwithbrackets = splittedlines[0].strip()
+                        revision = revisionwithbrackets[1:-1]
+                        author = splittedlines[1].strip()
+                        email = splittedlines[2].strip()
+                        comment = splittedlines[3].strip()
+                        date = splittedlines[4].strip()
 
+                        changeentries.append(ChangeEntry(revision, author, email, date, comment))
+
+                        currentinformationpresent = 0
+                        currentline = ""
         return changeentries
 
     @staticmethod
@@ -270,7 +360,7 @@ class ImportHandler:
             shouter.shout("Skipping this part of history")
             return revisions
 
-        with open(outputfilename, 'r') as file:
+        with open(outputfilename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 revisions.append(line.strip())
         revisions.reverse()  # to begin by the oldest
@@ -290,8 +380,8 @@ class ImportHandler:
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
-        comparecommand = "lscm --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.workspace, comparetype, value, self.config.repo, dateformat)
+        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo, dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 

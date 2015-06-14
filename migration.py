@@ -14,8 +14,9 @@ def initialize(config):
     directory = config.workDirectory
     if os.path.exists(directory):
         sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
-    os.mkdir(directory)
+    os.makedirs(directory)
     os.chdir(directory)
+    config.deletelogfolder()
     git = Initializer(config)
     git.initalize()
     RTCInitializer.initialize(config)
@@ -25,7 +26,7 @@ def initialize(config):
 def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
-    RTCInitializer.loginandcollectstreams(config)
+    RTCInitializer.loginandcollectstreamuuid(config)
     WorkspaceHandler(config).load()
 
 
@@ -34,34 +35,31 @@ def migrate():
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
-
     initialize(config)
-    streamuuids = config.streamuuids
-    for streamuuid in streamuuids:
-        componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
-        streamname = config.streamnames[streamuuids.index(streamuuid)]
-        rtcworkspace.setnewflowtargets(streamuuid)
-        git.branch(streamname)
+    streamuuid = config.streamuuid
+    streamname = config.streamname
+    branchname = streamname + "_branchpoint"
 
-        history = rtc.readhistory(componentbaselineentries, streamname)
-        changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
+    componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
+    rtcworkspace.setnewflowtargets(streamuuid)
+    git.branch(branchname)
 
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-        shouter.shout("All changes of components of stream '%s' accepted" % streamname)
-        git.pushbranch(streamname)
+    history = rtc.readhistory(componentbaselineentries, streamname)
+    changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
 
-        rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
-        rtcworkspace.load()
+    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+    shouter.shout("All changes until creation of stream '%s' accepted" % streamname)
+    git.pushbranch(branchname)
+    git.branch(streamname)
 
-        changeentries = rtc.getchangeentriesofstream(streamuuid)
-        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-        git.pushbranch(streamname)
-        shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
+    rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
+    rtcworkspace.load()
 
-        morestreamstomigrate = streamuuids.index(streamuuid) + 1 is not len(streamuuids)
-        if morestreamstomigrate:
-            git.checkout("master")
-            rtcworkspace.recreateoldestworkspace()
+    changeentries = rtc.getchangeentriesofstream(streamuuid)
+    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+    git.pushbranch(streamname)
+    shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
 
-migrate()
+if __name__ == "__main__":
+    migrate()
