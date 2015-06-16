@@ -29,6 +29,7 @@ def read():
 
     workdirectory = getworkdirectory(generalsection['Directory'])
     streamname = migrationsection['StreamToMigrate'].strip()
+    previousstreamname = migrationsection['PreviousStream'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
@@ -36,6 +37,7 @@ def read():
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
+    configbuilder.setpreviousstreamname(previousstreamname)
     return configbuilder.build()
 
 
