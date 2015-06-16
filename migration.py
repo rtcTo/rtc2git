@@ -26,10 +26,14 @@ def initialize(config):
 def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
-    RTCInitializer.loginandcollectstreamuuid(config)
-    if not config.previousstreamname:  # in case previousstreamname is set, #prepare will load the workspace
-        WorkspaceHandler(config).load()
+    if not ImportHandler(config).is_reloading_necessary():
+        sys.exit("Directory is not clean, please commit untracked files or revert them")
 
+    RTCInitializer.loginandcollectstreamuuid(config)
+    if config.previousstreamname:
+        prepare(config)
+    else:
+        WorkspaceHandler(config).load()
 
 def migrate():
     config = configuration.read()
@@ -37,7 +41,6 @@ def migrate():
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
     resume(config)
-    prepare(config)
     streamuuid = config.streamuuid
     streamname = config.streamname
     branchname = streamname + "_branchpoint"
