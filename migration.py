@@ -27,7 +27,8 @@ def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
     RTCInitializer.loginandcollectstreamuuid(config)
-    WorkspaceHandler(config).load()
+    if not config.previousstreamname:  # in case previousstreamname is set, #prepare will load the workspace
+        WorkspaceHandler(config).load()
 
 
 def migrate():
@@ -35,7 +36,8 @@ def migrate():
     rtc = ImportHandler(config)
     rtcworkspace = WorkspaceHandler(config)
     git = Commiter
-    initialize(config)
+    resume(config)
+    prepare(config)
     streamuuid = config.streamuuid
     streamname = config.streamname
     branchname = streamname + "_branchpoint"
@@ -60,6 +62,17 @@ def migrate():
     git.pushbranch(streamname)
     shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
+
+def prepare(config):
+    rtc = ImportHandler(config)
+    rtcworkspace = WorkspaceHandler(config)
+    # git checkout branchpoint
+    Commiter.checkout(config.previousstreamname + "_branchpoint")
+    # list baselines of current workspace
+    componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(config.previousstreamuuid)
+    # set components to that baselines
+    rtcworkspace.setcomponentstobaseline(componentbaselineentries, config.previousstreamuuid)
+    rtcworkspace.load()
 
 if __name__ == "__main__":
     migrate()
