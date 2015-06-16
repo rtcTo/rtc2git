@@ -18,6 +18,10 @@ encoding =
 # Stream to be migrated,  referenced by Name or UUID
 StreamToMigrate = MyDevelopmentStream
 
+# Optional - Used by author for prepare a workspace for migrating an earlier release-stream to a later one
+# (eg. When Migrating Stream_Version2, Previous-Stream would be Stream_Version1
+PreviousStream=
+
 # Optional, can be defined additionally to set the workspace to a specific baseline
 # Use following format: ComponentName = BaseLineName, AnotherComponentName=BaseLineName
 # If its not set, it will determine the oldest baseline (takes some time, depending of how much components you have in your stream)

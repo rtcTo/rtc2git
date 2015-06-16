@@ -75,6 +75,7 @@ class Builder:
         self.streamname = ""
         self.gitreponame = ""
         self.clonedgitreponame = ""
+        self.previousstreamname = ""
 
     def setuser(self, user):
         self.user = user
@@ -133,6 +134,10 @@ class Builder:
         self.useautomaticconflictresolution = self.isenabled(useautomaticconflictresolution)
         return self
 
+    def setpreviousstreamname(self, previousstreamname):
+        self.previousstreamname = previousstreamname
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -141,13 +146,14 @@ class Builder:
         return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
-                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder)
+                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
+                            self.previousstreamname)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -165,6 +171,8 @@ class ConfigObject:
         self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuid = ""
+        self.previousstreamname = previousstreamname
+        self.previousstreamuuid = ""
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -181,10 +189,17 @@ class ConfigObject:
         historypath = self.rootFolder + os.sep + "History"
         return historypath + os.sep + filename
 
-    def collectstreamuuid(self):
-        shouter.shout("Get UUID of configured stream")
+    def collectstreamuuid(self, streamname):
+        if not streamname:
+            return
+        shouter.shout("Get UUID of configured stream " + streamname)
         showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
-            self.scmcommand, self.repo, self.streamname)
+            self.scmcommand, self.repo, streamname)
         output = shell.getoutput(showuuidcommand)
         splittedfirstline = output[0].split(" ")
-        self.streamuuid = splittedfirstline[0].strip()[1:-1]
+        streamuuid = splittedfirstline[0].strip()[1:-1]
+        return streamuuid
+
+    def collectstreamuuids(self):
+        self.streamuuid = self.collectstreamuuid(self.streamname)
+        self.previousstreamuuid = self.collectstreamuuid(self.previousstream)

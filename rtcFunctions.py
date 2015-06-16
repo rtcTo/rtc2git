@@ -22,7 +22,7 @@ class RTCInitializer:
     @staticmethod
     def loginandcollectstreamuuid(config):
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuid()
+        config.collectstreamuuids()
 
 
 class WorkspaceHandler:
