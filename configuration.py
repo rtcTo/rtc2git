@@ -202,4 +202,4 @@ class ConfigObject:
 
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
-        self.previousstreamuuid = self.collectstreamuuid(self.previousstream)
+        self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
