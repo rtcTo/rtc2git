@@ -209,7 +209,7 @@ class ImportHandler:
 
     @staticmethod
     def is_reloading_necessary():
-        return shell.execute("git diff --exit-code") is 0
+        return shell.execute("git diff --quiet") is 0
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
