@@ -90,5 +90,4 @@ class Commiter:
 
     @staticmethod
     def checkout(branchname):
-        shell.execute("git stash")  # in case there are changes, stash them before checkout new branch
         shell.execute("git checkout " + branchname)
