@@ -4,7 +4,7 @@ import sys
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
 from rtcFunctions import RTCInitializer
-from gitFunctions import Initializer
+from gitFunctions import Initializer, Differ
 from gitFunctions import Commiter
 import configuration
 import shouter
@@ -26,7 +26,7 @@ def initialize(config):
 def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
-    if ImportHandler.has_uncommited_changes():
+    if Differ.has_diff():
         sys.exit("Your git repo has some uncommited changes, please add/remove them")
     RTCInitializer.loginandcollectstreamuuid(config)
     WorkspaceHandler(config).load()

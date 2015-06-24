@@ -91,3 +91,9 @@ class Commiter:
     @staticmethod
     def checkout(branchname):
         shell.execute("git checkout " + branchname)
+
+
+class Differ:
+    @staticmethod
+    def has_diff():
+        return shell.execute("git diff --quiet") is 1
