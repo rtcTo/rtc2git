@@ -75,6 +75,7 @@ class Builder:
         self.streamname = ""
         self.gitreponame = ""
         self.clonedgitreponame = ""
+        self.ignorefileextensions = ""
 
     def setuser(self, user):
         self.user = user
@@ -133,6 +134,10 @@ class Builder:
         self.useautomaticconflictresolution = self.isenabled(useautomaticconflictresolution)
         return self
 
+    def setignorefileextensions(self, ignorefileextensions):
+        self.ignorefileextensions = ignorefileextensions
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -141,13 +146,16 @@ class Builder:
         return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
-                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder)
+                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
+                            self.ignorefileextensions)
+
+
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder, ignorefileextensionsproperty):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -165,6 +173,7 @@ class ConfigObject:
         self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuid = ""
+        self.ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -188,3 +197,17 @@ class ConfigObject:
         output = shell.getoutput(showuuidcommand)
         splittedfirstline = output[0].split(" ")
         self.streamuuid = splittedfirstline[0].strip()[1:-1]
+
+    @staticmethod
+    def parseignorefileextensionsproperty(ignorefileextensionsproperty):
+        """
+        :param ignorefileextensionsproperty
+        :return: a list of file extensions to be ignored, possibly empty
+        """
+        splittedextensions = []
+        if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
+            splittedextensions = ignorefileextensionsproperty.split(',')
+        ignorefileextensions = []
+        for splittedextension in splittedextensions:
+            ignorefileextensions.append(splittedextension.strip())
+        return ignorefileextensions

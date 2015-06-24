@@ -32,3 +32,21 @@ class ConfigurationTestCase(unittest.TestCase):
     def test_sampleBoolConfigEntrySetToTrue_ShouldBeTrue(self):
         config = Builder().setuseautomaticconflictresolution("True").build()
         self.assertTrue(config.useautomaticconflictresolution)
+
+    def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromNone(self):
+        config = Builder().setignorefileextensions(None).build()
+        self.assertTrue(len(config.ignorefileextensions) == 0)
+
+    def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromEmpty(self):
+        config = Builder().setignorefileextensions("").build()
+        self.assertTrue(len(config.ignorefileextensions) == 0)
+
+    def test_fileExtensionsToBeIgnored_SingleExtensions(self):
+        config = Builder().setignorefileextensions(" .zip  ").build()
+        self.assertTrue(len(config.ignorefileextensions) == 1)
+        self.assertEqual(['.zip'], config.ignorefileextensions)
+
+    def test_fileExtensionsToBeIgnored_MultipleExtensions(self):
+        config = Builder().setignorefileextensions(".zip, .jar,  .exe").build()
+        self.assertTrue(len(config.ignorefileextensions) == 3)
+        self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
