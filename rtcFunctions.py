@@ -201,15 +201,15 @@ class ImportHandler:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
-                if self.is_reloading_necessary():
+                if not self.has_uncommited_changes():
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             Commiter.addandcommit(changeEntry)
 
     @staticmethod
-    def is_reloading_necessary():
-        return shell.execute("git diff --quiet") is 0
+    def has_uncommited_changes():
+        return shell.execute("git diff --quiet") is 1
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):

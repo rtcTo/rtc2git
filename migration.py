@@ -26,6 +26,8 @@ def initialize(config):
 def resume(config):
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
+    if ImportHandler.has_uncommited_changes():
+        sys.exit("Your git repo has some uncommited changes, please add/remove them")
     RTCInitializer.loginandcollectstreamuuid(config)
     WorkspaceHandler(config).load()
 
