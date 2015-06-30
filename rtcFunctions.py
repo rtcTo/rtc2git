@@ -22,7 +22,7 @@ class RTCInitializer:
     @staticmethod
     def loginandcollectstreamuuid(config):
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuid()
+        config.collectstreamuuids()
 
 
 class WorkspaceHandler:
@@ -229,6 +229,7 @@ class ImportHandler:
         if amountofchangestoaccept > 1:
             Changes.tostring(*changestoaccept)
             if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
+                shouter.shout("Trying to resolve conflict by accepting multiple changes")
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
                     if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:

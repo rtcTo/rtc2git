@@ -29,7 +29,10 @@ def resume(config):
     if Differ.has_diff():
         sys.exit("Your git repo has some uncommited changes, please add/remove them")
     RTCInitializer.loginandcollectstreamuuid(config)
-    WorkspaceHandler(config).load()
+    if config.previousstreamname:
+        prepare(config)
+    else:
+        WorkspaceHandler(config).load()
 
 
 def migrate():
@@ -62,6 +65,17 @@ def migrate():
     git.pushbranch(streamname)
     shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
+
+def prepare(config):
+    rtc = ImportHandler(config)
+    rtcworkspace = WorkspaceHandler(config)
+    # git checkout branchpoint
+    Commiter.checkout(config.previousstreamname + "_branchpoint")
+    # list baselines of current workspace
+    componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(config.previousstreamuuid)
+    # set components to that baselines
+    rtcworkspace.setcomponentstobaseline(componentbaselineentries, config.previousstreamuuid)
+    rtcworkspace.load()
 
 if __name__ == "__main__":
     migrate()
