@@ -168,8 +168,8 @@ class ImportHandler:
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
-            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -p %s -m 20000" % \
-                      (entry.component, config.user, config.password, config.repo)
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -P %s -m 20000" % \
+                      (entry.component, config.repo, config.user, config.password)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
 
