@@ -205,7 +205,7 @@ class ImportHandler:
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            Commiter.addandcommit(changeEntry)
+            Commiter.addandcommit(self.config, changeEntry)
 
     @staticmethod
     def is_reloading_necessary():

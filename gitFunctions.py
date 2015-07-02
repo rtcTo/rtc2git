@@ -41,7 +41,8 @@ class Commiter:
     commitcounter = 0
 
     @staticmethod
-    def addandcommit(changeentry):
+    def addandcommit(config, changeentry):
+        Commiter.filterignore(config)
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
         shell.execute(Commiter.getcommitcommand(changeentry))
@@ -92,3 +93,68 @@ class Commiter:
     def checkout(branchname):
         shell.execute("git stash")  # in case there are changes, stash them before checkout new branch
         shell.execute("git checkout " + branchname)
+
+    @staticmethod
+    def ignore(filelines):
+        """
+        append the file lines to the toplevel .gitignore
+        :param filelines: a list of newline terminated file names to be ignored
+        """
+        with open(".gitignore", "a") as ignore:
+            ignore.writelines(filelines)
+
+    @staticmethod
+    def filterignore(config):
+        strippedlines = shell.getoutput('git status -z')
+        # TODO what if > 1 line?
+        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines[0])
+        repositoryfilestoignore = BinaryFileFilter.match(repositoryfiles, config)
+        for repositoryfiletoignore in repositoryfilestoignore:
+            print(repositoryfiletoignore)
+        Commiter.ignore(repositoryfilestoignore)
+
+    @staticmethod
+    def splitoutputofgitstatusz(self, line):
+        """
+        Split the output of  'git status -z' into single files
+
+        :param line: the output line from the command
+        :return: a list of all repository files with status changes
+
+        [ to add to .gitignore, each backslash has to be escaped with a backslash ]
+        """
+        repositoryfiles = []
+        entries = line.split(sep='\x00')         # ascii 0 is the delimiter
+        for entry in entries:
+            entry = entry.strip()
+            if len(entry) > 0:
+                start = entry.find(' ')
+                if 1 <= start <= 2:
+                    repositoryfile = entry[3:]   # output is formatted
+                else:
+                    repositoryfile = entry       # file on a single line (e.g. rename continuation)
+                repositoryfiles.append(repositoryfile)
+        return repositoryfiles
+
+
+class BinaryFileFilter:
+
+    @staticmethod
+    def match(repositoryfiles, config):
+        """
+        Determine the repository files to ignore.
+        These filenames are returned as a list of newline terminated lines, ready to be added to .gitignore with writelines()
+
+        :param repositoryfiles: a list of (changed) files
+        :param config the configuration
+        :return: a list of newline terminated file names, possibly empty
+        """
+        extensions = config.ignorefileextensions
+        repositoryfilestoignore = []
+        for repositoryfile in repositoryfiles:
+            for extension in extensions:
+                if len(repositoryfile) >= len(extension):
+                    if repositoryfile[-len(extension):] == extension:
+                        # escape a backslash with a backslash, and append a newline
+                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
+        return repositoryfilestoignore
