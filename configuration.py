@@ -29,6 +29,7 @@ def read():
 
     workdirectory = getworkdirectory(generalsection['Directory'])
     streamname = migrationsection['StreamToMigrate'].strip()
+    previousstreamname = migrationsection['PreviousStream'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
@@ -36,6 +37,7 @@ def read():
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
+    configbuilder.setpreviousstreamname(previousstreamname)
     return configbuilder.build()
 
 
@@ -75,6 +77,7 @@ class Builder:
         self.streamname = ""
         self.gitreponame = ""
         self.clonedgitreponame = ""
+        self.previousstreamname = ""
         self.ignorefileextensions = ""
 
     def setuser(self, user):
@@ -134,6 +137,10 @@ class Builder:
         self.useautomaticconflictresolution = self.isenabled(useautomaticconflictresolution)
         return self
 
+    def setpreviousstreamname(self, previousstreamname):
+        self.previousstreamname = previousstreamname
+        return self
+
     def setignorefileextensions(self, ignorefileextensions):
         self.ignorefileextensions = ignorefileextensions
         return self
@@ -147,15 +154,14 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
-                            self.ignorefileextensions)
-
-
+                            self.previousstreamname, self.ignorefileextensions)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder, ignorefileextensionsproperty):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname,
+                 ignorefileextensionsproperty):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -173,6 +179,8 @@ class ConfigObject:
         self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.streamuuid = ""
+        self.previousstreamname = previousstreamname
+        self.previousstreamuuid = ""
         self.ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
 
     def getlogpath(self, filename):
@@ -190,13 +198,20 @@ class ConfigObject:
         historypath = self.rootFolder + os.sep + "History"
         return historypath + os.sep + filename
 
-    def collectstreamuuid(self):
-        shouter.shout("Get UUID of configured stream")
+    def collectstreamuuid(self, streamname):
+        if not streamname:
+            return
+        shouter.shout("Get UUID of configured stream " + streamname)
         showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
-            self.scmcommand, self.repo, self.streamname)
+            self.scmcommand, self.repo, streamname)
         output = shell.getoutput(showuuidcommand)
         splittedfirstline = output[0].split(" ")
-        self.streamuuid = splittedfirstline[0].strip()[1:-1]
+        streamuuid = splittedfirstline[0].strip()[1:-1]
+        return streamuuid
+
+    def collectstreamuuids(self):
+        self.streamuuid = self.collectstreamuuid(self.streamname)
+        self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
 
     @staticmethod
     def parseignorefileextensionsproperty(ignorefileextensionsproperty):

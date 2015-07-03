@@ -4,7 +4,7 @@ import re
 
 import sorter
 import shell
-from gitFunctions import Commiter
+from gitFunctions import Commiter, Differ
 import shouter
 
 
@@ -22,7 +22,7 @@ class RTCInitializer:
     @staticmethod
     def loginandcollectstreamuuid(config):
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuid()
+        config.collectstreamuuids()
 
 
 class WorkspaceHandler:
@@ -168,8 +168,8 @@ class ImportHandler:
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
-            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -p %s -m 20000" % \
-                      (entry.component, config.user, config.password, config.repo)
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -P %s -m 20000" % \
+                      (entry.component, config.repo, config.user, config.password)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
 
@@ -201,15 +201,11 @@ class ImportHandler:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
-                if self.is_reloading_necessary():
+                if not Differ.has_diff():
                     WorkspaceHandler(self.config).load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             Commiter.addandcommit(self.config, changeEntry)
-
-    @staticmethod
-    def is_reloading_necessary():
-        return shell.execute("git diff --exit-code") is 0
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
@@ -233,6 +229,7 @@ class ImportHandler:
         if amountofchangestoaccept > 1:
             Changes.tostring(*changestoaccept)
             if self.config.useautomaticconflictresolution or self.is_user_agreeing_to_accept_next_change(change):
+                shouter.shout("Trying to resolve conflict by accepting multiple changes")
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
                     if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:

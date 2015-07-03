@@ -91,7 +91,6 @@ class Commiter:
 
     @staticmethod
     def checkout(branchname):
-        shell.execute("git stash")  # in case there are changes, stash them before checkout new branch
         shell.execute("git checkout " + branchname)
 
     @staticmethod
@@ -135,6 +134,12 @@ class Commiter:
                     repositoryfile = entry       # file on a single line (e.g. rename continuation)
                 repositoryfiles.append(repositoryfile)
         return repositoryfiles
+
+
+class Differ:
+    @staticmethod
+    def has_diff():
+        return shell.execute("git diff --quiet") is 1
 
 
 class BinaryFileFilter:
