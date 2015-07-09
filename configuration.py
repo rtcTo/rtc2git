@@ -2,22 +2,23 @@ import os
 import configparser
 import shutil
 
-from rtcFunctions import ComponentBaseLineEntry
 import shell
 import shouter
 
+config = None
 
-def read():
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    generalsection = config['General']
-    migrationsection = config['Migration']
+
+def read(configname="config.ini"):
+    parsedconfig = configparser.ConfigParser()
+    parsedconfig.read(configname)
+    generalsection = parsedconfig['General']
+    migrationsection = parsedconfig['Migration']
 
     user = generalsection['User']
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
-    shell.logcommands = config['Miscellaneous']['LogShellCommands'] == "True"
+    shell.logcommands = parsedconfig['Miscellaneous']['LogShellCommands'] == "True"
     shell.setencoding(generalsection['encoding'])
 
     workspace = generalsection['WorkspaceName']
@@ -38,7 +39,15 @@ def read():
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
-    return configbuilder.build()
+    global config
+    config = configbuilder.build()
+    return config
+
+
+def get():
+    if not config:
+        read()
+    return config
 
 
 def getworkdirectory(workdirectory):
@@ -205,3 +214,11 @@ class ConfigObject:
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
         self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
+
+
+class ComponentBaseLineEntry:
+    def __init__(self, component, baseline, componentname, baselinename):
+        self.component = component
+        self.baseline = baseline
+        self.componentname = componentname
+        self.baselinename = baselinename

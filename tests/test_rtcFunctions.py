@@ -6,6 +6,7 @@ import os
 
 from rtcFunctions import Changes, ChangeEntry, ImportHandler
 from configuration import Builder
+import configuration
 import shell
 
 
@@ -21,8 +22,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
-        Changes.accept(config, self.apath, self.createChangeEntry(revision1),
-                       self.createChangeEntry(revision2))
+        configuration.config = config
+        Changes.accept(self.apath, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
                                                                                      revision2)
         appendlogfileshortcut = "a"
@@ -35,11 +36,13 @@ class RtcFunctionsTestCase(unittest.TestCase):
         revision2 = "anyOtherRevision"
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
-        Changes.discard(config, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        configuration.config = config
+        Changes.discard(self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
-    def createChangeEntry(self, revision = "anyRevisionId", author = "anyAuthor", email = "anyEmail", comment = "anyComment", date = "anyDate"):
+    def createChangeEntry(self, revision="anyRevisionId", author="anyAuthor", email="anyEmail", comment="anyComment",
+                          date="anyDate"):
         return ChangeEntry(revision, author, email, date, comment)
 
     def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
@@ -81,8 +84,9 @@ class RtcFunctionsTestCase(unittest.TestCase):
         shellmock.execute.return_value = 0
         self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setworkspace("anyWs")
         config = self.configBuilder.build()
+        configuration.config = config
 
-        handler = ImportHandler(config)
+        handler = ImportHandler()
         handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
 
         expectedshellcommand = 'lscm accept -v -o -r anyurl -t anyWs --changes anyRevId anyOtherRevId'
@@ -96,8 +100,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
 
         changeentries = [mychange1, mychange2, mymergechange, changefromsomeoneelse]
 
-        handler = ImportHandler(self.configBuilder.build())
-        collectedchanges = handler.collect_changes_to_accept_to_avoid_conflicts(mychange1, changeentries)
+        configuration.config = self.configBuilder.build()
+        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(mychange1, changeentries)
         self.assertTrue(mychange1 in collectedchanges)
         self.assertTrue(mychange2 in collectedchanges)
         self.assertTrue(mymergechange in collectedchanges)
@@ -106,14 +110,14 @@ class RtcFunctionsTestCase(unittest.TestCase):
 
     @patch('builtins.input', return_value='Y')
     def test_useragreeing_answeris_y_expecttrue(self, inputmock):
-        handler = ImportHandler(self.configBuilder.build())
-        self.assertTrue(handler.is_user_agreeing_to_accept_next_change(self.createChangeEntry()))
+        configuration.config = self.configBuilder.build()
+        self.assertTrue(ImportHandler().is_user_agreeing_to_accept_next_change(self.createChangeEntry()))
 
     @patch('builtins.input', return_value='n')
     def test_useragreeing_answeris_n_expectfalseandexception(self, inputmock):
-        handler = ImportHandler(self.configBuilder.build())
+        configuration.config = self.configBuilder.build()
         try:
-            handler.is_user_agreeing_to_accept_next_change(self.createChangeEntry())
+            ImportHandler().is_user_agreeing_to_accept_next_change(self.createChangeEntry())
             self.fail("Should have exit the program")
         except SystemExit as e:
             self.assertEqual("Please check the output/log and rerun program with resume", e.code)

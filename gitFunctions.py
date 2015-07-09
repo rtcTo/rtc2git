@@ -2,10 +2,12 @@ import os
 
 import shouter
 import shell
+import configuration
 
 
 class Initializer:
-    def __init__(self, config):
+    def __init__(self):
+        config = configuration.get()
         self.repoName = config.gitRepoName
         self.clonedRepoName = config.clonedGitRepoName
         self.author = config.user

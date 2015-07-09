@@ -2,6 +2,7 @@ import unittest
 import os
 
 from configuration import Builder
+import configuration
 
 
 class ConfigurationTestCase(unittest.TestCase):
@@ -32,3 +33,8 @@ class ConfigurationTestCase(unittest.TestCase):
     def test_sampleBoolConfigEntrySetToTrue_ShouldBeTrue(self):
         config = Builder().setuseautomaticconflictresolution("True").build()
         self.assertTrue(config.useautomaticconflictresolution)
+
+    def test_getSampleConfig_ExpectInitializedConfigWithDefaultValues(self):
+        config = configuration.read("../config.ini.sample")
+        self.assertEqual("lscm", config.scmcommand)
+        self.assertEqual(config, configuration.get())
