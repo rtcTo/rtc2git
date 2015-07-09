@@ -10,7 +10,8 @@ import configuration
 import shouter
 
 
-def initialize(config):
+def initialize():
+    config = configuration.get()
     directory = config.workDirectory
     if os.path.exists(directory):
         sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
@@ -23,24 +24,27 @@ def initialize(config):
     git.initialcommitandpush()
 
 
-def resume(config):
+def resume():
+    config = configuration.get()
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
     if Differ.has_diff():
         sys.exit("Your git repo has some uncommited changes, please add/remove them")
-    RTCInitializer.loginandcollectstreamuuid(config)
+    RTCInitializer.loginandcollectstreamuuid()
     if config.previousstreamname:
-        prepare(config)
+        prepare()
     else:
-        WorkspaceHandler(config).load()
+        WorkspaceHandler().load()
 
 
 def migrate():
-    config = configuration.read()
-    rtc = ImportHandler(config)
-    rtcworkspace = WorkspaceHandler(config)
+    rtc = ImportHandler()
+    rtcworkspace = WorkspaceHandler()
     git = Commiter
-    initialize(config)
+
+    initialize()
+
+    config = configuration.get()
     streamuuid = config.streamuuid
     streamname = config.streamname
     branchname = streamname + "_branchpoint"
@@ -66,9 +70,10 @@ def migrate():
     shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
 
 
-def prepare(config):
-    rtc = ImportHandler(config)
-    rtcworkspace = WorkspaceHandler(config)
+def prepare():
+    config = configuration.get()
+    rtc = ImportHandler()
+    rtcworkspace = WorkspaceHandler()
     # git checkout branchpoint
     Commiter.checkout(config.previousstreamname + "_branchpoint")
     # list baselines of current workspace
