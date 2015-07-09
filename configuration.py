@@ -2,7 +2,6 @@ import os
 import configparser
 import shutil
 
-from rtcFunctions import ComponentBaseLineEntry
 import shell
 import shouter
 
@@ -215,3 +214,11 @@ class ConfigObject:
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
         self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
+
+
+class ComponentBaseLineEntry:
+    def __init__(self, component, baseline, componentname, baselinename):
+        self.component = component
+        self.baseline = baseline
+        self.componentname = componentname
+        self.baselinename = baselinename

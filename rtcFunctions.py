@@ -2,11 +2,12 @@ import sys
 import os
 import re
 
+import configuration
+from configuration import ComponentBaseLineEntry
 import sorter
 import shell
-from gitFunctions import Commiter, Differ
 import shouter
-import configuration
+from gitFunctions import Commiter, Differ
 
 
 class RTCInitializer:
@@ -407,9 +408,3 @@ class ChangeEntry:
         return self.comment + " (Date: " + self.date + ", Author: " + self.author + ", Revision: " + self.revision + ")"
 
 
-class ComponentBaseLineEntry:
-    def __init__(self, component, baseline, componentname, baselinename):
-        self.component = component
-        self.baseline = baseline
-        self.componentname = componentname
-        self.baselinename = baselinename
