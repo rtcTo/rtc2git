@@ -18,9 +18,9 @@ def initialize():
     os.makedirs(directory)
     os.chdir(directory)
     config.deletelogfolder()
-    git = Initializer(config)
+    git = Initializer()
     git.initalize()
-    RTCInitializer.initialize(config)
+    RTCInitializer.initialize()
     git.initialcommitandpush()
 
 
