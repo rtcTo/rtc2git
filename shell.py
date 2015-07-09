@@ -6,6 +6,7 @@ import shouter
 logcommands = False
 encoding = None
 
+
 def execute(command, outputfile=None, openmode="w"):
     shout_command_to_log(command, outputfile)
     if not outputfile:

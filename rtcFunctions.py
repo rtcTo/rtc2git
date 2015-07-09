@@ -116,7 +116,6 @@ class Changes:
         shouter.shout(logmessage)
 
 
-
 class ImportHandler:
     def __init__(self, config):
         self.config = config
@@ -378,7 +377,8 @@ class ImportHandler:
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
         comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo, dateformat)
+                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo,
+                            dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
