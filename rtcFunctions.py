@@ -287,7 +287,7 @@ class ImportHandler:
     def readhistory(self, componentbaselineentries, streamname):
         if not self.config.useprovidedhistory:
             warning = "Warning - UseProvidedHistory is set to false, merge-conflicts are more likely to happen. \n " \
-                      "For more information see https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files"
+                      "For more information see https://github.com/rtcTo/rtc2git/wiki/Getting-your-History-Files"
             shouter.shout(warning)
             return None
         historyuuids = {}
