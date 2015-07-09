@@ -200,7 +200,7 @@ class ImportHandler:
                 shouter.shout("Skipping " + changeEntry.tostring())
                 changestoskip -= 1
                 continue
-            acceptedsuccesfully = Changes.accept(self.acceptlogpath, self.acceptlogpath, changeEntry) is 0
+            acceptedsuccesfully = Changes.accept(self.acceptlogpath, changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
