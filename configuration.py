@@ -1,7 +1,6 @@
 import os
 import configparser
 import shutil
-import sys
 
 from rtcFunctions import ComponentBaseLineEntry
 import shell
@@ -48,7 +47,7 @@ def read(configname="config.ini"):
 
 def get():
     if not config:
-        sys.exit("Config has not been initalized yet")
+        read()
     return config
 
 

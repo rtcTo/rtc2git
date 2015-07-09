@@ -34,14 +34,7 @@ class ConfigurationTestCase(unittest.TestCase):
         config = Builder().setuseautomaticconflictresolution("True").build()
         self.assertTrue(config.useautomaticconflictresolution)
 
-    def test_getSampleConfig_WhenNotYetRead_ExpectError(self):
-        try:
-            config = configuration.get()
-            self.fail("Should have thrown an exception, that config is not yet initalized")
-        except SystemExit as e:
-            self.assertEqual("Config has not been initalized yet", e.code)
-
-    def test_getSampleConfig_WhenRead_ExpectInitializedConfigWithDefaultValues(self):
+    def test_getSampleConfig_ExpectInitializedConfigWithDefaultValues(self):
         config = configuration.read("../config.ini.sample")
         self.assertEqual("lscm", config.scmcommand)
         self.assertEqual(config, configuration.get())
