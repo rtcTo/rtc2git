@@ -194,7 +194,7 @@ class ImportHandler:
         amountofacceptedchanges = 0
         changestoskip = 0
         reloaded = False
-        sandbox = os.path.join(self.config.workDirectory, self.config.clonedGitRepoName)
+
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
             if changestoskip > 0:
@@ -210,7 +210,7 @@ class ImportHandler:
                     WorkspaceHandler().load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            Commiter.addandcommit(changeEntry, sandbox)
+            Commiter.addandcommit(changeEntry)
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):

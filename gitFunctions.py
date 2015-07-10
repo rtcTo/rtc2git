@@ -45,13 +45,24 @@ class Commiter:
     commitcounter = 0
 
     @staticmethod
-    def addandcommit(changeentry, sandbox):
+    def addandcommit(changeentry):
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
-        #Check if any of the file names have changed case
+        Commiter.check_for_captitalization_filename_changes()
+        shell.execute(Commiter.getcommitcommand(changeentry))
+        Commiter.commitcounter += 1
+        if Commiter.commitcounter is 30:
+            shouter.shout("30 Commits happend, push current branch to avoid out of memory")
+            Commiter.pushbranch("")
+            Commiter.commitcounter = 0
+        shouter.shout("Commited change in local git repository")
+
+    @staticmethod
+    def check_for_captitalization_filename_changes():
+        sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status")
         for line in lines:
-            if(len (line.split("new file:   ")) > 1 ):
+            if len(line.split("new file:   ")) > 1:
                 newFileInGit = line.split("new file:   ")[1]
                 pathWithFileName = os.path.join(sandbox, newFileInGit)
                 directory = os.path.dirname(pathWithFileName)
@@ -65,14 +76,6 @@ class Commiter:
                     if (baseFileInGitLower == fileLower and baseFileInGit != file):
                         shell.execute("git rm --cached %s" % file)
                 os.chdir(cwd)
-        #Continue with the commit
-        shell.execute(Commiter.getcommitcommand(changeentry))
-        Commiter.commitcounter += 1
-        if Commiter.commitcounter is 30:
-            shouter.shout("30 Commits happend, push current branch to avoid out of memory")
-            Commiter.pushbranch("")
-            Commiter.commitcounter = 0
-        shouter.shout("Commited change in local git repository")
 
     @staticmethod
     def getcommitcommand(changeentry):
