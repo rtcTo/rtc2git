@@ -194,6 +194,7 @@ class ImportHandler:
         amountofacceptedchanges = 0
         changestoskip = 0
         reloaded = False
+
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
             if changestoskip > 0:
