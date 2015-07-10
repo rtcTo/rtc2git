@@ -37,15 +37,35 @@ class Initializer:
         shouter.shout("Finished commit")
         shell.execute("git push origin master")
         shouter.shout("Finished push")
+        shell.execute("git config --replace-all core.ignorecase false")
+        shouter.shout("Set core.ignorecase to false")
 
 
 class Commiter:
     commitcounter = 0
 
     @staticmethod
-    def addandcommit(changeentry):
+    def addandcommit(changeentry, sandbox):
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
+        #Check if any of the file names have changed case
+        lines = shell.getoutput("git status")
+        for line in lines:
+            if(len (line.split("new file:   ")) > 1 ):
+                newFileInGit = line.split("new file:   ")[1]
+                pathWithFileName = os.path.join(sandbox, newFileInGit)
+                directory = os.path.dirname(pathWithFileName)
+                baseFileInGit = os.path.basename(newFileInGit)
+                cwd = os.getcwd()
+                os.chdir(directory)
+                files = shell.getoutput("git ls-tree --name-only HEAD")
+                for file in files:
+                    baseFileInGitLower = baseFileInGit.lower()
+                    fileLower = file.lower()
+                    if (baseFileInGitLower == fileLower and baseFileInGit != file):
+                        shell.execute("git rm --cached %s" % file)
+                os.chdir(cwd)
+        #Continue with the commit
         shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
         if Commiter.commitcounter is 30:
