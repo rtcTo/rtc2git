@@ -64,18 +64,22 @@ class Commiter:
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status -z")
         for line in lines:
-            if line.startswith("A"):
-                newfileingit = line[3:-1]  # cut A and following space and NUL at the end
-                cwd = os.getcwd()
-                os.chdir(sandbox)
-                files = shell.getoutput("git ls-tree --name-only HEAD")
-                for previousFileName in files:
-                    was_same_file_name = newfileingit.lower() == previousFileName.lower()
-                    file_was_renamed = newfileingit != previousFileName
+            for entry in line.split(sep='\x00'):  # ascii 0 is the delimiter
+                entry = entry.strip()
+                if entry.startswith("A"):
+                    newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
+                    directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
+                    newfilename = os.path.basename(newfilerelativepath)
+                    cwd = os.getcwd()
+                    os.chdir(directoryofnewfile)
+                    files = shell.getoutput("git ls-tree --name-only HEAD")
+                    for previousFileName in files:
+                        was_same_file_name = newfilename.lower() == previousFileName.lower()
+                        file_was_renamed = newfilename != previousFileName
 
-                    if was_same_file_name and file_was_renamed:
-                        shell.execute("git rm --cached %s" % previousFileName)
-                os.chdir(cwd)
+                        if was_same_file_name and file_was_renamed:
+                            shell.execute("git rm --cached %s" % previousFileName)
+                    os.chdir(cwd)
 
     @staticmethod
     def getcommitcommand(changeentry):

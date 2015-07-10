@@ -25,7 +25,7 @@ class GitFunctionsTestCase(unittest.TestCase):
         originalfilename = "aFileWithLowerStart"
         newfilename = "AFileWithLowerStart"
 
-        self.simulateRenameInGitRepo(originalfilename, newfilename)
+        self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
         self.assertGitStatusShowsIsRenamed()
 
     def assertGitStatusShowsIsRenamed(self):
@@ -37,10 +37,20 @@ class GitFunctionsTestCase(unittest.TestCase):
         originalfilename = "AFileWithLowerStart"
         newfilename = "aFileWithLowerStart"
 
-        self.simulateRenameInGitRepo(originalfilename, newfilename)
+        self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
         self.assertGitStatusShowsIsRenamed()
 
-    def simulateRenameInGitRepo(self, originalfilename, newfilename):
+    def test_ExistingFileStartsWithUpperCaseInSubFolder_RenameToLowerCase_ExpectGitRename(self):
+        originalfilename = "AFileWithLowerStart"
+        newfilename = "aFileWithLowerStart"
+        subfolder = "test"
+        os.mkdir(subfolder)
+        os.chdir(subfolder)
+
+        self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
+        self.assertGitStatusShowsIsRenamed()
+
+    def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         self.initializer.initialcommitandpush()
         os.rename(originalfilename, newfilename)  # change capitalization
