@@ -26,6 +26,8 @@ class Initializer:
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
         shell.execute("git config push.default current")
+        shell.execute("git config core.ignorecase false")
+        shouter.shout("Set core.ignorecase to false")
         self.createignore()
 
     @staticmethod
@@ -37,8 +39,6 @@ class Initializer:
         shouter.shout("Finished commit")
         shell.execute("git push origin master")
         shouter.shout("Finished push")
-        shell.execute("git config --replace-all core.ignorecase false")
-        shouter.shout("Set core.ignorecase to false")
 
 
 class Commiter:
