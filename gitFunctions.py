@@ -62,20 +62,19 @@ class Commiter:
     @staticmethod
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
-        lines = shell.getoutput("git status")
+        lines = shell.getoutput("git status -z")
         for line in lines:
-            line_split = line.split("new file:   ")
-            if len(line_split) > 1:
-                newFileInGit = line_split[1]
-                pathWithFileName = os.path.join(sandbox, newFileInGit)
-                directory = os.path.dirname(pathWithFileName)
-                baseFileInGit = os.path.basename(newFileInGit)
+            if line.startswith("A"):
+                newfileingit = line[3:-1]  # cut A and following space and NUL at the end
                 cwd = os.getcwd()
-                os.chdir(directory)
+                os.chdir(sandbox)
                 files = shell.getoutput("git ls-tree --name-only HEAD")
-                for file in files:
-                    if baseFileInGit.lower() == file.lower() and baseFileInGit != file:
-                        shell.execute("git rm --cached %s" % file)
+                for previousFileName in files:
+                    was_same_file_name = newfileingit.lower() == previousFileName.lower()
+                    file_was_renamed = newfileingit != previousFileName
+
+                    if was_same_file_name and file_was_renamed:
+                        shell.execute("git rm --cached %s" % previousFileName)
                 os.chdir(cwd)
 
     @staticmethod
