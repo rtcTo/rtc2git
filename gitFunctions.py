@@ -48,7 +48,9 @@ class Commiter:
     def addandcommit(changeentry):
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
-        Commiter.check_for_captitalization_filename_changes()
+
+        Commiter.handle_captitalization_filename_changes()
+
         shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
         if Commiter.commitcounter is 30:
@@ -58,12 +60,13 @@ class Commiter:
         shouter.shout("Commited change in local git repository")
 
     @staticmethod
-    def check_for_captitalization_filename_changes():
+    def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status")
         for line in lines:
-            if len(line.split("new file:   ")) > 1:
-                newFileInGit = line.split("new file:   ")[1]
+            line_split = line.split("new file:   ")
+            if len(line_split) > 1:
+                newFileInGit = line_split[1]
                 pathWithFileName = os.path.join(sandbox, newFileInGit)
                 directory = os.path.dirname(pathWithFileName)
                 baseFileInGit = os.path.basename(newFileInGit)
@@ -71,9 +74,7 @@ class Commiter:
                 os.chdir(directory)
                 files = shell.getoutput("git ls-tree --name-only HEAD")
                 for file in files:
-                    baseFileInGitLower = baseFileInGit.lower()
-                    fileLower = file.lower()
-                    if (baseFileInGitLower == fileLower and baseFileInGit != file):
+                    if baseFileInGit.lower() == file.lower() and baseFileInGit != file:
                         shell.execute("git rm --cached %s" % file)
                 os.chdir(cwd)
 
