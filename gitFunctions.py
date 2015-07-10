@@ -72,7 +72,7 @@ class Commiter:
                     newfilename = os.path.basename(newfilerelativepath)
                     cwd = os.getcwd()
                     os.chdir(directoryofnewfile)
-                    files = shell.getoutput("git ls-tree --name-only HEAD")
+                    files = shell.getoutput("git ls-files")
                     for previousFileName in files:
                         was_same_file_name = newfilename.lower() == previousFileName.lower()
                         file_was_renamed = newfilename != previousFileName
