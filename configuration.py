@@ -21,7 +21,7 @@ def read(configname="config.ini"):
     shell.logcommands = parsedconfig['Miscellaneous']['LogShellCommands'] == "True"
     shell.setencoding(generalsection['encoding'])
 
-    workspace = generalsection['WorkspaceName']
+    workspace = "'" + generalsection['WorkspaceName'] + "'"
     gitreponame = generalsection['GIT-Reponame']
 
     useexistingworkspace = generalsection['useExistingWorkspace']
