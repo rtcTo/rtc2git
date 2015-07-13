@@ -37,7 +37,7 @@ class WorkspaceHandler:
         self.scmcommand = self.config.scmcommand
 
     def createandload(self, stream, componentbaselineentries=[]):
-        shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
+        shell.execute("%s create workspace -r %s -s %s '%s'" % (self.scmcommand, self.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
@@ -46,7 +46,7 @@ class WorkspaceHandler:
         self.load()
 
     def load(self):
-        command = "%s load -r %s %s --force" % (self.scmcommand, self.repo, self.workspace)
+        command = "%s load -r %s '%s' --force" % (self.scmcommand, self.repo, self.workspace)
         shouter.shout("Start (re)loading current workspace: " + command)
         shell.execute(command)
         shouter.shout("Load of workspace finished")
@@ -56,20 +56,20 @@ class WorkspaceHandler:
             shouter.shout("Set component '%s'(%s) to baseline '%s' (%s)" % (entry.componentname, entry.component,
                                                                             entry.baselinename, entry.baseline))
 
-            replacecommand = "%s set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
+            replacecommand = "%s set component -r %s -b %s '%s' stream %s %s --overwrite-uncommitted" % \
                              (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
         if not self.hasflowtarget(streamuuid):
-            shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
+            shell.execute("%s add flowtarget -r %s '%s' %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
-        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
+        command = "%s set flowtarget -r %s '%s' --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
-        command = "%s --show-uuid y --show-alias n list flowtargets -r %s %s" % (self.scmcommand, self.repo, self.workspace)
+        command = "%s --show-uuid y --show-alias n list flowtargets -r %s '%s'" % (self.scmcommand, self.repo, self.workspace)
         flowtargetlines = shell.getoutput(command)
         for flowtargetline in flowtargetlines:
             splittedinformationline = flowtargetline.split("\"")
@@ -88,7 +88,7 @@ class Changes:
     def discard(*changeentries):
         config = configuration.get()
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
+        shell.execute(config.scmcommand + " discard -w '" + config.workspace + "' -r " + config.repo + " -o" + idstodiscard)
 
     @staticmethod
     def accept(logpath, *changeentries):
@@ -96,8 +96,8 @@ class Changes:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
         config = configuration.get()
-        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
-                                        config.workspace + " --changes" + revisions
+        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t '" + \
+                                        config.workspace + "' --changes" + revisions
         return shell.execute(Changes.latest_accept_command, logpath, "a")
 
     @staticmethod
@@ -382,7 +382,7 @@ class ImportHandler:
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
-        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+        comparecommand = "%s --show-alias n --show-uuid y compare ws '%s' %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
                          % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo,
                             dateformat)
         shell.execute(comparecommand, outputfilename)
