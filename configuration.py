@@ -4,6 +4,7 @@ import shutil
 
 import shell
 import shouter
+import shlex
 
 config = None
 
@@ -21,7 +22,7 @@ def read(configname="config.ini"):
     shell.logcommands = parsedconfig['Miscellaneous']['LogShellCommands'] == "True"
     shell.setencoding(generalsection['encoding'])
 
-    workspace = "'" + generalsection['WorkspaceName'] + "'"
+    workspace = shlex.quote(generalsection['WorkspaceName'])
     gitreponame = generalsection['GIT-Reponame']
 
     useexistingworkspace = generalsection['useExistingWorkspace']
@@ -29,7 +30,7 @@ def read(configname="config.ini"):
     useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
 
     workdirectory = getworkdirectory(generalsection['Directory'])
-    streamname = migrationsection['StreamToMigrate'].strip()
+    streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
     previousstreamname = migrationsection['PreviousStream'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
 
