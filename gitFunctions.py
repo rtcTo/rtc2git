@@ -2,10 +2,12 @@ import os
 
 import shouter
 import shell
+import configuration
 
 
 class Initializer:
-    def __init__(self, config):
+    def __init__(self):
+        config = configuration.get()
         self.repoName = config.gitRepoName
         self.clonedRepoName = config.clonedGitRepoName
         self.author = config.user
@@ -24,6 +26,8 @@ class Initializer:
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
         shell.execute("git config push.default current")
+        shell.execute("git config core.ignorecase false")
+        shouter.shout("Set core.ignorecase to false")
         self.createignore()
 
     @staticmethod
@@ -45,6 +49,9 @@ class Commiter:
         Commiter.filterignore(config)
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
+
+        Commiter.handle_captitalization_filename_changes()
+
         shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
         if Commiter.commitcounter is 30:
@@ -52,6 +59,28 @@ class Commiter:
             Commiter.pushbranch("")
             Commiter.commitcounter = 0
         shouter.shout("Commited change in local git repository")
+
+    @staticmethod
+    def handle_captitalization_filename_changes():
+        sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
+        lines = shell.getoutput("git status -z")
+        for line in lines:
+            for entry in line.split(sep='\x00'):  # ascii 0 is the delimiter
+                entry = entry.strip()
+                if entry.startswith("A"):
+                    newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
+                    directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
+                    newfilename = os.path.basename(newfilerelativepath)
+                    cwd = os.getcwd()
+                    os.chdir(directoryofnewfile)
+                    files = shell.getoutput("git ls-files")
+                    for previousFileName in files:
+                        was_same_file_name = newfilename.lower() == previousFileName.lower()
+                        file_was_renamed = newfilename != previousFileName
+
+                        if was_same_file_name and file_was_renamed:
+                            shell.execute("git rm --cached %s" % previousFileName)
+                    os.chdir(cwd)
 
     @staticmethod
     def getcommitcommand(changeentry):

@@ -11,7 +11,7 @@ Directory = \temp\myWorkingDirectory
 # Scm command to use (lscm or scm)
 ScmCommand = lscm
 # Optional - Set encoding of files (For example encoding = UTF-8)
-# See https://github.com/WtfJoke/rtc2git/wiki/Encoding for further instructions
+# See "https://github.com/rtcTo/rtc2git/wiki/Encoding" for further instructions
 encoding =
 
 [Migration]
@@ -29,7 +29,7 @@ InitialBaseLines =
 
 # False - Rely on order of changeset provided by the rtc cli compare command (due wrong order, more likely to cause merge-conflicts
 # True - (Component)History needs to be provided in a separate file by the user
-# For more information read https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files
+# For more information read https://github.com/rtcTo/rtc2git/wiki/Getting-your-History-Files
 UseProvidedHistory = False
 
 # Determines whether to prompt the user to accept change sets together to resolve accept errors.

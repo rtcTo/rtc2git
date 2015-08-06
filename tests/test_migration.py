@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import migration
 from configuration import Builder
+import configuration
 
 
 class MigrationTestCase(unittest.TestCase):
@@ -18,8 +19,9 @@ class MigrationTestCase(unittest.TestCase):
         config = Builder().setrootfolder(self.rootfolder).build()
         anylogpath = config.getlogpath("testDeletionOfLogFolderOnInitalization")
         os_mock.path.exists.return_value = False
+        configuration.config = config
 
-        migration.initialize(config)
+        migration.initialize()
 
         expectedlogfolder = self.rootfolder + os.sep + "Logs"
         shutil_mock.rmtree.assert_called_once_with(expectedlogfolder)

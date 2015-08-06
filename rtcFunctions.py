@@ -2,17 +2,20 @@ import sys
 import os
 import re
 
+import configuration
+from configuration import ComponentBaseLineEntry
 import sorter
 import shell
-from gitFunctions import Commiter, Differ
 import shouter
+from gitFunctions import Commiter, Differ
 
 
 class RTCInitializer:
     @staticmethod
-    def initialize(config):
-        RTCInitializer.loginandcollectstreamuuid(config)
-        workspace = WorkspaceHandler(config)
+    def initialize():
+        RTCInitializer.loginandcollectstreamuuid()
+        workspace = WorkspaceHandler()
+        config = configuration.get()
         if config.useexistingworkspace:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
@@ -20,24 +23,25 @@ class RTCInitializer:
             workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
     @staticmethod
-    def loginandcollectstreamuuid(config):
+    def loginandcollectstreamuuid():
+        config = configuration.get()
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
         config.collectstreamuuids()
 
 
 class WorkspaceHandler:
-    def __init__(self, config):
-        self.config = config
-        self.workspace = config.workspace
-        self.repo = config.repo
-        self.scmcommand = config.scmcommand
+    def __init__(self):
+        self.config = configuration.get()
+        self.workspace = self.config.workspace
+        self.repo = self.config.repo
+        self.scmcommand = self.config.scmcommand
 
     def createandload(self, stream, componentbaselineentries=[]):
         shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
         if componentbaselineentries:
             self.setcomponentstobaseline(componentbaselineentries, stream)
         else:
-            self.setcomponentstobaseline(ImportHandler(self.config).determineinitialbaseline(stream),
+            self.setcomponentstobaseline(ImportHandler().determineinitialbaseline(stream),
                                          stream)
         self.load()
 
@@ -81,15 +85,17 @@ class Changes:
     latest_accept_command = ""
 
     @staticmethod
-    def discard(config, *changeentries):
+    def discard(*changeentries):
+        config = configuration.get()
         idstodiscard = Changes._collectids(changeentries)
         shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
 
     @staticmethod
-    def accept(config, logpath, *changeentries):
+    def accept(logpath, *changeentries):
         for changeEntry in changeentries:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
+        config = configuration.get()
         Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
                                         config.workspace + " --changes" + revisions
         return shell.execute(Changes.latest_accept_command, logpath, "a")
@@ -116,11 +122,10 @@ class Changes:
         shouter.shout(logmessage)
 
 
-
 class ImportHandler:
-    def __init__(self, config):
-        self.config = config
-        self.acceptlogpath = config.getlogpath("accept.txt")
+    def __init__(self):
+        self.config = configuration.get()
+        self.acceptlogpath = self.config.getlogpath("accept.txt")
 
     def getcomponentbaselineentriesfromstream(self, stream):
         filename = self.config.getlogpath("StreamComponents_" + stream + ".txt")
@@ -189,20 +194,20 @@ class ImportHandler:
         amountofacceptedchanges = 0
         changestoskip = 0
         reloaded = False
+
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
             if changestoskip > 0:
                 shouter.shout("Skipping " + changeEntry.tostring())
                 changestoskip -= 1
                 continue
-            acceptedsuccesfully = Changes.accept(self.config, self.acceptlogpath,
-                                                 changeEntry) is 0
+            acceptedsuccesfully = Changes.accept(self.acceptlogpath, changeEntry) is 0
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             elif not reloaded:
                 if not Differ.has_diff():
-                    WorkspaceHandler(self.config).load()
+                    WorkspaceHandler().load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             Commiter.addandcommit(self.config, changeEntry)
@@ -232,12 +237,12 @@ class ImportHandler:
                 shouter.shout("Trying to resolve conflict by accepting multiple changes")
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
-                    if Changes.accept(self.config, self.acceptlogpath, *toaccept) is 0:
+                    if Changes.accept(self.acceptlogpath, *toaccept) is 0:
                         changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
                         issuccessful = True
                         break
                     else:
-                        Changes.discard(self.config, *toaccept)  # revert initial state
+                        Changes.discard(*toaccept)  # revert initial state
         if not issuccessful:
             self.is_user_aborting(change)
         return changestoskip
@@ -288,7 +293,7 @@ class ImportHandler:
     def readhistory(self, componentbaselineentries, streamname):
         if not self.config.useprovidedhistory:
             warning = "Warning - UseProvidedHistory is set to false, merge-conflicts are more likely to happen. \n " \
-                      "For more information see https://github.com/WtfJoke/rtc2git/wiki/Getting-your-History-Files"
+                      "For more information see https://github.com/rtcTo/rtc2git/wiki/Getting-your-History-Files"
             shouter.shout(warning)
             return None
         historyuuids = {}
@@ -378,7 +383,8 @@ class ImportHandler:
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
         comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo, dateformat)
+                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo,
+                            dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
 
@@ -403,9 +409,3 @@ class ChangeEntry:
         return self.comment + " (Date: " + self.date + ", Author: " + self.author + ", Revision: " + self.revision + ")"
 
 
-class ComponentBaseLineEntry:
-    def __init__(self, component, baseline, componentname, baselinename):
-        self.component = component
-        self.baseline = baseline
-        self.componentname = componentname
-        self.baselinename = baselinename

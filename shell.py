@@ -1,11 +1,11 @@
 import sys
-from subprocess import call
-from subprocess import check_output
+from subprocess import call, check_output, CalledProcessError
 
 import shouter
 
 logcommands = False
 encoding = None
+
 
 def execute(command, outputfile=None, openmode="w"):
     shout_command_to_log(command, outputfile)
@@ -18,8 +18,11 @@ def execute(command, outputfile=None, openmode="w"):
 
 def getoutput(command):
     shout_command_to_log(command)
-    outputasbytestring = check_output(command, shell=True)
-    output = outputasbytestring.decode(sys.stdout.encoding).splitlines()
+    try:
+        outputasbytestring = check_output(command, shell=True)
+        output = outputasbytestring.decode(sys.stdout.encoding).splitlines()
+    except CalledProcessError as e:
+        shouter.shout(e)
     strippedlines = []
     for line in output:
         cleanedline = line.strip()
