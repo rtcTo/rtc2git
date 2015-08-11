@@ -67,7 +67,7 @@ class Commiter:
         for line in lines:
             for entry in line.split(sep='\x00'):  # ascii 0 is the delimiter
                 entry = entry.strip()
-                if entry.startswith("A"):
+                if entry.startswith("A "):
                     newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
                     directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
                     newfilename = os.path.basename(newfilerelativepath)
