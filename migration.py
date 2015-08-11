@@ -20,8 +20,8 @@ def initialize():
     config.deletelogfolder()
     git = Initializer()
     git.initalize()
-    RTCInitializer.initialize()
     git.initialcommitandpush()
+    RTCInitializer.initialize()
 
 
 def resume():
