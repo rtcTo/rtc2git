@@ -45,8 +45,8 @@ class Commiter:
     commitcounter = 0
 
     @staticmethod
-    def addandcommit(config, changeentry):
-        Commiter.filterignore(config)
+    def addandcommit(changeentry):
+        Commiter.filterignore()
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
@@ -123,26 +123,28 @@ class Commiter:
         shell.execute("git checkout " + branchname)
 
     @staticmethod
+    def filterignore():
+        """
+        add files with extensions to be ignored to .gitignore
+        """
+        strippedlines = shell.getoutput('git status -z')
+        # expect exactly one line:
+        for strippedline in strippedlines:
+            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedline)
+            Commiter.ignore(BinaryFileFilter.match(repositoryfiles, configuration.get()))
+
+    @staticmethod
     def ignore(filelines):
         """
         append the file lines to the toplevel .gitignore
         :param filelines: a list of newline terminated file names to be ignored
         """
-        with open(".gitignore", "a") as ignore:
-            ignore.writelines(filelines)
+        if len(filelines) > 0:
+            with open(".gitignore", "a") as ignore:
+                ignore.writelines(filelines)
 
     @staticmethod
-    def filterignore(config):
-        strippedlines = shell.getoutput('git status -z')
-        # TODO what if > 1 line?
-        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines[0])
-        repositoryfilestoignore = BinaryFileFilter.match(repositoryfiles, config)
-        for repositoryfiletoignore in repositoryfilestoignore:
-            print(repositoryfiletoignore)
-        Commiter.ignore(repositoryfilestoignore)
-
-    @staticmethod
-    def splitoutputofgitstatusz(self, line):
+    def splitoutputofgitstatusz(line):
         """
         Split the output of  'git status -z' into single files
 

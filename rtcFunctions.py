@@ -210,7 +210,7 @@ class ImportHandler:
                     WorkspaceHandler().load()
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            Commiter.addandcommit(self.config, changeEntry)
+            Commiter.addandcommit(changeEntry)
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
