@@ -12,7 +12,12 @@ import configuration
 
 class GitFunctionsTestCase(unittest.TestCase):
     def setUp(self):
+        self.cwd = os.getcwd()
         self.createRepo()
+
+    def tearDown(self):
+        configuration.config = None
+        os.chdir(self.cwd)
 
     def createRepo(self):
         self.repodir = tempfile.mkdtemp(prefix="gitfunctionstestcase_")

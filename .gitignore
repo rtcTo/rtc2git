@@ -7,3 +7,4 @@ History_B*.txt
 __pycache__
 *.swp
 *.pyc
+*~
