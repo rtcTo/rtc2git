@@ -55,6 +55,17 @@ class GitFunctionsTestCase(unittest.TestCase):
         self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
         self.assertGitStatusShowsIsRenamed()
 
+    # test for issue #39
+    def test_ExistingDirStartsWithUpperCaseA_RenameChildFile_ExpectGitRename(self):
+        originalfilename = "AFileWithLowerStart"
+        newfilename = "aFileWithLowerStart"
+        subfolder = "Afolder" # this is key to reproduce #39
+        os.mkdir(subfolder)
+        os.chdir(subfolder)
+
+        self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
+        self.assertGitStatusShowsIsRenamed()
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         self.initializer.initialcommitandpush()
