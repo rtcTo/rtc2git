@@ -15,10 +15,15 @@ class Initializer:
     @staticmethod
     def createignore():
         newline = "\n"
-        with open(".gitignore", "w") as ignore:
-            ignore.write(".jazz5" + newline)
-            ignore.write(".metadata" + newline)
-            ignore.write(".jazzShed" + newline)
+        git_ignore = ".gitignore"
+
+        if not os.path.exists(git_ignore):
+            with open(git_ignore, "w") as ignore:
+                ignore.write(".jazz5" + newline)
+                ignore.write(".metadata" + newline)
+                ignore.write(".jazzShed" + newline)
+            shell.execute("git add " + git_ignore)
+            shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 
     def initalize(self):
         shell.execute("git init --bare " + self.repoName)
