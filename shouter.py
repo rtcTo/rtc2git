@@ -15,8 +15,8 @@ def safeshout(messagetoshout):
 
 
 def gettimestamp():
-    return datetime.now().strftime('%H:%M:%S')
+    return datetime.now().strftime('%X')
 
 
 def getdatetimestamp():
-    return datetime.now().strftime('%d.%m %H:%M:%S')
+    return datetime.now().strftime('%x %X')
