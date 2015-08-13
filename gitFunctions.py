@@ -126,10 +126,13 @@ class Commiter:
             shell.execute("git checkout -b " + branchname)
 
     @staticmethod
-    def pushbranch(branchname):
+    def pushbranch(branchname, force=False):
         if branchname:
             shouter.shout("Push of branch " + branchname)
-        shell.execute("git push origin " + branchname)
+        if force:
+            return shell.execute("git push -f origin " + branchname)
+        else:
+            return shell.execute("git push origin " + branchname)
 
     @staticmethod
     def pushmaster():
@@ -145,8 +148,11 @@ class Commiter:
 
     @staticmethod
     def promotebranchtomaster(branchname):
-        return Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S')) and \
-               Commiter.renamebranch(branchname, "master")
+        masterename = Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
+        migratedstreamrename = Commiter.renamebranch(branchname, "master")
+        if masterename is 0 and migratedstreamrename is 0:
+            return Commiter.pushbranch("master", True)
+        return 1  # branch couldnt get renamed
 
 
 class Differ:

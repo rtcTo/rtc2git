@@ -110,7 +110,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             Commiter.branch(branchname)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
             time.sleep(1)
-            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+            self.assertEqual(1, Commiter.promotebranchtomaster(branchname))
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
