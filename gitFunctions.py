@@ -26,14 +26,21 @@ class Initializer:
             shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 
     def initalize(self):
+        self.createrepo()
+        self.initializeconfig()
+        self.createignore()
+
+    def createrepo(self):
         shell.execute("git init --bare " + self.repoName)
         shouter.shout("Repository was created in " + os.getcwd())
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
+
+    @staticmethod
+    def initializeconfig():
         shell.execute("git config push.default current")
         shell.execute("git config core.ignorecase false")
         shouter.shout("Set core.ignorecase to false")
-        self.createignore()
 
     @staticmethod
     def initialcommitandpush():
