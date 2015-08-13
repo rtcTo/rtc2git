@@ -27,7 +27,7 @@ class Initializer:
 
     def initalize(self):
         self.createrepo()
-        self.initializeconfig()
+        self.setgitconfigs()
         self.createignore()
 
     def createrepo(self):
@@ -37,7 +37,7 @@ class Initializer:
         os.chdir(self.clonedRepoName)
 
     @staticmethod
-    def initializeconfig():
+    def setgitconfigs():
         shell.execute("git config push.default current")
         shell.execute("git config core.ignorecase false")
         shouter.shout("Set core.ignorecase to false")
