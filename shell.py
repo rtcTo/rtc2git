@@ -23,6 +23,7 @@ def getoutput(command):
         output = outputasbytestring.decode(sys.stdout.encoding).splitlines()
     except CalledProcessError as e:
         shouter.shout(e)
+        output = ""
     strippedlines = []
     for line in output:
         cleanedline = line.strip()
