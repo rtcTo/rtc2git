@@ -29,7 +29,7 @@ def resume():
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
     if Differ.has_diff():
-        sys.exit("Your git repo has some uncommited changes, please add/remove them")
+        sys.exit("Your git repo has some uncommited changes, please add/remove them manually")
     RTCInitializer.loginandcollectstreamuuid()
     if config.previousstreamname:
         prepare()
