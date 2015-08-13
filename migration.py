@@ -67,7 +67,9 @@ def migrate():
     changeentries = rtc.getchangeentriesofstream(streamuuid)
     rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
     git.pushbranch(streamname)
-    shouter.shout("All changes of stream '%s' accepted - Migration of stream completed" % streamname)
+    shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed. \n"
+                  "You should adjust your .gitignore to ignore the same files as defined in your .jazzignore \n"
+                  "Afterwards you can distribute the git-repo '%s'" % (streamname, config.gitRepoName))
 
 
 def prepare():
