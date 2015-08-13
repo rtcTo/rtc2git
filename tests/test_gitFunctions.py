@@ -99,7 +99,8 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
-        self.initializer.initialcommitandpush()
+        self.initializer.initialcommit()
+        Commiter.pushmaster()
         os.rename(originalfilename, newfilename)  # change capitalization
         shell.execute("git add -A")
         Commiter.handle_captitalization_filename_changes()

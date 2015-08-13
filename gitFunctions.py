@@ -43,14 +43,12 @@ class Initializer:
         shouter.shout("Set core.ignorecase to false")
 
     @staticmethod
-    def initialcommitandpush():
+    def initialcommit():
         shouter.shout("Initial git add")
         shell.execute("git add -A", os.devnull)
         shouter.shout("Finished initial git add, starting commit")
         shell.execute("git commit -m %s -q" % shell.quote("Initial Commit"))
-        shouter.shout("Finished commit")
-        shell.execute("git push origin master")
-        shouter.shout("Finished push")
+        shouter.shout("Finished initial commit")
 
 
 class Commiter:
@@ -126,8 +124,12 @@ class Commiter:
     @staticmethod
     def pushbranch(branchname):
         if branchname:
-            shouter.shout("Final push of branch " + branchname)
+            shouter.shout("Push of branch " + branchname)
         shell.execute("git push origin " + branchname)
+
+    @staticmethod
+    def pushmaster():
+        Commiter.pushbranch("master")
 
     @staticmethod
     def checkout(branchname):
