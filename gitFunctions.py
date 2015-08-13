@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import shouter
 import shell
@@ -15,30 +16,43 @@ class Initializer:
     @staticmethod
     def createignore():
         newline = "\n"
-        with open(".gitignore", "w") as ignore:
-            ignore.write(".jazz5" + newline)
-            ignore.write(".metadata" + newline)
-            ignore.write(".jazzShed" + newline)
+        git_ignore = ".gitignore"
+
+        if not os.path.exists(git_ignore):
+            with open(git_ignore, "w") as ignore:
+                ignore.write(".jazz5" + newline)
+                ignore.write(".metadata" + newline)
+                ignore.write(".jazzShed" + newline)
+            shell.execute("git add " + git_ignore)
+            shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 
     def initalize(self):
+        self.createrepo()
+        self.preparerepo()
+
+    def preparerepo(self):
+        self.setgitconfigs()
+        self.createignore()
+
+    def createrepo(self):
         shell.execute("git init --bare " + self.repoName)
         shouter.shout("Repository was created in " + os.getcwd())
         shell.execute("git clone " + self.repoName)
         os.chdir(self.clonedRepoName)
+
+    @staticmethod
+    def setgitconfigs():
         shell.execute("git config push.default current")
         shell.execute("git config core.ignorecase false")
         shouter.shout("Set core.ignorecase to false")
-        self.createignore()
 
     @staticmethod
-    def initialcommitandpush():
+    def initialcommit():
         shouter.shout("Initial git add")
         shell.execute("git add -A", os.devnull)
         shouter.shout("Finished initial git add, starting commit")
         shell.execute("git commit -m %s -q" % shell.quote("Initial Commit"))
-        shouter.shout("Finished commit")
-        shell.execute("git push origin master")
-        shouter.shout("Finished push")
+        shouter.shout("Finished initial commit")
 
 
 class Commiter:
@@ -113,14 +127,33 @@ class Commiter:
             shell.execute("git checkout -b " + branchname)
 
     @staticmethod
-    def pushbranch(branchname):
+    def pushbranch(branchname, force=False):
         if branchname:
-            shouter.shout("Final push of branch " + branchname)
-        shell.execute("git push origin " + branchname)
+            shouter.shout("Push of branch " + branchname)
+        if force:
+            return shell.execute("git push -f origin " + branchname)
+        else:
+            return shell.execute("git push origin " + branchname)
+
+    @staticmethod
+    def pushmaster():
+        Commiter.pushbranch("master")
 
     @staticmethod
     def checkout(branchname):
         shell.execute("git checkout " + branchname)
+
+    @staticmethod
+    def renamebranch(oldname, newname):
+        return shell.execute("git branch -m %s %s" % (oldname, newname))
+
+    @staticmethod
+    def promotebranchtomaster(branchname):
+        masterename = Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
+        migratedstreamrename = Commiter.renamebranch(branchname, "master")
+        if masterename is 0 and migratedstreamrename is 0:
+            return Commiter.pushbranch("master", True)
+        return 1  # branch couldnt get renamed
 
     @staticmethod
     def filterignore():

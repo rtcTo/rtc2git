@@ -13,7 +13,7 @@ from gitFunctions import Commiter, Differ
 class RTCInitializer:
     @staticmethod
     def initialize():
-        RTCInitializer.loginandcollectstreamuuid()
+        RTCLogin.loginandcollectstreamuuid()
         workspace = WorkspaceHandler()
         config = configuration.get()
         if config.useexistingworkspace:
@@ -22,11 +22,18 @@ class RTCInitializer:
         else:
             workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
+
+class RTCLogin:
     @staticmethod
     def loginandcollectstreamuuid():
         config = configuration.get()
         shell.execute("%s login -r %s -u %s -P %s" % (config.scmcommand, config.repo, config.user, config.password))
         config.collectstreamuuids()
+
+    @staticmethod
+    def logout():
+        config = configuration.get()
+        shell.execute("%s logout -r %s" % (config.scmcommand, config.repo))
 
 
 class WorkspaceHandler:
