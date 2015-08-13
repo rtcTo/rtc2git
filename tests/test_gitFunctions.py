@@ -31,7 +31,7 @@ class GitFunctionsTestCase(unittest.TestCase):
         try:
             yield
         finally:
-            shutil.rmtree(self.repodir, ignore_errors=True)  # on windows they remain in temp, git process locks it
+            shutil.rmtree(self.repodir, ignore_errors=True)  # on windows folder remains in temp, git process locks it
 
     def test_ExistingFileStartsWithLowerCase_RenameToUpperCase_ExpectGitRename(self):
         with self.createRepo():
@@ -59,7 +59,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             originalfilename = "AFileWithLowerStart"
             newfilename = "aFileWithLowerStart"
             subfolder = "test"
-            createAndChangeDirectory(subfolder)
+            create_and_change_directory(subfolder)
 
             self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
             self.assertGitStatusShowsIsRenamed()
@@ -70,15 +70,17 @@ class GitFunctionsTestCase(unittest.TestCase):
             originalfilename = "AFileWithLowerStart"
             newfilename = "aFileWithLowerStart"
             subfolder = "Afolder"  # this is key to reproduce #39
-            createAndChangeDirectory(subfolder)
+            create_and_change_directory(subfolder)
 
             self.simulateCreationAndRenameInGitRepo(originalfilename, newfilename)
             self.assertGitStatusShowsIsRenamed()
 
     def test_CreationOfGitIgnore_ExistAlready_ShouldntGetCreated(self):
-        with mkchdir("aFolder"):
+        with mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
             ignore = '.gitignore'
             existing_git_ignore_entry = "test"
+            Initializer().createrepo()
             with open(ignore, 'w') as gitIgnore:
                 gitIgnore.write(existing_git_ignore_entry)
             Initializer.createignore()
@@ -87,10 +89,13 @@ class GitFunctionsTestCase(unittest.TestCase):
                     self.assertEqual(existing_git_ignore_entry, line)
 
     def test_CreationOfGitIgnore_DoesntExist_ShouldGetCreated(self):
-        with mkchdir("aFolder"):
+        with mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
             ignore = '.gitignore'
+            Initializer().createrepo()
             Initializer.createignore()
-            # self.assertTrue(os.path.exists(os.getcwd().join(ignore)))
+            gitignorepath = os.path.join(os.getcwd(), ignore)
+            self.assertTrue(os.path.exists(gitignorepath))
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
@@ -100,18 +105,19 @@ class GitFunctionsTestCase(unittest.TestCase):
         Commiter.handle_captitalization_filename_changes()
 
 
-def createAndChangeDirectory(subfolder):
+def create_and_change_directory(subfolder):
     os.mkdir(subfolder)
-    # os.chdir(subfolder)
+    os.chdir(subfolder)
 
 
 @contextmanager
 def mkchdir(subfolder):
-    createAndChangeDirectory(subfolder)
+    tempfolder = tempfile.mkdtemp(prefix="gitfunctionstestcase_" + subfolder)
+    os.chdir(tempfolder)
     try:
-        yield
+        yield tempfolder
     finally:
-        shutil.rmtree(subfolder)
+        shutil.rmtree(tempfolder, ignore_errors=True)  # on windows folder remains in temp, git process locks it
 
 
 if __name__ == '__main__':
