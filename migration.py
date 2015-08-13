@@ -4,6 +4,7 @@ import sys
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
 from rtcFunctions import RTCInitializer
+from rtcFunctions import RTCLogin
 from gitFunctions import Initializer, Differ
 from gitFunctions import Commiter
 import configuration
@@ -32,7 +33,7 @@ def resume():
     os.chdir(config.clonedGitRepoName)
     if Differ.has_diff():
         sys.exit("Your git repo has some uncommited changes, please add/remove them manually")
-    RTCInitializer.loginandcollectstreamuuid()
+    RTCLogin.loginandcollectstreamuuid()
     Initializer.preparerepo()
     if config.previousstreamname:
         prepare()
@@ -70,6 +71,7 @@ def migrate():
     changeentries = rtc.getchangeentriesofstream(streamuuid)
     rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
     git.pushbranch(streamname)
+    RTCLogin.logout()
     shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed. \n"
                   "You should adjust your .gitignore to ignore the same files as defined in your .jazzignore \n"
                   "Afterwards you can distribute the git-repo '%s'" % (streamname, config.gitRepoName))
