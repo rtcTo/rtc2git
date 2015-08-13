@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import shouter
 import shell
@@ -137,6 +138,15 @@ class Commiter:
     @staticmethod
     def checkout(branchname):
         shell.execute("git checkout " + branchname)
+
+    @staticmethod
+    def renamebranch(oldname, newname):
+        return shell.execute("git branch -m %s %s" % (oldname, newname))
+
+    @staticmethod
+    def promotebranchtomaster(branchname):
+        return Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S')) and \
+               Commiter.renamebranch(branchname, "master")
 
 
 class Differ:

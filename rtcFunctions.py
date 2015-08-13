@@ -35,6 +35,7 @@ class RTCLogin:
         config = configuration.get()
         shell.execute("%s logout -r %s" % (config.scmcommand, config.repo))
 
+
 class WorkspaceHandler:
     def __init__(self):
         self.config = configuration.get()

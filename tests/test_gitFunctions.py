@@ -5,6 +5,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 import shutil
+import time
 
 from gitFunctions import Commiter, Initializer
 from configuration import Builder
@@ -96,6 +97,20 @@ class GitFunctionsTestCase(unittest.TestCase):
             Initializer.createignore()
             gitignorepath = os.path.join(os.getcwd(), ignore)
             self.assertTrue(os.path.exists(gitignorepath))
+
+    def test_BranchRenaming_TargetBranchDoesntExist(self):
+        with self.createRepo():
+            branchname = "hello"
+            Commiter.branch(branchname)
+            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+
+    def test_BranchRenaming_TargetBranchExist_ShouldntFail(self):
+        with self.createRepo():
+            branchname = "hello"
+            Commiter.branch(branchname)
+            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+            time.sleep(1)
+            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
