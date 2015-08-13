@@ -33,6 +33,7 @@ def resume():
     if Differ.has_diff():
         sys.exit("Your git repo has some uncommited changes, please add/remove them manually")
     RTCInitializer.loginandcollectstreamuuid()
+    Initializer.preparerepo()
     if config.previousstreamname:
         prepare()
     else:

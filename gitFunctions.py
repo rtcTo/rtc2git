@@ -27,6 +27,9 @@ class Initializer:
 
     def initalize(self):
         self.createrepo()
+        self.preparerepo()
+
+    def preparerepo(self):
         self.setgitconfigs()
         self.createignore()
 
