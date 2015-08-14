@@ -41,12 +41,23 @@ def resume():
         WorkspaceHandler().load()
 
 
+def existsrepo():
+    config = configuration.get()
+    directory = config.workDirectory
+    repodirectory = os.path.join(directory, config.gitRepoName)
+    return os.path.exists(directory) and os.path.exists(repodirectory)
+
+
+
 def migrate():
     rtc = ImportHandler()
     rtcworkspace = WorkspaceHandler()
     git = Commiter
 
-    initialize()
+    if existsrepo():
+        resume()
+    else:
+        initialize()
 
     config = configuration.get()
     streamuuid = config.streamuuid
