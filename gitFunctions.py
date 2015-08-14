@@ -220,10 +220,11 @@ class BinaryFileFilter:
         """
         extensions = config.ignorefileextensions
         repositoryfilestoignore = []
-        for repositoryfile in repositoryfiles:
-            for extension in extensions:
-                if len(repositoryfile) >= len(extension):
-                    if repositoryfile[-len(extension):] == extension:
+        for extension in extensions:
+          for repositoryfile in repositoryfiles:
+                extlen = len(extension)
+                if len(repositoryfile) >= extlen:
+                    if repositoryfile[-extlen:] == extension:
                         # escape a backslash with a backslash, and append a newline
                         repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
         return repositoryfilestoignore
