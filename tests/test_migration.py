@@ -5,6 +5,7 @@ from unittest.mock import patch
 import migration
 from configuration import Builder
 import configuration
+from tests import testhelper
 
 
 class MigrationTestCase(unittest.TestCase):
@@ -27,3 +28,11 @@ class MigrationTestCase(unittest.TestCase):
 
         expectedlogfolder = self.rootfolder + os.sep + "Logs"
         shutil_mock.rmtree.assert_called_once_with(expectedlogfolder)
+
+    def testExistRepo_Exists_ShouldReturnTrue(self):
+        with testhelper.createrepo(folderprefix="test_migration"):
+            self.assertTrue(migration.existsrepo())
+
+    def testExistRepo_DoesntExist_ShouldReturnFalse(self):
+        configuration.config = Builder().setworkdirectory(self.rootfolder).setgitreponame("test.git").build()
+        self.assertFalse(migration.existsrepo())

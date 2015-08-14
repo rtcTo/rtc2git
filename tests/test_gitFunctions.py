@@ -2,15 +2,13 @@ __author__ = 'Manuel'
 
 import unittest
 import os
-import tempfile
-from contextlib import contextmanager
-import shutil
 import time
 
 from gitFunctions import Commiter, Initializer
 from configuration import Builder
 import shell
 import configuration
+from tests import testhelper
 
 
 class GitFunctionsTestCase(unittest.TestCase):
@@ -22,20 +20,8 @@ class GitFunctionsTestCase(unittest.TestCase):
         configuration.config = None
         os.chdir(self.cwd)
 
-    @contextmanager
-    def createRepo(self):
-        self.repodir = tempfile.mkdtemp(prefix="gitfunctionstestcase_")
-        configuration.config = Builder().setworkdirectory(self.repodir).setgitreponame("test.git").build()
-        self.initializer = Initializer()
-        os.chdir(self.repodir)
-        self.initializer.initalize()
-        try:
-            yield
-        finally:
-            shutil.rmtree(self.repodir, ignore_errors=True)  # on windows folder remains in temp, git process locks it
-
     def test_ExistingFileStartsWithLowerCase_RenameToUpperCase_ExpectGitRename(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             originalfilename = "aFileWithLowerStart"
             newfilename = "AFileWithLowerStart"
 
@@ -48,7 +34,7 @@ class GitFunctionsTestCase(unittest.TestCase):
         self.assertEquals("R", modifier)
 
     def test_ExistingFileStartsWithUpperCase_RenameToLowerCase_ExpectGitRename(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             originalfilename = "AFileWithLowerStart"
             newfilename = "aFileWithLowerStart"
 
@@ -56,7 +42,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertGitStatusShowsIsRenamed()
 
     def test_ExistingFileStartsWithUpperCaseInSubFolder_RenameToLowerCase_ExpectGitRename(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             originalfilename = "AFileWithLowerStart"
             newfilename = "aFileWithLowerStart"
             subfolder = "test"
@@ -67,7 +53,7 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     # test for issue #39
     def test_ExistingDirStartsWithUpperCaseA_RenameChildFile_ExpectGitRename(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             originalfilename = "AFileWithLowerStart"
             newfilename = "aFileWithLowerStart"
             subfolder = "Afolder"  # this is key to reproduce #39
@@ -77,7 +63,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertGitStatusShowsIsRenamed()
 
     def test_CreationOfGitIgnore_ExistAlready_ShouldntGetCreated(self):
-        with mkchdir("aFolder") as folder:
+        with testhelper.mkchdir("aFolder") as folder:
             configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
             ignore = '.gitignore'
             existing_git_ignore_entry = "test"
@@ -90,7 +76,7 @@ class GitFunctionsTestCase(unittest.TestCase):
                     self.assertEqual(existing_git_ignore_entry, line)
 
     def test_CreationOfGitIgnore_DoesntExist_ShouldGetCreated(self):
-        with mkchdir("aFolder") as folder:
+        with testhelper.mkchdir("aFolder") as folder:
             configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
             ignore = '.gitignore'
             Initializer().createrepo()
@@ -99,13 +85,13 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertTrue(os.path.exists(gitignorepath))
 
     def test_BranchRenaming_TargetBranchDoesntExist(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
 
     def test_BranchRenaming_TargetBranchExist_ShouldntFail(self):
-        with self.createRepo():
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
@@ -114,7 +100,7 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
-        self.initializer.initialcommit()
+        Initializer.initialcommit()
         Commiter.pushmaster()
         os.rename(originalfilename, newfilename)  # change capitalization
         shell.execute("git add -A")
@@ -125,15 +111,6 @@ def create_and_change_directory(subfolder):
     os.mkdir(subfolder)
     os.chdir(subfolder)
 
-
-@contextmanager
-def mkchdir(subfolder):
-    tempfolder = tempfile.mkdtemp(prefix="gitfunctionstestcase_" + subfolder)
-    os.chdir(tempfolder)
-    try:
-        yield tempfolder
-    finally:
-        shutil.rmtree(tempfolder, ignore_errors=True)  # on windows folder remains in temp, git process locks it
 
 
 if __name__ == '__main__':
