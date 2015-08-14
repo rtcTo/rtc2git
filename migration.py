@@ -28,6 +28,7 @@ def initialize():
 
 
 def resume():
+    shouter.shout("Found existing git repo in work directory, resuming migration...")
     config = configuration.get()
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
@@ -41,12 +42,21 @@ def resume():
         WorkspaceHandler().load()
 
 
+def existsrepo():
+    config = configuration.get()
+    repodirectory = os.path.join(config.workDirectory, config.gitRepoName)
+    return os.path.exists(repodirectory)
+
+
 def migrate():
     rtc = ImportHandler()
     rtcworkspace = WorkspaceHandler()
     git = Commiter
 
-    initialize()
+    if existsrepo():
+        resume()
+    else:
+        initialize()
 
     config = configuration.get()
     streamuuid = config.streamuuid

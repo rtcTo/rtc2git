@@ -30,9 +30,10 @@ class Initializer:
         self.createrepo()
         self.preparerepo()
 
-    def preparerepo(self):
-        self.setgitconfigs()
-        self.createignore()
+    @staticmethod
+    def preparerepo():
+        Initializer.setgitconfigs()
+        Initializer.createignore()
 
     def createrepo(self):
         shell.execute("git init --bare " + self.repoName)
