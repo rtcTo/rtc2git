@@ -28,6 +28,7 @@ def initialize():
 
 
 def resume():
+    shouter.shout("Found git repo, resume migration")
     config = configuration.get()
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
@@ -43,10 +44,8 @@ def resume():
 
 def existsrepo():
     config = configuration.get()
-    directory = config.workDirectory
-    repodirectory = os.path.join(directory, config.gitRepoName)
-    return os.path.exists(directory) and os.path.exists(repodirectory)
-
+    repodirectory = os.path.join(config.workDirectory, config.gitRepoName)
+    return os.path.exists(repodirectory)
 
 
 def migrate():
