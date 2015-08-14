@@ -65,7 +65,14 @@ class Commiter:
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
+        # get added files
+        # if config ignore:
+        #     reset the file(s) and add them to .gitignore
+        #     if some files ignored: git add .gitignore
+        #     (we assume there is no Rename involved, this would be more complex)
+        # then pass the list into handle_capitalization
         Commiter.handle_captitalization_filename_changes()
+
 
         shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
