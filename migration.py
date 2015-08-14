@@ -28,7 +28,7 @@ def initialize():
 
 
 def resume():
-    shouter.shout("Found git repo, resume migration")
+    shouter.shout("Found existing git repo in work directory, resuming migration...")
     config = configuration.get()
     os.chdir(config.workDirectory)
     os.chdir(config.clonedGitRepoName)
