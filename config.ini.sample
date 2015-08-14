@@ -42,7 +42,7 @@ UseAutomaticConflictResolution = False
 LogShellCommands = False
 
 # Ignore big (binary) files
-# Define a comma-separated list of extensions to be generally ignored
+# Define a semicolon-separated list of extensions to be generally ignored
 # Example:
-# IgnoreFileExtensions = .zip, .jar, .exe, .dll
+# IgnoreFileExtensions = .zip; .jar; .exe; .dll
 IgnoreFileExtensions =

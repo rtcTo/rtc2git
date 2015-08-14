@@ -14,12 +14,13 @@ def read(configname="config.ini"):
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
     migrationsection = parsedconfig['Migration']
+    miscellaneoussection = parsedconfig['Miscellaneous']
 
     user = generalsection['User']
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
-    shell.logcommands = parsedconfig['Miscellaneous']['LogShellCommands'] == "True"
+    shell.logcommands = miscellaneoussection['LogShellCommands'] == "True"
     shell.setencoding(generalsection['encoding'])
 
     workspace = shlex.quote(generalsection['WorkspaceName'])
@@ -33,6 +34,7 @@ def read(configname="config.ini"):
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
     previousstreamname = migrationsection['PreviousStream'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
+    ignorefileextensions = miscellaneoussection['IgnoreFileExtensions']
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -40,6 +42,7 @@ def read(configname="config.ini"):
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
+    configbuilder.setignorefileextensions(ignorefileextensions)
     global config
     config = configbuilder.build()
     return config
@@ -231,7 +234,7 @@ class ConfigObject:
         """
         splittedextensions = []
         if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
-            splittedextensions = ignorefileextensionsproperty.split(',')
+            splittedextensions = ignorefileextensionsproperty.split(';')
         ignorefileextensions = []
         for splittedextension in splittedextensions:
             ignorefileextensions.append(splittedextension.strip())
