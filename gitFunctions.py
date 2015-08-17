@@ -150,8 +150,9 @@ class Commiter:
     @staticmethod
     def promotebranchtomaster(branchname):
         masterename = Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
-        migratedstreamrename = Commiter.renamebranch(branchname, "master")
-        if masterename is 0 and migratedstreamrename is 0:
+        Commiter.branch("master")
+
+        if masterename is 0:
             return Commiter.pushbranch("master", True)
         return 1  # branch couldnt get renamed
 
