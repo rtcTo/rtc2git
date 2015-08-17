@@ -81,7 +81,7 @@ def migrate():
     changeentries = rtc.getchangeentriesofstream(streamuuid)
     rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
     git.pushbranch(streamname)
-    git.promotecurrentbranchtomaster()
+    git.promotebranchtomaster(streamname)
     RTCLogin.logout()
     shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed. \n"
                   "You should adjust your .gitignore to ignore the same files as defined in your .jazzignore \n"
