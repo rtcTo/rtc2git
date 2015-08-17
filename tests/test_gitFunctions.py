@@ -98,6 +98,13 @@ class GitFunctionsTestCase(unittest.TestCase):
             time.sleep(1)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
 
+    def test_BranchRenaming_TwoCallsAtTheSameTime_ShouldFail(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            branchname = "hello"
+            Commiter.branch(branchname)
+            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+            self.assertEqual(1, Commiter.promotebranchtomaster(branchname))
+
     def test_CopyBranch_TargetDoesntExist_ShouldBeSucessful(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"

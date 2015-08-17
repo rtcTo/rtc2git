@@ -159,7 +159,9 @@ class Commiter:
 
         if masterename is 0 and copybranch is 0:
             return Commiter.pushbranch(master, True)
-        return 1  # branch couldnt get renamed
+        else:
+            shouter.shout("Branch %s couldnt get renamed to master, please do that on your own" % branchname)
+            return 1  # branch couldnt get renamed
 
 
 class Differ:
