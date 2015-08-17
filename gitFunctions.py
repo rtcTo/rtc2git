@@ -156,14 +156,20 @@ class Commiter:
         return shell.execute("git branch -m %s %s" % (oldname, newname))
 
     @staticmethod
-    def promotecurrentbranchtomaster():
+    def copybranch(existingbranchname, newbranchname):
+        return shell.execute("git branch %s %s" % (newbranchname, existingbranchname))
+
+    @staticmethod
+    def promotebranchtomaster(branchname):
         master = "master"
         masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
-        Commiter.branch(master)  # switch current branch to master
+        copybranch = Commiter.copybranch(branchname, master)
 
-        if masterename is 0:
+        if masterename is 0 and copybranch is 0:
             return Commiter.pushbranch(master, True)
-        return 1  # branch couldnt get renamed
+        else:
+            shouter.shout("Branch %s couldnt get renamed to master, please do that on your own" % branchname)
+            return 1  # branch couldnt get renamed
 
     @staticmethod
     def filterignore():
