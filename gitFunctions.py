@@ -156,11 +156,13 @@ class Commiter:
         return shell.execute("git branch -m %s %s" % (oldname, newname))
 
     @staticmethod
-    def promotebranchtomaster(branchname):
-        masterename = Commiter.renamebranch("master", "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
-        migratedstreamrename = Commiter.renamebranch(branchname, "master")
-        if masterename is 0 and migratedstreamrename is 0:
-            return Commiter.pushbranch("master", True)
+    def promotecurrentbranchtomaster():
+        master = "master"
+        masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
+        Commiter.branch(master)  # switch current branch to master
+
+        if masterename is 0:
+            return Commiter.pushbranch(master, True)
         return 1  # branch couldnt get renamed
 
     @staticmethod

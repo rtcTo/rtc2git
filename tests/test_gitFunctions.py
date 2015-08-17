@@ -88,15 +88,15 @@ class GitFunctionsTestCase(unittest.TestCase):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
-            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+            self.assertEqual(0, Commiter.promotecurrentbranchtomaster())
 
     def test_BranchRenaming_TargetBranchExist_ShouldntFail(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
-            self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
+            self.assertEqual(0, Commiter.promotecurrentbranchtomaster())
             time.sleep(1)
-            self.assertEqual(1, Commiter.promotebranchtomaster(branchname))
+            self.assertEqual(0, Commiter.promotecurrentbranchtomaster())
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
