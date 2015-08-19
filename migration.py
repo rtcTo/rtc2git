@@ -53,7 +53,9 @@ def migrate():
     rtcworkspace = WorkspaceHandler()
     git = Commiter
 
+    resumed = False
     if existsrepo():
+        resumed = True
         resume()
     else:
         initialize()
@@ -65,23 +67,26 @@ def migrate():
 
     componentbaselineentries = rtc.getcomponentbaselineentriesfromstream(streamuuid)
     rtcworkspace.setnewflowtargets(streamuuid)
-    git.branch(branchname)
 
     history = rtc.readhistory(componentbaselineentries, streamname)
-    changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
 
-    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-    shouter.shout("All changes until creation of stream '%s' accepted" % streamname)
-    git.pushbranch(branchname)
+    if not resumed:
+        git.branch(branchname)
+        changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
+        rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+        shouter.shout("All changes until creation of stream '%s' accepted" % streamname)
+        git.pushbranch(branchname)
+
+        rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
+        rtcworkspace.load()
+
     git.branch(streamname)
-
-    rtcworkspace.setcomponentstobaseline(componentbaselineentries, streamuuid)
-    rtcworkspace.load()
-
     changeentries = rtc.getchangeentriesofstream(streamuuid)
-    rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-    git.pushbranch(streamname)
-    git.promotebranchtomaster(streamname)
+    amountofacceptedchanges = rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
+    if not resumed or amountofacceptedchanges > 0:
+        git.pushbranch(streamname)
+        git.promotebranchtomaster(streamname)
+
     RTCLogin.logout()
     shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed. \n"
                   "You should adjust your .gitignore to ignore the same files as defined in your .jazzignore \n"
