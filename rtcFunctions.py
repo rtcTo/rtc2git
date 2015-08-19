@@ -173,7 +173,7 @@ class ImportHandler:
         return componentbaselinesentries
 
     def determineinitialbaseline(self, stream):
-        regex = "\(_\w+\)"
+        regex = "\(_[\w-]+\)"
         pattern = re.compile(regex)
         config = self.config
         componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
