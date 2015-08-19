@@ -53,6 +53,6 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(['.zip'], config.ignorefileextensions)
 
     def test_fileExtensionsToBeIgnored_MultipleExtensions(self):
-        config = Builder().setignorefileextensions(".zip, .jar,  .exe").build()
+        config = Builder().setignorefileextensions(".zip; .jar;  .exe").build()
         self.assertTrue(len(config.ignorefileextensions) == 3)
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
