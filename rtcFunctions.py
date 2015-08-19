@@ -218,6 +218,7 @@ class ImportHandler:
                 reloaded = True
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             Commiter.addandcommit(changeEntry)
+        return amountofacceptedchanges
 
     @staticmethod
     def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
