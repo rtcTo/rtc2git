@@ -192,6 +192,7 @@ class ImportHandler:
                     uuid = matchedstring[1:-1]
                     entry.baseline = uuid
                     entry.baselinename = "Automatically detected initial baseline"
+                    shouter.shout("Initial baseline is: %s" % baselineline)
                     break
         return componentbaselinesentries
 
