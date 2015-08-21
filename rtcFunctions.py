@@ -201,7 +201,6 @@ class ImportHandler:
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
         changestoskip = 0
-        reloaded = False
 
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
@@ -213,10 +212,9 @@ class ImportHandler:
             if not acceptedsuccesfully:
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
-            elif not reloaded:
-                if not Differ.has_diff():
-                    WorkspaceHandler().load()
-                reloaded = True
+            if not Differ.has_diff():
+                # no differences found - force reload of the workspace
+                WorkspaceHandler().load()
             shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
             Commiter.addandcommit(changeEntry)
         return amountofacceptedchanges
