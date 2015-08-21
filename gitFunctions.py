@@ -65,14 +65,7 @@ class Commiter:
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
-        # get added files
-        # if config ignore:
-        #     reset the file(s) and add them to .gitignore
-        #     if some files ignored: git add .gitignore
-        #     (we assume there is no Rename involved, this would be more complex)
-        # then pass the list into handle_capitalization
         Commiter.handle_captitalization_filename_changes()
-
 
         shell.execute(Commiter.getcommitcommand(changeentry))
         Commiter.commitcounter += 1
@@ -176,11 +169,15 @@ class Commiter:
         """
         add files with extensions to be ignored to .gitignore
         """
-        strippedlines = shell.getoutput('git status -z')
-        # expect exactly one line:
-        for strippedline in strippedlines:
-            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedline)
-            Commiter.ignore(BinaryFileFilter.match(repositoryfiles, configuration.get()))
+        # there is only work to to if there are extensions configured at all
+        ignorefileextensions = configuration.get().ignorefileextensions
+        if len(ignorefileextensions) > 0:
+            # make sure we see all untracked files:
+            strippedlines = shell.getoutput('git status --untracked-files=all --porcelain -z')
+            # expect exactly one line:
+            for strippedline in strippedlines:
+                repositoryfiles = Commiter.splitoutputofgitstatusz(strippedline)
+                Commiter.ignore(BinaryFileFilter.match(repositoryfiles, ignorefileextensions))
 
     @staticmethod
     def ignore(filelines):
@@ -225,16 +222,15 @@ class Differ:
 class BinaryFileFilter:
 
     @staticmethod
-    def match(repositoryfiles, config):
+    def match(repositoryfiles, extensions):
         """
         Determine the repository files to ignore.
         These filenames are returned as a list of newline terminated lines, ready to be added to .gitignore with writelines()
 
         :param repositoryfiles: a list of (changed) files
-        :param config the configuration
+        :param extensions the extensions to be ignored
         :return: a list of newline terminated file names, possibly empty
         """
-        extensions = config.ignorefileextensions
         repositoryfilestoignore = []
         for extension in extensions:
           for repositoryfile in repositoryfiles:
