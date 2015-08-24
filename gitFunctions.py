@@ -177,7 +177,7 @@ class Commiter:
             # expect exactly one line:
             for strippedline in strippedlines:
                 repositoryfiles = Commiter.splitoutputofgitstatusz(strippedline)
-                Commiter.ignore(BinaryFileFilter.match(repositoryfiles, ignorefileextensions))
+                Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
 
     @staticmethod
     def ignore(filelines):
@@ -196,8 +196,6 @@ class Commiter:
 
         :param line: the output line from the command
         :return: a list of all repository files with status changes
-
-        [ to add to .gitignore, each backslash has to be escaped with a backslash ]
         """
         repositoryfiles = []
         entries = line.split(sep='\x00')         # ascii 0 is the delimiter
@@ -219,13 +217,14 @@ class Differ:
         return shell.execute("git diff --quiet") is 1
 
 
-class BinaryFileFilter:
+class ExtensionFilter:
 
     @staticmethod
     def match(repositoryfiles, extensions):
         """
         Determine the repository files to ignore.
-        These filenames are returned as a list of newline terminated lines, ready to be added to .gitignore with writelines()
+        These filenames are returned as a list of newline terminated lines,
+        ready to be added to .gitignore with writelines()
 
         :param repositoryfiles: a list of (changed) files
         :param extensions the extensions to be ignored

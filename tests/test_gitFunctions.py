@@ -116,6 +116,23 @@ class GitFunctionsTestCase(unittest.TestCase):
             Commiter.branch(branchname)
             self.assertFalse(Commiter.copybranch("master", branchname) is 0)
 
+    def test_splitoutputofgitstatusz(self):
+        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readline())
+            self.assertEqual(12, len(repositoryfiles))
+            self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
+            self.assertEqual('project2/src/taka.txt', repositoryfiles[1])
+            self.assertEqual('project1/src/taka.txt', repositoryfiles[2]) # rename continuation would bite here
+            self.assertEqual('project2/src/takatuka.txt', repositoryfiles[3])
+            self.assertEqual('project2/src/tuka.txt', repositoryfiles[4])
+            self.assertEqual('project1/src/sub/kling -- klong.zip', repositoryfiles[5])
+            self.assertEqual('project1/src/sub/kling :and: klong.zip', repositoryfiles[6])
+            self.assertEqual('project1/src/sub/kling ;and; klong.zip', repositoryfiles[7])
+            self.assertEqual('project1/src/sub/kling >and< klong.zip', repositoryfiles[8])
+            self.assertEqual('project1/src/sub/kling \\and\\ klong.zip', repositoryfiles[9])
+            self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
+            self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()

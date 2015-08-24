@@ -33,3 +33,17 @@ def createrepo(reponame="test.git", folderprefix="rtc2test_case"):
     finally:
         os.chdir(previousdir)
         shutil.rmtree(repodir, ignore_errors=True)  # on windows folder remains in temp, git process locks it
+
+
+@contextmanager
+def cd(newdir):
+    """
+    Change directory to newdir and return to the previous upon completion
+    :param newdir: directory to change to
+    """
+    previousdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(previousdir)
