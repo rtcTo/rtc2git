@@ -79,23 +79,21 @@ class Commiter:
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status -z")
-        for line in lines:
-            for entry in line.split(sep='\x00'):  # ascii 0 is the delimiter
-                entry = entry.strip()
-                if entry.startswith("A "):
-                    newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
-                    directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
-                    newfilename = os.path.basename(newfilerelativepath)
-                    cwd = os.getcwd()
-                    os.chdir(directoryofnewfile)
-                    files = shell.getoutput("git ls-files")
-                    for previousFileName in files:
-                        was_same_file_name = newfilename.lower() == previousFileName.lower()
-                        file_was_renamed = newfilename != previousFileName
+        for entry in Commiter.splitoutputofgitstatusz(lines):
+            if entry.startswith("A "):
+                newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
+                directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
+                newfilename = os.path.basename(newfilerelativepath)
+                cwd = os.getcwd()
+                os.chdir(directoryofnewfile)
+                files = shell.getoutput("git ls-files")
+                for previousFileName in files:
+                    was_same_file_name = newfilename.lower() == previousFileName.lower()
+                    file_was_renamed = newfilename != previousFileName
 
-                        if was_same_file_name and file_was_renamed:
-                            shell.execute("git rm --cached %s" % previousFileName)
-                    os.chdir(cwd)
+                    if was_same_file_name and file_was_renamed:
+                        shell.execute("git rm --cached %s" % previousFileName)
+                os.chdir(cwd)
 
     @staticmethod
     def getcommitcommand(changeentry):
@@ -174,10 +172,8 @@ class Commiter:
         if len(ignorefileextensions) > 0:
             # make sure we see all untracked files:
             strippedlines = shell.getoutput('git status --untracked-files=all --porcelain -z')
-            # expect exactly one line:
-            for strippedline in strippedlines:
-                repositoryfiles = Commiter.splitoutputofgitstatusz(strippedline)
-                Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
+            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+            Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
 
     @staticmethod
     def ignore(filelines):
@@ -190,24 +186,25 @@ class Commiter:
                 ignore.writelines(filelines)
 
     @staticmethod
-    def splitoutputofgitstatusz(line):
+    def splitoutputofgitstatusz(lines):
         """
         Split the output of  'git status -z' into single files
 
-        :param line: the output line from the command
+        :param lines: the output line(s) from the command
         :return: a list of all repository files with status changes
         """
         repositoryfiles = []
-        entries = line.split(sep='\x00')         # ascii 0 is the delimiter
-        for entry in entries:
-            entry = entry.strip()
-            if len(entry) > 0:
-                start = entry.find(' ')
-                if 1 <= start <= 2:
-                    repositoryfile = entry[3:]   # output is formatted
-                else:
-                    repositoryfile = entry       # file on a single line (e.g. rename continuation)
-                repositoryfiles.append(repositoryfile)
+        for line in lines:                           # expect exactly one line
+            entries = line.split(sep='\x00')         # ascii 0 is the delimiter
+            for entry in entries:
+                entry = entry.strip()
+                if len(entry) > 0:
+                    start = entry.find(' ')
+                    if 1 <= start <= 2:
+                        repositoryfile = entry[3:]   # output is formatted
+                    else:
+                        repositoryfile = entry       # file on a single line (e.g. rename continuation)
+                    repositoryfiles.append(repositoryfile)
         return repositoryfiles
 
 

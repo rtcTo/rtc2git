@@ -118,7 +118,7 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def test_splitoutputofgitstatusz(self):
         with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
-            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readline())
+            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines())
             self.assertEqual(12, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
             self.assertEqual('project2/src/taka.txt', repositoryfiles[1])
@@ -153,8 +153,8 @@ class GitFunctionsTestCase(unittest.TestCase):
                 lines = gitIgnore.readlines()
                 self.assertEqual(2, len(lines))
                 lines.sort()
-                self.assertEqual('test.jar', lines[0].strip())
-                self.assertEqual('test.zip', lines[1].strip())
+                self.assertEqual(jar, lines[0].strip())
+                self.assertEqual(zip, lines[1].strip())
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
