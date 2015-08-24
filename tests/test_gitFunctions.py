@@ -133,6 +133,24 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
 
+    def test_splitoutputofgitstatusz_filterprefix_A(self):
+        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), 'A  ')
+            self.assertEqual(1, len(repositoryfiles))
+            self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
+
+    def test_splitoutputofgitstatusz_filterprefix_double_question(self):
+        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), '?? ')
+            self.assertEqual(7, len(repositoryfiles))
+            self.assertEqual('project1/src/sub/kling -- klong.zip', repositoryfiles[0])
+            self.assertEqual('project1/src/sub/kling :and: klong.zip', repositoryfiles[1])
+            self.assertEqual('project1/src/sub/kling ;and; klong.zip', repositoryfiles[2])
+            self.assertEqual('project1/src/sub/kling >and< klong.zip', repositoryfiles[3])
+            self.assertEqual('project1/src/sub/kling \\and\\ klong.zip', repositoryfiles[4])
+            self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[5])
+            self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[6])
+
     def test_filterignore(self):
         with testhelper.mkchdir("aFolder") as folder:
             # create test repo

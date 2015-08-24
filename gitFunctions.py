@@ -79,21 +79,19 @@ class Commiter:
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status -z")
-        for entry in Commiter.splitoutputofgitstatusz(lines):
-            if entry.startswith("A "):
-                newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
-                directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
-                newfilename = os.path.basename(newfilerelativepath)
-                cwd = os.getcwd()
-                os.chdir(directoryofnewfile)
-                files = shell.getoutput("git ls-files")
-                for previousFileName in files:
-                    was_same_file_name = newfilename.lower() == previousFileName.lower()
-                    file_was_renamed = newfilename != previousFileName
+        for newfilerelativepath in Commiter.splitoutputofgitstatusz(lines, "A  "):
+            directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
+            newfilename = os.path.basename(newfilerelativepath)
+            cwd = os.getcwd()
+            os.chdir(directoryofnewfile)
+            files = shell.getoutput("git ls-files")
+            for previousFileName in files:
+                was_same_file_name = newfilename.lower() == previousFileName.lower()
+                file_was_renamed = newfilename != previousFileName
 
-                    if was_same_file_name and file_was_renamed:
-                        shell.execute("git rm --cached %s" % previousFileName)
-                os.chdir(cwd)
+                if was_same_file_name and file_was_renamed:
+                    shell.execute("git rm --cached %s" % previousFileName)
+            os.chdir(cwd)
 
     @staticmethod
     def getcommitcommand(changeentry):
@@ -186,12 +184,13 @@ class Commiter:
                 ignore.writelines(filelines)
 
     @staticmethod
-    def splitoutputofgitstatusz(lines):
+    def splitoutputofgitstatusz(lines, filterprefix=None):
         """
         Split the output of  'git status -z' into single files
 
         :param lines: the output line(s) from the command
-        :return: a list of all repository files with status changes
+        :param filterprefix: if given, only the files of those entries matching the prefix will be returned
+        :return: a list of repository files with status changes
         """
         repositoryfiles = []
         for line in lines:                           # expect exactly one line
@@ -199,12 +198,13 @@ class Commiter:
             for entry in entries:
                 entry = entry.strip()
                 if len(entry) > 0:
-                    start = entry.find(' ')
-                    if 1 <= start <= 2:
-                        repositoryfile = entry[3:]   # output is formatted
-                    else:
-                        repositoryfile = entry       # file on a single line (e.g. rename continuation)
-                    repositoryfiles.append(repositoryfile)
+                    if not filterprefix or entry.startswith(filterprefix):
+                        start = entry.find(' ')
+                        if 1 <= start <= 2:
+                            repositoryfile = entry[3:]   # output is formatted
+                        else:
+                            repositoryfile = entry       # file on a single line (e.g. rename continuation)
+                        repositoryfiles.append(repositoryfile)
         return repositoryfiles
 
 
