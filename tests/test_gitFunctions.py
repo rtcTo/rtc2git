@@ -133,6 +133,29 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
 
+    def test_filterignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            # create test repo
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setignorefileextensions('.zip; .jar').build()
+            ignore = '.gitignore'
+            Initializer().createrepo()
+            # simulate addition of .zip and .jar files
+            zip = 'test.zip'
+            with open(zip, 'w') as testzip:
+                testzip.write('test zip content')
+            jar = 'test.jar'
+            with open(jar, 'w') as testjar:
+                testjar.write('test jar content')
+            # do the filtering
+            Commiter.filterignore()
+            # check output of .gitignore
+            with open(ignore, 'r') as gitIgnore:
+                lines = gitIgnore.readlines()
+                self.assertEqual(2, len(lines))
+                lines.sort()
+                self.assertEqual('test.jar', lines[0].strip())
+                self.assertEqual('test.zip', lines[1].strip())
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()
