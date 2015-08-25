@@ -169,7 +169,7 @@ class Commiter:
         ignorefileextensions = configuration.get().ignorefileextensions
         if len(ignorefileextensions) > 0:
             # make sure we see all untracked files:
-            strippedlines = shell.getoutput('git status --untracked-files=all --porcelain -z')
+            strippedlines = shell.getoutput('git status --untracked-files=all -z')
             repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
             Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
 
