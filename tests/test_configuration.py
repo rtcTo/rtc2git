@@ -3,6 +3,7 @@ import os
 
 from configuration import Builder
 import configuration
+import shell
 
 
 class ConfigurationTestCase(unittest.TestCase):
@@ -38,3 +39,55 @@ class ConfigurationTestCase(unittest.TestCase):
         config = configuration.read("../config.ini.sample")
         self.assertEqual("lscm", config.scmcommand)
         self.assertEqual(config, configuration.get())
+
+    def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromNone(self):
+        config = Builder().setignorefileextensions(None).build()
+        self.assertEqual(0, len(config.ignorefileextensions))
+
+    def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromEmpty(self):
+        config = Builder().setignorefileextensions("").build()
+        self.assertEqual(0, len(config.ignorefileextensions))
+
+    def test_fileExtensionsToBeIgnored_SingleExtensions(self):
+        config = Builder().setignorefileextensions(" .zip  ").build()
+        self.assertEqual(1, len(config.ignorefileextensions))
+        self.assertEqual(['.zip'], config.ignorefileextensions)
+
+    def test_fileExtensionsToBeIgnored_MultipleExtensions(self):
+        config = Builder().setignorefileextensions(".zip; .jar;  .exe").build()
+        self.assertEqual(3, len(config.ignorefileextensions))
+        self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
+
+    def test_read(self):
+        # [General]
+        config = configuration.read('resources/test_config.ini')
+        self.assertEqual('https://rtc.supercompany.com/ccm/', config.repo)
+        self.assertEqual('superuser', config.user)
+        self.assertEqual('supersecret', config.password)
+        self.assertEqual('super.git', config.gitRepoName)
+        self.assertEqual('Superworkspace', config.workspace)
+        self.assertEqual('/tmp/migration', config.workDirectory)
+        self.assertTrue(config.useexistingworkspace)
+        self.assertEqual('lscm', config.scmcommand)
+        self.assertEqual('UTF-8', shell.encoding)  # directly deviated to shell
+        # [Migration]
+        self.assertEqual('Superstream', config.streamname)
+        self.assertEqual('Previousstream', config.previousstreamname)
+        initialcomponentbaselines = config.initialcomponentbaselines
+        self.assertEqual(2, len(initialcomponentbaselines))
+        initialcomponentbaseline = initialcomponentbaselines[0]
+        self.assertEqual('Component1', initialcomponentbaseline.componentname)
+        self.assertEqual('Baseline1', initialcomponentbaseline.baselinename)
+        initialcomponentbaseline = initialcomponentbaselines[1]
+        self.assertEqual('Component2', initialcomponentbaseline.componentname)
+        self.assertEqual('Baseline2', initialcomponentbaseline.baselinename)
+        self.assertTrue(config.useprovidedhistory)
+        self.assertTrue(config.useautomaticconflictresolution)
+        # [Miscellaneous]
+        self.assertTrue(shell.logcommands)  # directly deviated to shell
+        ignorefileextensions = config.ignorefileextensions
+        self.assertEqual(2, len(ignorefileextensions))
+        self.assertEqual('.zip', ignorefileextensions[0])
+        self.assertEqual('.jar', ignorefileextensions[1])
+
+

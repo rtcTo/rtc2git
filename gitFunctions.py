@@ -61,6 +61,7 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
+        Commiter.filterignore()
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
@@ -78,23 +79,19 @@ class Commiter:
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
         lines = shell.getoutput("git status -z")
-        for line in lines:
-            for entry in line.split(sep='\x00'):  # ascii 0 is the delimiter
-                entry = entry.strip()
-                if entry.startswith("A "):
-                    newfilerelativepath = entry[3:]  # cut A and following space and NUL at the end
-                    directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
-                    newfilename = os.path.basename(newfilerelativepath)
-                    cwd = os.getcwd()
-                    os.chdir(directoryofnewfile)
-                    files = shell.getoutput("git ls-files")
-                    for previousFileName in files:
-                        was_same_file_name = newfilename.lower() == previousFileName.lower()
-                        file_was_renamed = newfilename != previousFileName
+        for newfilerelativepath in Commiter.splitoutputofgitstatusz(lines, "A  "):
+            directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
+            newfilename = os.path.basename(newfilerelativepath)
+            cwd = os.getcwd()
+            os.chdir(directoryofnewfile)
+            files = shell.getoutput("git ls-files")
+            for previousFileName in files:
+                was_same_file_name = newfilename.lower() == previousFileName.lower()
+                file_was_renamed = newfilename != previousFileName
 
-                        if was_same_file_name and file_was_renamed:
-                            shell.execute("git rm --cached %s" % previousFileName)
-                    os.chdir(cwd)
+                if was_same_file_name and file_was_renamed:
+                    shell.execute("git rm --cached %s" % previousFileName)
+            os.chdir(cwd)
 
     @staticmethod
     def getcommitcommand(changeentry):
@@ -163,8 +160,79 @@ class Commiter:
             shouter.shout("Branch %s couldnt get renamed to master, please do that on your own" % branchname)
             return 1  # branch couldnt get renamed
 
+    @staticmethod
+    def filterignore():
+        """
+        add files with extensions to be ignored to .gitignore
+        """
+        # there is only work to to if there are extensions configured at all
+        ignorefileextensions = configuration.get().ignorefileextensions
+        if len(ignorefileextensions) > 0:
+            # make sure we see all untracked files:
+            strippedlines = shell.getoutput('git status --untracked-files=all -z')
+            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+            Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
+
+    @staticmethod
+    def ignore(filelines):
+        """
+        append the file lines to the toplevel .gitignore
+        :param filelines: a list of newline terminated file names to be ignored
+        """
+        if len(filelines) > 0:
+            with open(".gitignore", "a") as ignore:
+                ignore.writelines(filelines)
+
+    @staticmethod
+    def splitoutputofgitstatusz(lines, filterprefix=None):
+        """
+        Split the output of  'git status -z' into single files
+
+        :param lines: the output line(s) from the command
+        :param filterprefix: if given, only the files of those entries matching the prefix will be returned
+        :return: a list of repository files with status changes
+        """
+        repositoryfiles = []
+        for line in lines:                           # expect exactly one line
+            entries = line.split(sep='\x00')         # ascii 0 is the delimiter
+            for entry in entries:
+                entry = entry.strip()
+                if len(entry) > 0:
+                    if not filterprefix or entry.startswith(filterprefix):
+                        start = entry.find(' ')
+                        if 1 <= start <= 2:
+                            repositoryfile = entry[3:]   # output is formatted
+                        else:
+                            repositoryfile = entry       # file on a single line (e.g. rename continuation)
+                        repositoryfiles.append(repositoryfile)
+        return repositoryfiles
+
 
 class Differ:
     @staticmethod
     def has_diff():
         return shell.execute("git diff --quiet") is 1
+
+
+class ExtensionFilter:
+
+    @staticmethod
+    def match(repositoryfiles, extensions):
+        """
+        Determine the repository files to ignore.
+        These filenames are returned as a list of newline terminated lines,
+        ready to be added to .gitignore with writelines()
+
+        :param repositoryfiles: a list of (changed) files
+        :param extensions the extensions to be ignored
+        :return: a list of newline terminated file names, possibly empty
+        """
+        repositoryfilestoignore = []
+        for extension in extensions:
+          for repositoryfile in repositoryfiles:
+                extlen = len(extension)
+                if len(repositoryfile) >= extlen:
+                    if repositoryfile[-extlen:] == extension:
+                        # escape a backslash with a backslash, and append a newline
+                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
+        return repositoryfilestoignore

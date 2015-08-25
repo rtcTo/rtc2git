@@ -14,12 +14,13 @@ def read(configname="config.ini"):
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
     migrationsection = parsedconfig['Migration']
+    miscellaneoussection = parsedconfig['Miscellaneous']
 
     user = generalsection['User']
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection['ScmCommand']
-    shell.logcommands = parsedconfig['Miscellaneous']['LogShellCommands'] == "True"
+    shell.logcommands = miscellaneoussection['LogShellCommands'] == "True"
     shell.setencoding(generalsection['encoding'])
 
     workspace = shlex.quote(generalsection['WorkspaceName'])
@@ -33,6 +34,7 @@ def read(configname="config.ini"):
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
     previousstreamname = migrationsection['PreviousStream'].strip()
     baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
+    ignorefileextensions = miscellaneoussection['IgnoreFileExtensions']
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -40,6 +42,7 @@ def read(configname="config.ini"):
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
+    configbuilder.setignorefileextensions(ignorefileextensions)
     global config
     config = configbuilder.build()
     return config
@@ -88,6 +91,7 @@ class Builder:
         self.gitreponame = ""
         self.clonedgitreponame = ""
         self.previousstreamname = ""
+        self.ignorefileextensions = ""
 
     def setuser(self, user):
         self.user = user
@@ -150,6 +154,10 @@ class Builder:
         self.previousstreamname = previousstreamname
         return self
 
+    def setignorefileextensions(self, ignorefileextensions):
+        self.ignorefileextensions = ignorefileextensions
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -159,13 +167,14 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
-                            self.previousstreamname)
+                            self.previousstreamname, self.ignorefileextensions)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname):
+                 useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname,
+                 ignorefileextensionsproperty):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -185,6 +194,7 @@ class ConfigObject:
         self.streamuuid = ""
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
+        self.ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -215,6 +225,20 @@ class ConfigObject:
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
         self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
+
+    @staticmethod
+    def parseignorefileextensionsproperty(ignorefileextensionsproperty):
+        """
+        :param ignorefileextensionsproperty
+        :return: a list of file extensions to be ignored, possibly empty
+        """
+        splittedextensions = []
+        if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
+            splittedextensions = ignorefileextensionsproperty.split(';')
+        ignorefileextensions = []
+        for splittedextension in splittedextensions:
+            ignorefileextensions.append(splittedextension.strip())
+        return ignorefileextensions
 
 
 class ComponentBaseLineEntry:

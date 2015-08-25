@@ -40,3 +40,9 @@ UseAutomaticConflictResolution = False
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line
 LogShellCommands = False
+
+# Ignore big (binary) files
+# Define a semicolon-separated list of extensions to be generally ignored
+# Example:
+# IgnoreFileExtensions = .zip; .jar; .exe; .dll
+IgnoreFileExtensions =
