@@ -42,20 +42,20 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromNone(self):
         config = Builder().setignorefileextensions(None).build()
-        self.assertTrue(len(config.ignorefileextensions) == 0)
+        self.assertEqual(0, len(config.ignorefileextensions))
 
     def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromEmpty(self):
         config = Builder().setignorefileextensions("").build()
-        self.assertTrue(len(config.ignorefileextensions) == 0)
+        self.assertEqual(0, len(config.ignorefileextensions))
 
     def test_fileExtensionsToBeIgnored_SingleExtensions(self):
         config = Builder().setignorefileextensions(" .zip  ").build()
-        self.assertTrue(len(config.ignorefileextensions) == 1)
+        self.assertEqual(1, len(config.ignorefileextensions))
         self.assertEqual(['.zip'], config.ignorefileextensions)
 
     def test_fileExtensionsToBeIgnored_MultipleExtensions(self):
         config = Builder().setignorefileextensions(".zip; .jar;  .exe").build()
-        self.assertTrue(len(config.ignorefileextensions) == 3)
+        self.assertEqual(3, len(config.ignorefileextensions))
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
 
     def test_read(self):
