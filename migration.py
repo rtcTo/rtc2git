@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 
 from rtcFunctions import ImportHandler
 from rtcFunctions import WorkspaceHandler
@@ -103,5 +104,17 @@ def prepare():
     rtcworkspace.setcomponentstobaseline(componentbaselineentries, config.previousstreamuuid)
     rtcworkspace.load()
 
+
+def parsecommandline():
+    parser = argparse.ArgumentParser()
+    configfiledefault = 'config.ini'
+    configfilehelp = 'name of the config file, or full path to the config file; defaults to ' + configfiledefault
+    parser.add_argument('-c', '--configfile', metavar='file', dest='configfile', help=configfilehelp,
+                        default=configfiledefault)
+    arguments = parser.parse_args()
+    configuration.setconfigfile(arguments.configfile)
+
+
 if __name__ == "__main__":
+    parsecommandline()
     migrate()

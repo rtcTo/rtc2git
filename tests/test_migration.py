@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 from unittest.mock import patch
 
 import migration
@@ -36,3 +37,20 @@ class MigrationTestCase(unittest.TestCase):
     def testExistRepo_DoesntExist_ShouldReturnFalse(self):
         configuration.config = Builder().setworkdirectory(self.rootfolder).setgitreponame("test.git").build()
         self.assertFalse(migration.existsrepo())
+
+    def testParseCommandLine_expect_specified_configfile_shortoption(self):
+        configfilename = 'myShortTestConfig.ini'
+        sys.argv = ['migration.py', '-c', configfilename]
+        migration.parsecommandline()
+        self.assertEqual(configfilename, configuration.configfile)
+
+    def testParseCommandLine_expect_specified_configfile_longoption(self):
+        configfilename = 'myLongTestConfig.ini'
+        sys.argv = ['migration.py', '--configfile', configfilename]
+        migration.parsecommandline()
+        self.assertEqual(configfilename, configuration.configfile)
+
+    def testParseCommandLine_expect_default_configfile(self):
+        sys.argv = ['migration.py']
+        migration.parsecommandline()
+        self.assertEqual('config.ini', configuration.configfile)

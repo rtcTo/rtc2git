@@ -1,15 +1,19 @@
 import os
 import configparser
 import shutil
+import shlex
 
 import shell
 import shouter
-import shlex
 
 config = None
+configfile = None
 
 
-def read(configname="config.ini"):
+def read(configname=None):
+    if not configname:
+        global configfile
+        configname = configfile
     parsedconfig = configparser.ConfigParser()
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
@@ -52,6 +56,11 @@ def get():
     if not config:
         read()
     return config
+
+
+def setconfigfile(newconfigfile):
+    global configfile
+    configfile = newconfigfile
 
 
 def getworkdirectory(workdirectory):
