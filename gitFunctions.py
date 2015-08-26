@@ -151,7 +151,7 @@ class Commiter:
     @staticmethod
     def promotebranchtomaster(branchname):
         master = "master"
-        masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%H_%M_%S'))
+        masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%Y%m%d_%H%M%S'))
         copybranch = Commiter.copybranch(branchname, master)
 
         if masterename is 0 and copybranch is 0:
