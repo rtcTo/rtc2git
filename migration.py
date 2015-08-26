@@ -109,7 +109,8 @@ def parsecommandline():
     parser = argparse.ArgumentParser()
     configfiledefault = 'config.ini'
     configfilehelp = 'name of the config file, or full path to the config file; defaults to ' + configfiledefault
-    parser.add_argument('-c', '--configfile', metavar='file', dest='configfile', help=configfilehelp, default=configfiledefault)
+    parser.add_argument('-c', '--configfile', metavar='file', dest='configfile', help=configfilehelp,
+                        default=configfiledefault)
     arguments = parser.parse_args()
     configuration.setconfigfile(arguments.configfile)
 
