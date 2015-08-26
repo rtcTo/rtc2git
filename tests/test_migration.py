@@ -41,16 +41,16 @@ class MigrationTestCase(unittest.TestCase):
     def testParseCommandLine_expect_specified_configfile_shortoption(self):
         configfilename = 'myShortTestConfig.ini'
         sys.argv = ['migration.py', '-c', configfilename]
-        migration.parseCommandLine()
+        migration.parsecommandline()
         self.assertEqual(configfilename, configuration.configfile)
 
     def testParseCommandLine_expect_specified_configfile_longoption(self):
         configfilename = 'myLongTestConfig.ini'
         sys.argv = ['migration.py', '--configfile', configfilename]
-        migration.parseCommandLine()
+        migration.parsecommandline()
         self.assertEqual(configfilename, configuration.configfile)
 
     def testParseCommandLine_expect_default_configfile(self):
         sys.argv = ['migration.py']
-        migration.parseCommandLine()
+        migration.parsecommandline()
         self.assertEqual('config.ini', configuration.configfile)

@@ -62,7 +62,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self._assertConfig(configuration.read('resources/test_config.ini'))
 
     def test_read_configfile_from_configuration(self):
-        configuration.setConfigfile('resources/test_config.ini')
+        configuration.setconfigfile('resources/test_config.ini')
         self._assertConfig(configuration.read())
 
 

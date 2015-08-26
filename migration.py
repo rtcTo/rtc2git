@@ -105,15 +105,15 @@ def prepare():
     rtcworkspace.load()
 
 
-def parseCommandLine():
+def parsecommandline():
     parser = argparse.ArgumentParser()
     configfiledefault = 'config.ini'
     configfilehelp = 'name of the config file, or full path to the config file; defaults to ' + configfiledefault
     parser.add_argument('-c', '--configfile', metavar='file', dest='configfile', help=configfilehelp, default=configfiledefault)
     arguments = parser.parse_args()
-    configuration.setConfigfile(arguments.configfile)
+    configuration.setconfigfile(arguments.configfile)
 
 
 if __name__ == "__main__":
-    parseCommandLine()
+    parsecommandline()
     migrate()

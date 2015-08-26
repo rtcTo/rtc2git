@@ -1,10 +1,10 @@
 import os
 import configparser
 import shutil
+import shlex
 
 import shell
 import shouter
-import shlex
 
 config = None
 configfile = None
@@ -58,9 +58,9 @@ def get():
     return config
 
 
-def setConfigfile(newConfigfile):
+def setconfigfile(newconfigfile):
     global configfile
-    configfile = newConfigfile
+    configfile = newconfigfile
 
 
 def getworkdirectory(workdirectory):
