@@ -53,9 +53,7 @@ def migrate():
     rtcworkspace = WorkspaceHandler()
     git = Commiter
 
-    resumed = False
     if existsrepo():
-        resumed = True
         resume()
     else:
         initialize()
@@ -69,10 +67,10 @@ def migrate():
     rtcworkspace.setnewflowtargets(streamuuid)
 
     history = rtc.readhistory(componentbaselineentries, streamname)
+    changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
 
-    if not resumed:
+    if len(changeentries) > 0:
         git.branch(branchname)
-        changeentries = rtc.getchangeentriesofstreamcomponents(componentbaselineentries)
         rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
         shouter.shout("All changes until creation of stream '%s' accepted" % streamname)
         git.pushbranch(branchname)
@@ -83,7 +81,7 @@ def migrate():
     git.branch(streamname)
     changeentries = rtc.getchangeentriesofstream(streamuuid)
     amountofacceptedchanges = rtc.acceptchangesintoworkspace(rtc.getchangeentriestoaccept(changeentries, history))
-    if not resumed or amountofacceptedchanges > 0:
+    if amountofacceptedchanges > 0:
         git.pushbranch(streamname)
         git.promotebranchtomaster(streamname)
 
