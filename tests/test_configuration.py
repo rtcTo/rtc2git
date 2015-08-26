@@ -58,9 +58,16 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(3, len(config.ignorefileextensions))
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
 
-    def test_read(self):
+    def test_read_passedin_configfile(self):
+        self._assertConfig(configuration.read('resources/test_config.ini'))
+
+    def test_read_configfile_from_configuration(self):
+        configuration.setConfigfile('resources/test_config.ini')
+        self._assertConfig(configuration.read())
+
+
+    def _assertConfig(self, config):
         # [General]
-        config = configuration.read('resources/test_config.ini')
         self.assertEqual('https://rtc.supercompany.com/ccm/', config.repo)
         self.assertEqual('superuser', config.user)
         self.assertEqual('supersecret', config.password)
@@ -89,5 +96,3 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(2, len(ignorefileextensions))
         self.assertEqual('.zip', ignorefileextensions[0])
         self.assertEqual('.jar', ignorefileextensions[1])
-
-
