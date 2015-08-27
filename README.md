@@ -6,7 +6,7 @@ It uses the CLI of RTC to gather the required informations (You can find the CLI
 <ul>
 <li> RTC Version 5.0+ (Was tested using 5.0.1) </li> 
 <li> RTC CLI --> (e.g Command "scm help" should work in console)</li>
-<li> Configure RTC CLI (see wiki page on [configure RTC CLI](https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI)) 
+<li> Configure RTC CLI (see wiki page on [configure RTC CLI](https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI) ) 
 <li> Python 3.4.2+ (might be working with earlier versions as well, but not with Python 2)</li>
 </ul>
 
