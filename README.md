@@ -1,10 +1,10 @@
 # rtc2git
 A tool made for migrating code from an existing [RTC] (https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
-It uses the CLI of RTC to gather the required informations (You can find the CLI under the name "SCM Tools" [here] (https://jazz.net/downloads/rational-team-concert/releases/5.0.1?p=allDownloads))
+It uses the CLI of RTC to gather the required information.
 
 ## Prerequirements
 - RTC Version 5.0+ (Was tested using 5.0.1)
-- RTC CLI (see wiki page [configure RTC CLI] (https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI))
+- **[SCM Tools](https://jazz.net/downloads/rational-team-concert/releases/5.0.1?p=allDownloads)** from IBM. To avoid an account creation on jazz.net site, you could use [bugmenot](http://bugmenot.com/) (see also wiki page [configure RTC CLI] (https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI))
 - Python 3.4.2+ (might be working with earlier versions as well, but not with Python 2)
 
 ## Usage
