@@ -4,6 +4,7 @@ Compare_*.txt
 StreamComponents_*.txt
 accept*.txt
 History_*.txt
+!History_SampleComponent_Streamname.txt
 __pycache__
 *.swp
 *.pyc
