@@ -1,0 +1,10 @@
+[General]
+Repo=https://rtc.mySite.com/ccm
+User=USR
+Password=secret
+GIT-Reponame = myGitRepo.git
+WorkspaceName=ToBeCreatedWorkspaceName
+
+[Migration]
+# Stream to be migrated,  referenced by Name or UUID
+StreamToMigrate = MyDevelopmentStream
