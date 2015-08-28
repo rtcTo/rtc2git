@@ -8,7 +8,7 @@ It uses the CLI of RTC to gather the required information.
 - Python 3.4.2+ (might be working with earlier versions as well, but not with Python 2)
 
 ## Usage
-- Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" as reference
+- Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" or "config.ini.minimum.sample" as reference
 - Execute migration.py
 
 

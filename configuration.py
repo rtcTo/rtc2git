@@ -18,27 +18,27 @@ def read(configname=None):
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
     migrationsection = parsedconfig['Migration']
-    miscellaneoussection = parsedconfig['Miscellaneous']
-
+    miscsectionname = 'Miscellaneous'
     user = generalsection['User']
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
-    scmcommand = generalsection['ScmCommand']
-    shell.logcommands = miscellaneoussection['LogShellCommands'] == "True"
-    shell.setencoding(generalsection['encoding'])
+    scmcommand = generalsection.get('ScmCommand', "lscm")
+    shell.logcommands = parsedconfig.get(miscsectionname, 'LogShellCommands', fallback="False") == "True"
+    shell.setencoding(generalsection.get('encoding'))
 
     workspace = shlex.quote(generalsection['WorkspaceName'])
     gitreponame = generalsection['GIT-Reponame']
 
-    useexistingworkspace = generalsection['useExistingWorkspace']
-    useprovidedhistory = migrationsection['UseProvidedHistory']
-    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
+    useexistingworkspace = generalsection.get('useExistingWorkspace', "False")
+    useprovidedhistory = migrationsection.get('UseProvidedHistory', "False")
+    useautomaticconflictresolution = migrationsection.get('UseAutomaticConflictResolution', "False")
 
-    workdirectory = getworkdirectory(generalsection['Directory'])
+    workdirectory = generalsection.get('Directory', os.getcwd())
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
-    previousstreamname = migrationsection['PreviousStream'].strip()
-    baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
-    ignorefileextensions = miscellaneoussection['IgnoreFileExtensions']
+    previousstreamname = migrationsection.get('PreviousStream', '').strip()
+    baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
+    ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
+    ignorefileextensions = parseignorefileextensionsproperty(ignorefileextensionsproperty)
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -63,12 +63,6 @@ def setconfigfile(newconfigfile):
     configfile = newconfigfile
 
 
-def getworkdirectory(workdirectory):
-    if not workdirectory:
-        workdirectory = "."
-    return workdirectory
-
-
 def getinitialcomponentbaselines(definedbaselines):
     initialcomponentbaselines = []
     if definedbaselines:
@@ -80,6 +74,19 @@ def getinitialcomponentbaselines(definedbaselines):
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     return initialcomponentbaselines
 
+
+def parseignorefileextensionsproperty(ignorefileextensionsproperty):
+    """
+    :param ignorefileextensionsproperty
+    :return: a list of file extensions to be ignored, possibly empty
+    """
+    splittedextensions = []
+    if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
+        splittedextensions = ignorefileextensionsproperty.split(';')
+    ignorefileextensions = []
+    for splittedextension in splittedextensions:
+        ignorefileextensions.append(splittedextension.strip())
+    return ignorefileextensions
 
 class Builder:
     def __init__(self):
@@ -203,7 +210,7 @@ class ConfigObject:
         self.streamuuid = ""
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
-        self.ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
+        self.ignorefileextensions = ignorefileextensionsproperty
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -234,20 +241,6 @@ class ConfigObject:
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
         self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
-
-    @staticmethod
-    def parseignorefileextensionsproperty(ignorefileextensionsproperty):
-        """
-        :param ignorefileextensionsproperty
-        :return: a list of file extensions to be ignored, possibly empty
-        """
-        splittedextensions = []
-        if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
-            splittedextensions = ignorefileextensionsproperty.split(';')
-        ignorefileextensions = []
-        for splittedextension in splittedextensions:
-            ignorefileextensions.append(splittedextension.strip())
-        return ignorefileextensions
 
 
 class ComponentBaseLineEntry:
