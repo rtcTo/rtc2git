@@ -38,7 +38,7 @@ def read(configname=None):
     previousstreamname = migrationsection.get('PreviousStream', '').strip()
     baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
-    ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
+    ignorefileextensions = parseignorefileextensionsproperty(ignorefileextensionsproperty)
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -74,6 +74,19 @@ def getinitialcomponentbaselines(definedbaselines):
             initialcomponentbaselines.append(ComponentBaseLineEntry(component, baseline, component, baseline))
     return initialcomponentbaselines
 
+
+def parseignorefileextensionsproperty(ignorefileextensionsproperty):
+    """
+    :param ignorefileextensionsproperty
+    :return: a list of file extensions to be ignored, possibly empty
+    """
+    splittedextensions = []
+    if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
+        splittedextensions = ignorefileextensionsproperty.split(';')
+    ignorefileextensions = []
+    for splittedextension in splittedextensions:
+        ignorefileextensions.append(splittedextension.strip())
+    return ignorefileextensions
 
 class Builder:
     def __init__(self):
@@ -197,7 +210,7 @@ class ConfigObject:
         self.streamuuid = ""
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
-        self.ignorefileextensions = ConfigObject.parseignorefileextensionsproperty(ignorefileextensionsproperty)
+        self.ignorefileextensions = ignorefileextensionsproperty
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
@@ -228,7 +241,6 @@ class ConfigObject:
     def collectstreamuuids(self):
         self.streamuuid = self.collectstreamuuid(self.streamname)
         self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
-
 
 
 class ComponentBaseLineEntry:
