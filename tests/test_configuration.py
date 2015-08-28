@@ -65,6 +65,9 @@ class ConfigurationTestCase(unittest.TestCase):
         configuration.setconfigfile('resources/test_config.ini')
         self._assertConfig(configuration.read())
 
+    def test_read_minimumconfigfile_shouldrelyonfallbackvalues(self):
+        configuration.setconfigfile('resources/test_minimum_config.ini')
+        configuration.read()
 
     def _assertConfig(self, config):
         # [General]

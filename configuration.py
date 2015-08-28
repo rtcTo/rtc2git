@@ -18,27 +18,26 @@ def read(configname=None):
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
     migrationsection = parsedconfig['Migration']
-    miscellaneoussection = parsedconfig['Miscellaneous']
-
+    miscsectionname = 'Miscellaneous'
     user = generalsection['User']
     password = generalsection['Password']
     repositoryurl = generalsection['Repo']
-    scmcommand = generalsection['ScmCommand']
-    shell.logcommands = miscellaneoussection['LogShellCommands'] == "True"
-    shell.setencoding(generalsection['encoding'])
+    scmcommand = generalsection.get('ScmCommand', "lscm")
+    shell.logcommands = parsedconfig.get(miscsectionname, 'LogShellCommands', fallback="False") == "True"
+    shell.setencoding(generalsection.get('encoding'))
 
     workspace = shlex.quote(generalsection['WorkspaceName'])
     gitreponame = generalsection['GIT-Reponame']
 
-    useexistingworkspace = generalsection['useExistingWorkspace']
-    useprovidedhistory = migrationsection['UseProvidedHistory']
-    useautomaticconflictresolution = migrationsection['UseAutomaticConflictResolution']
+    useexistingworkspace = generalsection.get('useExistingWorkspace', "False")
+    useprovidedhistory = migrationsection.get('UseProvidedHistory', "False")
+    useautomaticconflictresolution = migrationsection.get('UseAutomaticConflictResolution', "False")
 
-    workdirectory = getworkdirectory(generalsection['Directory'])
+    workdirectory = generalsection.get('Directory', os.getcwd())
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
-    previousstreamname = migrationsection['PreviousStream'].strip()
-    baselines = getinitialcomponentbaselines(migrationsection['InitialBaseLines'])
-    ignorefileextensions = miscellaneoussection['IgnoreFileExtensions']
+    previousstreamname = migrationsection.get('PreviousStream', '').strip()
+    baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
+    ignorefileextensions = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -61,12 +60,6 @@ def get():
 def setconfigfile(newconfigfile):
     global configfile
     configfile = newconfigfile
-
-
-def getworkdirectory(workdirectory):
-    if not workdirectory:
-        workdirectory = "."
-    return workdirectory
 
 
 def getinitialcomponentbaselines(definedbaselines):
