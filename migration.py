@@ -17,6 +17,7 @@ def initialize():
     directory = config.workDirectory
     if os.path.exists(directory):
         sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
+    shouter.shout("Migration will take place in " + directory)
     os.makedirs(directory)
     os.chdir(directory)
     config.deletelogfolder()
