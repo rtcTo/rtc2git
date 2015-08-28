@@ -3,7 +3,7 @@ config.ini
 Compare_*.txt
 StreamComponents_*.txt
 accept*.txt
-History_B*.txt
+History_*.txt
 __pycache__
 *.swp
 *.pyc
