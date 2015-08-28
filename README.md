@@ -14,7 +14,7 @@ It uses the CLI of RTC to gather the required information.
 
 ## How does it work?
 1. It initalizes an empty git repository and clones it
-2. In this repository, it loads a newly created rtc workspace based on your oldest stream
+2. In this repository, it loads a newly created rtc workspace (which will be set to the oldest baseline possible)
 3. The baseline of each component of a given stream is determined
 4. For each baseline a compare command will be executed
 5. The result of the compare will be parsed to get to the necessary commit-informations (such as author, comment, date)
