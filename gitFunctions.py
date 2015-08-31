@@ -116,6 +116,14 @@ class Commiter:
         shell.execute("git config --replace-all user.email " + email)
 
     @staticmethod
+    def checkbranchname(branchname):
+        exitcode = shell.execute("git check-ref-format --normalize refs/heads/" + branchname)
+        if exitcode is 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
     def branch(branchname):
         branchexist = shell.execute("git show-ref --verify --quiet refs/heads/" + branchname)
         if branchexist is 0:

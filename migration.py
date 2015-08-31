@@ -116,6 +116,23 @@ def parsecommandline():
     configuration.setconfigfile(arguments.configfile)
 
 
+def validate():
+    config = configuration.get()
+    streamname = config.streamname
+    branchname = streamname + "_branchpoint"
+    previousstreamname = config.previousstreamname
+    offendingbranchname = None
+    if not Commiter.checkbranchname(streamname):
+        offendingbranchname = streamname
+    elif not Commiter.checkbranchname(branchname):
+        offendingbranchname = branchname
+    elif not Commiter.checkbranchname(previousstreamname):
+        offendingbranchname = previousstreamname
+    if offendingbranchname:
+        sys.exit(offendingbranchname + " is not a valid git branch name - consider renaming the stream")
+
+
 if __name__ == "__main__":
     parsecommandline()
+    validate()
     migrate()
