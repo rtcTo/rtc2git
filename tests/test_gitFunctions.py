@@ -174,6 +174,18 @@ class GitFunctionsTestCase(unittest.TestCase):
                 self.assertEqual(jar, lines[0].strip())
                 self.assertEqual(zip, lines[1].strip())
 
+    def test_checkbranchname_expect_valid(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            self.assertEqual(True, Commiter.checkbranchname("master"), "master should be a valid branch name")
+
+    def test_checkbranchname_quoted_expect_invalid(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            self.assertEqual(False, Commiter.checkbranchname("'master pflaster'"), "'master pflaster' should not be a valid branch name")
+
+    def test_checkbranchname_unquoted_expect_invalid(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            self.assertEqual(False, Commiter.checkbranchname("master pflaster"), "master pflaster should not be a valid branch name")
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()
