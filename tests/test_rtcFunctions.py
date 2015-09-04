@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 import os
 
-from rtcFunctions import Changes, ChangeEntry, ImportHandler
+from rtcFunctions import Changes, ChangeEntry, ImportHandler, WorkspaceHandler
 from configuration import Builder
 import configuration
 import shell
@@ -121,6 +121,24 @@ class RtcFunctionsTestCase(unittest.TestCase):
             self.fail("Should have exit the program")
         except SystemExit as e:
             self.assertEqual("Please check the output/log and rerun program with resume", e.code)
+
+    @patch('rtcFunctions.shell')
+    def test_load(self, shellmock):
+        anyurl = "anyUrl"
+        config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
+        configuration.config = config
+        WorkspaceHandler().load()
+        expected_load_command = "lscm load -r %s %s --force" % (anyurl, self.workspace)
+        shellmock.execute.assert_called_once_with(expected_load_command)
+
+    @patch('rtcFunctions.shell')
+    def test_load_includecomponentroots(self, shellmock):
+        anyurl = "anyUrl"
+        config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).setincludecomponentroots("True").build()
+        configuration.config = config
+        WorkspaceHandler().load()
+        expected_load_command = "lscm load -r %s %s --force --include-root" % (anyurl, self.workspace)
+        shellmock.execute.assert_called_once_with(expected_load_command)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)
