@@ -10,6 +10,9 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def setUp(self):
         self.workdirectory = os.path.dirname(os.path.realpath(__file__))
+        # reset global shell variables
+        shell.logcommands = False
+        shell.encoding = None
 
     def test_DeletionOfFolder(self):
         config = Builder().setworkdirectory(self.workdirectory).build()
@@ -60,17 +63,17 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
 
     def test_read_passedin_configfile(self):
-        self._assertConfig(configuration.read('resources/test_config.ini'))
+        self._assertTestConfig(configuration.read('resources/test_config.ini'))
 
     def test_read_configfile_from_configuration(self):
         configuration.setconfigfile('resources/test_config.ini')
-        self._assertConfig(configuration.read())
+        self._assertTestConfig(configuration.read())
 
     def test_read_minimumconfigfile_shouldrelyonfallbackvalues(self):
         configuration.setconfigfile('resources/test_minimum_config.ini')
-        configuration.read()
+        self._assertDefaultConfig(configuration.read())
 
-    def _assertConfig(self, config):
+    def _assertTestConfig(self, config):
         # [General]
         self.assertEqual('https://rtc.supercompany.com/ccm/', config.repo)
         self.assertEqual('superuser', config.user)
@@ -79,7 +82,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual('Superworkspace', config.workspace)
         self.assertEqual('/tmp/migration', config.workDirectory)
         self.assertTrue(config.useexistingworkspace)
-        self.assertEqual('lscm', config.scmcommand)
+        self.assertEqual('scm', config.scmcommand)
         self.assertEqual('UTF-8', shell.encoding)  # directly deviated to shell
         # [Migration]
         self.assertEqual('Superstream', config.streamname)
@@ -100,3 +103,26 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(2, len(ignorefileextensions))
         self.assertEqual('.zip', ignorefileextensions[0])
         self.assertEqual('.jar', ignorefileextensions[1])
+        self.assertTrue(config.includecomponentroots)
+
+    def _assertDefaultConfig(self, config):
+        # [General]
+        self.assertEqual('https://rtc.minicompany.com/ccm/', config.repo)
+        self.assertEqual('miniuser', config.user)
+        self.assertEqual('minisecret', config.password)
+        self.assertEqual('mini.git', config.gitRepoName)
+        self.assertEqual('Miniworkspace', config.workspace)
+        self.assertEqual(os.getcwd(), config.workDirectory)
+        self.assertFalse(config.useexistingworkspace)
+        self.assertEqual('lscm', config.scmcommand)
+        self.assertEqual(None, shell.encoding)  # directly deviated to shell
+        # [Migration]
+        self.assertEqual('Ministream', config.streamname)
+        self.assertEqual('', config.previousstreamname)
+        self.assertEqual(0, len(config.initialcomponentbaselines))
+        self.assertFalse(config.useprovidedhistory)
+        self.assertFalse(config.useautomaticconflictresolution)
+        # [Miscellaneous]
+        self.assertFalse(shell.logcommands)  # directly deviated to shell
+        self.assertEqual(0, len(config.ignorefileextensions))
+        self.assertFalse(config.includecomponentroots)

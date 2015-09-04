@@ -39,6 +39,7 @@ def read(configname=None):
     baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
     ignorefileextensions = parseignorefileextensionsproperty(ignorefileextensionsproperty)
+    includecomponentroots = parsedconfig.get(miscsectionname, 'IncludeComponentRoots', fallback="False")
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -47,6 +48,7 @@ def read(configname=None):
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
     configbuilder.setignorefileextensions(ignorefileextensions)
+    configbuilder.setincludecomponentroots(includecomponentroots)
     global config
     config = configbuilder.build()
     return config
@@ -108,6 +110,7 @@ class Builder:
         self.clonedgitreponame = ""
         self.previousstreamname = ""
         self.ignorefileextensions = ""
+        self.includecomponentroots = ""
 
     def setuser(self, user):
         self.user = user
@@ -174,6 +177,10 @@ class Builder:
         self.ignorefileextensions = ignorefileextensions
         return self
 
+    def setincludecomponentroots(self, includecomponentroots):
+        self.includecomponentroots = self.isenabled(includecomponentroots)
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -183,14 +190,14 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
-                            self.previousstreamname, self.ignorefileextensions)
+                            self.previousstreamname, self.ignorefileextensions, self.includecomponentroots)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname,
-                 ignorefileextensionsproperty):
+                 ignorefileextensionsproperty, includecomponentroots):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -211,6 +218,7 @@ class ConfigObject:
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
         self.ignorefileextensions = ignorefileextensionsproperty
+        self.includecomponentroots = includecomponentroots
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:

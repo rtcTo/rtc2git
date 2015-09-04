@@ -46,3 +46,7 @@ LogShellCommands = False
 # Example:
 # IgnoreFileExtensions = .zip; .jar; .exe; .dll
 IgnoreFileExtensions =
+
+# Set to true if you want to include component root directories when loading the workspace
+# (this will add the -i / --include-root option to the (l)scm load command)
+IncludeComponentRoots = False
