@@ -1,1 +1,2 @@
-(_RnnFo8QyEeGBKPBcKV85Sw) @@John ÆØÅ@@Jon.Doe@rtc2git.rocks@@Comment@@2015-05-26 10:40:00@@
+Component (_2mytestcomponent2-UUID) "TestComponent2"
+  (_RnnFo8QyEeGBKPBcKV85Sw) @@John ÆØÅ@@Jon.Doe@rtc2git.rocks@@Comment@@2015-05-26 10:40:00@@

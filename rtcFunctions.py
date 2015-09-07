@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+from enum import Enum, unique
 
 import configuration
 from configuration import ComponentBaseLineEntry
@@ -290,7 +291,6 @@ class ImportHandler:
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         missingchangeentries = {}
         shouter.shout("Start collecting changeentries")
-        changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
             shouter.shout("Collect changes until baseline %s of component %s" %
                           (componentBaseLineEntry.baselinename, componentBaseLineEntry.componentname))
@@ -328,7 +328,7 @@ class ImportHandler:
             changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
         else:
             changeentriestoaccept.extend(missingchangeentries.values())
-            # simple sort by date - same as returned by compare command
+            # simple sort by date
             changeentriestoaccept.sort(key=lambda change: change.date)
         return changeentriestoaccept
 
@@ -337,6 +337,8 @@ class ImportHandler:
         informationseparator = "@@"
         numberofexpectedinformationseparators = 5
         changeentries = []
+        component="unknown"
+        componentprefix = "Component ("
 
         with open(outputfilename, 'r', encoding=shell.encoding) as file:
             currentline = ""
@@ -344,23 +346,27 @@ class ImportHandler:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
-                    currentinformationpresent += cleanedline.count(informationseparator)
-                    if currentline:
-                        currentline += os.linesep
-                    currentline += cleanedline
-                    if currentinformationpresent >= numberofexpectedinformationseparators:
-                        splittedlines = currentline.split(informationseparator)
-                        revisionwithbrackets = splittedlines[0].strip()
-                        revision = revisionwithbrackets[1:-1]
-                        author = splittedlines[1].strip()
-                        email = splittedlines[2].strip()
-                        comment = splittedlines[3].strip()
-                        date = splittedlines[4].strip()
+                    if cleanedline.startswith(componentprefix):
+                        length = len(componentprefix)
+                        component = cleanedline[length:cleanedline.index(")", length)]
+                    else:
+                        currentinformationpresent += cleanedline.count(informationseparator)
+                        if currentline:
+                            currentline += os.linesep
+                        currentline += cleanedline
+                        if currentinformationpresent >= numberofexpectedinformationseparators:
+                            splittedlines = currentline.split(informationseparator)
+                            revisionwithbrackets = splittedlines[0].strip()
+                            revision = revisionwithbrackets[1:-1]
+                            author = splittedlines[1].strip()
+                            email = splittedlines[2].strip()
+                            comment = splittedlines[3].strip()
+                            date = splittedlines[4].strip()
 
-                        changeentries.append(ChangeEntry(revision, author, email, date, comment))
+                            changeentries.append(ChangeEntry(revision, author, email, date, comment, component))
 
-                        currentinformationpresent = 0
-                        currentline = ""
+                            currentinformationpresent = 0
+                            currentline = ""
         return changeentries
 
     @staticmethod
@@ -378,21 +384,22 @@ class ImportHandler:
         return revisions
 
     def getchangeentriesofbaseline(self, baselinetocompare):
-        return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
+        return self.getchangeentriesbytypeandvalue(CompareType.baseline, baselinetocompare)
 
     def getchangeentriesofstream(self, streamtocompare):
         shouter.shout("Start collecting changes since baseline creation")
         missingchangeentries = {}
-        changeentries = self.getchangeentriesbytypeandvalue("stream", streamtocompare)
+        changeentries = self.getchangeentriesbytypeandvalue(CompareType.stream, streamtocompare)
         for changeentry in changeentries:
             missingchangeentries[changeentry.revision] = changeentry
         return missingchangeentries
 
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
-        outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
-        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo,
+        outputfilename = self.config.getlogpath("Compare_" + comparetype.name + "_" + value + ".txt")
+        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I swc -C @@{name}@@{email}@@" + \
+                         " --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.scmcommand, self.config.workspace, comparetype.name, value, self.config.repo,
                             dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
@@ -403,18 +410,31 @@ class ImportHandler:
 
 
 class ChangeEntry:
-    def __init__(self, revision, author, email, date, comment):
+    def __init__(self, revision, author, email, date, comment, component="unknown"):
         self.revision = revision
         self.author = author
         self.email = email
         self.date = date
         self.comment = comment
+        self.component = component
+        self.setUnaccepted()
 
     def getgitauthor(self):
         authorrepresentation = "%s <%s>" % (self.author, self.email)
         return shell.quote(authorrepresentation)
 
+    def setAccepted(self):
+        self.accepted = True
+
+    def setUnaccepted(self):
+        self.accepted = False
+
     def tostring(self):
-        return self.comment + " (Date: " + self.date + ", Author: " + self.author + ", Revision: " + self.revision + ")"
+        return "%s (Date: %s, Author: %s, Revision: %s, Component: %s, Accepted: %s)" % \
+               (self.comment, self.date, self.author, self.revision, self.component, self.accepted)
 
 
+@unique
+class CompareType(Enum):
+    baseline = 1
+    stream = 2
