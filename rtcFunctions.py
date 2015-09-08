@@ -397,8 +397,7 @@ class ImportHandler:
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype.name + "_" + value + ".txt")
-        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I swc -C @@{name}@@{email}@@" + \
-                         " --flow-directions i -D @@\"%s\"@@" \
+        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I swc -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
                          % (self.config.scmcommand, self.config.workspace, comparetype.name, value, self.config.repo,
                             dateformat)
         shell.execute(comparecommand, outputfilename)
