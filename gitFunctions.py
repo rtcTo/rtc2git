@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import re
 
 import shouter
 import shell
@@ -58,6 +59,7 @@ class Initializer:
 
 class Commiter:
     commitcounter = 0
+    isattachedtoaworkitemregex = re.compile("^\d*:.*-")
 
     @staticmethod
     def addandcommit(changeentry):
@@ -95,9 +97,18 @@ class Commiter:
 
     @staticmethod
     def getcommitcommand(changeentry):
-        comment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
+        cleancomment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
+        comment = Commiter.getcommentwithprefix(cleancomment)
         return "git commit -m %s --date %s --author=%s" \
                % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor())
+
+    @staticmethod
+    def getcommentwithprefix(comment):
+        prefix = configuration.get().commitmessageprefix
+
+        if prefix and Commiter.isattachedtoaworkitemregex.match(comment):
+            return prefix + comment
+        return comment
 
     @staticmethod
     def replacegitcreatingfilesymbol(comment):
