@@ -210,6 +210,25 @@ class RtcFunctionsTestCase(unittest.TestCase):
                                    % (self.workspace, comparetypename, stream, anyurl)
         shellmock.execute.assert_called_once_with(expected_compare_command, outputfilename)
 
+    @patch('rtcFunctions.shell')
+    def test_getchangeentriesbytypeandvalue_type_baseline(self, shellmock):
+        anyurl = "anyUrl"
+        config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
+        configuration.config = config
+        baseline = "myBaselineUUID"
+        comparetype = CompareType.baseline
+        comparetypename = comparetype.name
+        filename = "Compare_%s_%s.txt" % (comparetypename, baseline)
+        outputfilename = config.getlogpath(filename)
+        try:
+            shellmock.encoding = 'UTF-8'
+            ImportHandler().getchangeentriesbytypeandvalue(comparetype, baseline)
+        except FileNotFoundError:
+            pass # do not bother creating the output file here
+        expected_compare_command = "lscm --show-alias n --show-uuid y compare ws %s %s %s -r %s -I swc -C @@{name}@@{email}@@ --flow-directions i -D @@\"yyyy-MM-dd HH:mm:ss\"@@" \
+                                   % (self.workspace, comparetypename, baseline, anyurl)
+        shellmock.execute.assert_called_once_with(expected_compare_command, outputfilename)
+
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)
