@@ -97,6 +97,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual('Baseline2', initialcomponentbaseline.baselinename)
         self.assertTrue(config.useprovidedhistory)
         self.assertTrue(config.useautomaticconflictresolution)
+        self.assertEqual("UP-", config.commitmessageprefix)
         # [Miscellaneous]
         self.assertTrue(shell.logcommands)  # directly deviated to shell
         ignorefileextensions = config.ignorefileextensions
@@ -122,6 +123,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(0, len(config.initialcomponentbaselines))
         self.assertFalse(config.useprovidedhistory)
         self.assertFalse(config.useautomaticconflictresolution)
+        self.assertEqual("", config.commitmessageprefix)
         # [Miscellaneous]
         self.assertFalse(shell.logcommands)  # directly deviated to shell
         self.assertEqual(0, len(config.ignorefileextensions))

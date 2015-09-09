@@ -37,6 +37,16 @@ UseProvidedHistory = False
 # True - The user is not prompted
 UseAutomaticConflictResolution = False
 
+# Optional, defines a prefix for commit-messages, which were linked to an rtc workitem.
+# In case you have migrated your workitems to another issue system (like jira/github/bitbucket) by using rtc2jira,
+# you can define a prefix for the commit-message, in order that previously linked rtc commits get linked to the new issue system.
+#
+# Examples:
+# In jira: AP- (Project has the key AP and is followed by a dash)
+# see https://confluence.atlassian.com/cloud/processing-jira-issues-with-commit-messages-686854819.html for more details)
+# On bitbucket/github: #
+CommitMessageWorkItemPrefix=
+
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line
 LogShellCommands = False

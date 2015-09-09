@@ -186,6 +186,30 @@ class GitFunctionsTestCase(unittest.TestCase):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             self.assertEqual(False, Commiter.checkbranchname("master pflaster"), "master pflaster should not be a valid branch name")
 
+    def test_getcommentwithprefix_enabled_commitisattached_shouldreturnwithprefix(self):
+        prefix = "APREFIX-"
+        configuration.config = Builder().setcommitmessageprefix(prefix)
+        comment = "1337: Upgrade to Wildfly - A comment"
+        expectedcomment = prefix + comment
+        self.assertEqual(expectedcomment, Commiter.getcommentwithprefix(comment))
+
+    def test_getcommentwithprefix_enabled_commitisattached_containsspecialchars_shouldreturnwithprefix(self):
+        prefix = "PR-"
+        configuration.config = Builder().setcommitmessageprefix(prefix)
+        comment = "1338: VAT: VAT-Conditions defined with 0 % and 0 amount - reverse"
+        expectedcomment = prefix + comment
+        self.assertEqual(expectedcomment, Commiter.getcommentwithprefix(comment))
+
+    def test_getcommentwithprefix_disabled_commitisattached_shouldreturncommentwithoutprefix(self):
+        configuration.config = Builder().setcommitmessageprefix("")
+        comment = "1337: Upgrade to Wildfly - A comment"
+        self.assertEqual(comment, Commiter.getcommentwithprefix(comment))
+
+    def test_getcommentwithprefix_enabled_commitisnotattachedtoanworkitem_shouldreturncommentwithoutprefix(self):
+        configuration.config = Builder().setcommitmessageprefix("PR-")
+        comment = "US1337: Fix some problems"
+        self.assertEqual(comment, Commiter.getcommentwithprefix(comment))
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()

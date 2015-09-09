@@ -40,6 +40,7 @@ def read(configname=None):
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
     ignorefileextensions = parseignorefileextensionsproperty(ignorefileextensionsproperty)
     includecomponentroots = parsedconfig.get(miscsectionname, 'IncludeComponentRoots', fallback="False")
+    commitmessageprefix = migrationsection.get('CommitMessageWorkItemPrefix', "")
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -48,7 +49,7 @@ def read(configname=None):
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
     configbuilder.setignorefileextensions(ignorefileextensions)
-    configbuilder.setincludecomponentroots(includecomponentroots)
+    configbuilder.setincludecomponentroots(includecomponentroots).setcommitmessageprefix(commitmessageprefix)
     global config
     config = configbuilder.build()
     return config
@@ -90,6 +91,7 @@ def parseignorefileextensionsproperty(ignorefileextensionsproperty):
         ignorefileextensions.append(splittedextension.strip())
     return ignorefileextensions
 
+
 class Builder:
     def __init__(self):
         self.user = ""
@@ -111,6 +113,7 @@ class Builder:
         self.previousstreamname = ""
         self.ignorefileextensions = ""
         self.includecomponentroots = ""
+        self.commitmessageprefix = ""
 
     def setuser(self, user):
         self.user = user
@@ -181,6 +184,10 @@ class Builder:
         self.includecomponentroots = self.isenabled(includecomponentroots)
         return self
 
+    def setcommitmessageprefix(self, commitmessageprefix):
+        self.commitmessageprefix = commitmessageprefix
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -190,14 +197,15 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
-                            self.previousstreamname, self.ignorefileextensions, self.includecomponentroots)
+                            self.previousstreamname, self.ignorefileextensions, self.includecomponentroots,
+                            self.commitmessageprefix)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname,
-                 ignorefileextensionsproperty, includecomponentroots):
+                 ignorefileextensionsproperty, includecomponentroots, commitmessageprefix):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -219,6 +227,7 @@ class ConfigObject:
         self.previousstreamuuid = ""
         self.ignorefileextensions = ignorefileextensionsproperty
         self.includecomponentroots = includecomponentroots
+        self.commitmessageprefix = commitmessageprefix
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:
