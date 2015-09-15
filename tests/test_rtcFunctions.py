@@ -155,6 +155,14 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertFalse(change3 in collectedchanges)
         self.assertEqual(2, len(collectedchanges))
 
+    def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldAcceptLargeAmountOfChangeSets(self):
+        changeentries = [self.createChangeEntry(str(i)) for i in range(1, 500)]
+        change1 = changeentries[0]
+
+        configuration.config = self.configBuilder.build()
+        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(change1, changeentries, 500)
+        self.assertEqual(499, len(collectedchanges))
+
     @patch('builtins.input', return_value='Y')
     def test_useragreeing_answeris_y_expecttrue(self, inputmock):
         configuration.config = self.configBuilder.build()

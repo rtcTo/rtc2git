@@ -284,7 +284,7 @@ class ImportHandler:
     def getnextchangeset(currentchangeentry, changeentries):
         nextchangeentry = None
         nextindex = changeentries.index(currentchangeentry) + 1
-        has_next_changeset = nextindex is not len(changeentries)
+        has_next_changeset = not (nextindex == len(changeentries))
         if has_next_changeset:
             nextchangeentry = changeentries[nextindex]
         return nextchangeentry
