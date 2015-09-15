@@ -117,7 +117,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertFalse(Commiter.copybranch("master", branchname) is 0)
 
     def test_splitoutputofgitstatusz(self):
-        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines())
             self.assertEqual(12, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
@@ -134,13 +134,13 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
 
     def test_splitoutputofgitstatusz_filterprefix_A(self):
-        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), 'A  ')
             self.assertEqual(1, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
 
     def test_splitoutputofgitstatusz_filterprefix_double_question(self):
-        with open('./resources/test_ignore_git_status_z.txt', 'r') as file:
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), '?? ')
             self.assertEqual(7, len(repositoryfiles))
             self.assertEqual('project1/src/sub/kling -- klong.zip', repositoryfiles[0])
