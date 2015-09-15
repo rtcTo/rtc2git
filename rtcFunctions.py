@@ -98,7 +98,10 @@ class Changes:
     def discard(*changeentries):
         config = configuration.get()
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
+        exitcode = shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
+        if exitcode is 0:
+            for changeEntry in changeentries:
+                changeEntry.setUnaccepted()
 
     @staticmethod
     def accept(logpath, *changeentries):
@@ -108,7 +111,13 @@ class Changes:
         config = configuration.get()
         Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
                                         config.workspace + " --changes" + revisions
-        return shell.execute(Changes.latest_accept_command, logpath, "a")
+        exitcode = shell.execute(Changes.latest_accept_command, logpath, "a")
+        if exitcode is 0:
+            for changeEntry in changeentries:
+                changeEntry.setAccepted()
+            return True
+        else:
+            return False
 
     @staticmethod
     def _collectids(changeentries):
@@ -211,8 +220,7 @@ class ImportHandler:
                 shouter.shout("Skipping " + changeEntry.tostring())
                 changestoskip -= 1
                 continue
-            acceptedsuccesfully = Changes.accept(self.acceptlogpath, changeEntry) is 0
-            if not acceptedsuccesfully:
+            if not Changes.accept(self.acceptlogpath, changeEntry):
                 shouter.shout("Change wasnt succesfully accepted into workspace")
                 changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
             if not Differ.has_diff():
@@ -247,7 +255,7 @@ class ImportHandler:
                 shouter.shout("Trying to resolve conflict by accepting multiple changes")
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
-                    if Changes.accept(self.acceptlogpath, *toaccept) is 0:
+                    if Changes.accept(self.acceptlogpath, *toaccept):
                         changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
                         issuccessful = True
                         break
@@ -427,6 +435,9 @@ class ChangeEntry:
 
     def setUnaccepted(self):
         self.accepted = False
+
+    def isAccepted(self):
+        return self.accepted
 
     def tostring(self):
         return "%s (Date: %s, Author: %s, Revision: %s, Component: %s, Accepted: %s)" % \

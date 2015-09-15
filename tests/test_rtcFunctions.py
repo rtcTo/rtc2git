@@ -30,6 +30,19 @@ class RtcFunctionsTestCase(unittest.TestCase):
         shell_mock.execute.assert_called_once_with(expected_accept_command, self.apath, appendlogfileshortcut)
         self.assertEqual(expected_accept_command, Changes.latest_accept_command)
 
+    def test_Accept_AssertThatChangeEntriesGetAccepted(self):
+        with patch.object(shell, 'execute', return_value=0) as shell_mock:
+            revision1 = "anyRevision"
+            revision2 = "anyOtherRevision"
+            anyurl = "anyUrl"
+            config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
+            configuration.config = config
+            changeentry1 = self.createChangeEntry(revision1)
+            changeentry2 = self.createChangeEntry(revision2)
+            Changes.accept(self.apath, changeentry1, changeentry2)
+            self.assertTrue(changeentry1.isAccepted())
+            self.assertTrue(changeentry1.isAccepted())
+
     @patch('rtcFunctions.shell')
     def test_Discard_AssertThatCorrectParamaterGetPassedToShell(self, shell_mock):
         revision1 = "anyRevision"
@@ -40,6 +53,21 @@ class RtcFunctionsTestCase(unittest.TestCase):
         Changes.discard(self.createChangeEntry(revision1), self.createChangeEntry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
+
+    def test_Discard_AssertThatChangeEntriesGetUnAccepted(self):
+        with patch.object(shell, 'execute', return_value=0) as shell_mock:
+            revision1 = "anyRevision"
+            revision2 = "anyOtherRevision"
+            anyurl = "anyUrl"
+            config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
+            configuration.config = config
+            changeentry1 = self.createChangeEntry(revision1)
+            changeentry1.setAccepted()
+            changeentry2 = self.createChangeEntry(revision2)
+            changeentry2.setAccepted()
+            Changes.discard(changeentry1, changeentry2)
+            self.assertFalse(changeentry1.isAccepted())
+            self.assertFalse(changeentry2.isAccepted())
 
     def test_ReadChangesetInformationFromFile_WithoutLineBreakInComment_ShouldBeSuccessful(self):
         sample_file_path = self.get_Sample_File_Path("SampleCompareOutputWithoutLineBreaks.txt")
