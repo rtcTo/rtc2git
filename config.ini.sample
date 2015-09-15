@@ -37,6 +37,9 @@ UseProvidedHistory = False
 # True - The user is not prompted
 UseAutomaticConflictResolution = False
 
+# The max number of change sets to accept together in order to resolve a merge conflict.
+MaxChangeSetsToAcceptTogether = 10
+
 # Optional, defines a prefix for commit-messages, which were linked to an rtc workitem.
 # In case you have migrated your workitems to another issue system (like jira/github/bitbucket) by using rtc2jira,
 # you can define a prefix for the commit-message, in order that previously linked rtc commits get linked to the new issue system.
