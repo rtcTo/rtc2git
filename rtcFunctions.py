@@ -127,13 +127,6 @@ class Changes:
         return ids
 
     @staticmethod
-    def arereleatedmergechangesets(changeentry1, changeentry2):
-        if changeentry1 and changeentry2:
-            if changeentry1.author == changeentry2.author or "merge" in changeentry2.comment.lower():
-                return True
-        return False
-
-    @staticmethod
     def tostring(*changes):
         logmessage = "Changes: \n"
         for change in changes:
@@ -231,12 +224,12 @@ class ImportHandler:
         return amountofacceptedchanges
 
     @staticmethod
-    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes):
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes, maxchangesetstoaccepttogether):
         changestoaccept = [changewhichcantacceptedallone]
         nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
 
         while True:
-            if Changes.arereleatedmergechangesets(changewhichcantacceptedallone, nextchange):
+            if nextchange and len(changestoaccept) < maxchangesetstoaccepttogether:
                 changestoaccept.append(nextchange)
                 nextchange = ImportHandler.getnextchangeset(nextchange, changes)
             else:
@@ -246,7 +239,7 @@ class ImportHandler:
     def retryacceptincludingnextchangesets(self, change, changes):
         changestoskip = 0
         issuccessful = False
-        changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes)
+        changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes, self.config.maxchangesetstoaccepttogether)
         amountofchangestoaccept = len(changestoaccept)
 
         if amountofchangestoaccept > 1:
