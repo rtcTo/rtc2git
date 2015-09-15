@@ -82,7 +82,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         changeentries = [changeentry1, changeentry2]
 
         shellmock.execute.return_value = 0
-        self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setworkspace("anyWs")
+        self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setmaxchangesetstoaccepttogether(10).setworkspace("anyWs")
         config = self.configBuilder.build()
         configuration.config = config
 
@@ -93,20 +93,32 @@ class RtcFunctionsTestCase(unittest.TestCase):
         shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectThreeChangesets(self):
-        mychange1 = self.createChangeEntry("doSomethingOnOldRev")
-        mychange2 = self.createChangeEntry("doSomethingElseOnOldRev")
-        mymergechange = self.createChangeEntry("anyRev", comment="merge change")
-        changefromsomeoneelse = self.createChangeEntry(author="anyOtherAuthor", revision="2", comment="anotherCommit")
+        change1 = self.createChangeEntry("1")
+        change2 = self.createChangeEntry("2")
+        change3 = self.createChangeEntry("3")
 
-        changeentries = [mychange1, mychange2, mymergechange, changefromsomeoneelse]
+        changeentries = [change1, change2, change3]
 
         configuration.config = self.configBuilder.build()
-        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(mychange1, changeentries)
-        self.assertTrue(mychange1 in collectedchanges)
-        self.assertTrue(mychange2 in collectedchanges)
-        self.assertTrue(mymergechange in collectedchanges)
-        self.assertFalse(changefromsomeoneelse in collectedchanges)
+        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(change1, changeentries, 10)
+        self.assertTrue(change1 in collectedchanges)
+        self.assertTrue(change2 in collectedchanges)
+        self.assertTrue(change3 in collectedchanges)
         self.assertEqual(3, len(collectedchanges))
+
+    def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldAdhereToMaxChangeSetCount(self):
+        change1 = self.createChangeEntry("1")
+        change2 = self.createChangeEntry("2")
+        change3 = self.createChangeEntry("3")
+
+        changeentries = [change1, change2, change3]
+
+        configuration.config = self.configBuilder.build()
+        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(change1, changeentries, 2)
+        self.assertTrue(change1 in collectedchanges)
+        self.assertTrue(change2 in collectedchanges)
+        self.assertFalse(change3 in collectedchanges)
+        self.assertEqual(2, len(collectedchanges))
 
     @patch('builtins.input', return_value='Y')
     def test_useragreeing_answeris_y_expecttrue(self, inputmock):

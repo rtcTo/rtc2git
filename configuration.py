@@ -32,6 +32,7 @@ def read(configname=None):
     useexistingworkspace = generalsection.get('useExistingWorkspace', "False")
     useprovidedhistory = migrationsection.get('UseProvidedHistory', "False")
     useautomaticconflictresolution = migrationsection.get('UseAutomaticConflictResolution', "False")
+    maxchangesetstoaccepttogether = migrationsection.get('MaxChangeSetsToAcceptTogether', "10")
 
     workdirectory = generalsection.get('Directory', os.getcwd())
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
@@ -46,6 +47,7 @@ def read(configname=None):
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
+    configbuilder.setmaxchangesetstoaccepttogether(maxchangesetstoaccepttogether)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
     configbuilder.setignorefileextensions(ignorefileextensions)
@@ -102,6 +104,7 @@ class Builder:
         self.useexistingworkspace = ""
         self.useprovidedhistory = ""
         self.useautomaticconflictresolution = ""
+        self.maxchangesetstoaccepttogether = ""
         self.workdirectory = os.path.dirname(os.path.realpath(__file__))
         self.rootFolder = self.workdirectory
         self.logFolder = self.rootFolder + os.sep + "Logs"
@@ -172,6 +175,10 @@ class Builder:
         self.useautomaticconflictresolution = self.isenabled(useautomaticconflictresolution)
         return self
 
+    def setmaxchangesetstoaccepttogether(self, maxchangesetstoaccepttogether):
+        self.maxchangesetstoaccepttogether = int(maxchangesetstoaccepttogether)
+        return self
+
     def setpreviousstreamname(self, previousstreamname):
         self.previousstreamname = previousstreamname
         return self
@@ -196,7 +203,7 @@ class Builder:
         return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
-                            self.useautomaticconflictresolution, self.clonedgitreponame, self.rootFolder,
+                            self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
                             self.previousstreamname, self.ignorefileextensions, self.includecomponentroots,
                             self.commitmessageprefix)
 
@@ -204,7 +211,7 @@ class Builder:
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, clonedgitreponame, rootfolder, previousstreamname,
+                 useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
                  ignorefileextensionsproperty, includecomponentroots, commitmessageprefix):
         self.user = user
         self.password = password
@@ -214,6 +221,7 @@ class ConfigObject:
         self.useexistingworkspace = useexistingworkspace
         self.useprovidedhistory = useprovidedhistory
         self.useautomaticconflictresolution = useautomaticconflictresolution
+        self.maxchangesetstoaccepttogether = maxchangesetstoaccepttogether
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamname = streamname
