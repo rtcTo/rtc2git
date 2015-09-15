@@ -98,6 +98,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual('Baseline2', initialcomponentbaseline.baselinename)
         self.assertTrue(config.useprovidedhistory)
         self.assertTrue(config.useautomaticconflictresolution)
+        self.assertEqual(100, config.maxchangesetstoaccepttogether)
         self.assertEqual("UP-", config.commitmessageprefix)
         # [Miscellaneous]
         self.assertTrue(shell.logcommands)  # directly deviated to shell
@@ -124,6 +125,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(0, len(config.initialcomponentbaselines))
         self.assertFalse(config.useprovidedhistory)
         self.assertFalse(config.useautomaticconflictresolution)
+        self.assertEqual(10, config.maxchangesetstoaccepttogether)
         self.assertEqual("", config.commitmessageprefix)
         # [Miscellaneous]
         self.assertFalse(shell.logcommands)  # directly deviated to shell
