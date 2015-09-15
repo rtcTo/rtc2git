@@ -47,3 +47,25 @@ def cd(newdir):
         yield
     finally:
         os.chdir(previousdir)
+
+
+def getrelativefilename(filenamerelativetotests):
+    """
+    Determine the correct relative file name, depending on the test runtime environment.
+    Default environment ist PyCharm, which sets the working directory to /test.
+    However, if the tests are run with 'python3 -m unittest discover -s tests', the working directory is one level above.
+
+    :param filenamerelativetotests:
+    :return:the correct relative file name
+    """
+    dir = os.getcwd()
+    if dir.endswith("/tests"):
+        relativefilename = filenamerelativetotests
+    else:
+        if filenamerelativetotests.startswith("../"):
+            relativefilename = filenamerelativetotests[1:]
+        elif filenamerelativetotests.startswith("./"):
+            relativefilename = 'tests/' + filenamerelativetotests[2:]
+        else:
+            relativefilename = 'tests/' + filenamerelativetotests
+    return relativefilename

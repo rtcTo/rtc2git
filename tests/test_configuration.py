@@ -4,6 +4,7 @@ import os
 from configuration import Builder
 import configuration
 import shell
+from tests import testhelper
 
 
 class ConfigurationTestCase(unittest.TestCase):
@@ -39,7 +40,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertTrue(config.useautomaticconflictresolution)
 
     def test_getSampleConfig_ExpectInitializedConfigWithDefaultValues(self):
-        config = configuration.read("../config.ini.sample")
+        config = configuration.read(testhelper.getrelativefilename("../config.ini.sample"))
         self.assertEqual("lscm", config.scmcommand)
         self.assertEqual(config, configuration.get())
 
@@ -63,14 +64,14 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
 
     def test_read_passedin_configfile(self):
-        self._assertTestConfig(configuration.read('resources/test_config.ini'))
+        self._assertTestConfig(configuration.read(testhelper.getrelativefilename('resources/test_config.ini')))
 
     def test_read_configfile_from_configuration(self):
-        configuration.setconfigfile('resources/test_config.ini')
+        configuration.setconfigfile(testhelper.getrelativefilename('resources/test_config.ini'))
         self._assertTestConfig(configuration.read())
 
     def test_read_minimumconfigfile_shouldrelyonfallbackvalues(self):
-        configuration.setconfigfile('resources/test_minimum_config.ini')
+        configuration.setconfigfile(testhelper.getrelativefilename('resources/test_minimum_config.ini'))
         self._assertDefaultConfig(configuration.read())
 
     def _assertTestConfig(self, config):
