@@ -1,14 +1,13 @@
 language: python
 python:
-#  - "3.2"
-#  - "3.3"
+  - "3.2"
+  - "3.3"
   - "3.4"
   - "3.5"
-#  - "3.5-dev" # 3.5 development branch
-#  - "nightly"
-# command to run tests
+  - "3.5-dev" # 3.5 development branch
+  - "nightly"
 before_script:
-  - git config --global user.email "atester@rtc.to"
-  - git config --global user.name "A Tester"
+  - git config --global user.email "maxpower@rtc.to"
+  - git config --global user.name "Max Power"
 
 script: python -m unittest discover -s tests
