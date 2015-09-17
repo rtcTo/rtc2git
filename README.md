@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rtcTo/rtc2git.svg)](https://travis-ci.org/rtcTo/rtc2git)
+
 # rtc2git
 A tool made for migrating code from an existing [RTC] (https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
 It uses the CLI of RTC to gather the required information.
