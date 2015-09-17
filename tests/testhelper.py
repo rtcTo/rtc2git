@@ -6,7 +6,6 @@ import shutil
 from configuration import Builder
 from gitFunctions import Initializer
 import configuration
-import shell
 
 
 @contextmanager
@@ -23,8 +22,6 @@ def mkchdir(subfolder, folderprefix="rtc2test_case"):
 
 @contextmanager
 def createrepo(reponame="test.git", folderprefix="rtc2test_case"):
-    shell.execute("git config user.email \"atester@rtc.to\"")
-    shell.execute("git config user.name \"A Tester\"")
     repodir = tempfile.mkdtemp(prefix=folderprefix)
     configuration.config = Builder().setworkdirectory(repodir).setgitreponame(reponame).build()
     initializer = Initializer()
