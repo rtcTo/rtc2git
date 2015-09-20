@@ -59,13 +59,13 @@ def getrelativefilename(filenamerelativetotests):
     :return:the correct relative file name
     """
     dir = os.getcwd()
-    if dir.endswith("/tests"):
+    if dir.endswith(os.sep + "tests"):
         relativefilename = filenamerelativetotests
     else:
-        if filenamerelativetotests.startswith("../"):
+        if filenamerelativetotests.startswith(".." + os.sep):
             relativefilename = filenamerelativetotests[1:]
-        elif filenamerelativetotests.startswith("./"):
-            relativefilename = 'tests/' + filenamerelativetotests[2:]
+        elif filenamerelativetotests.startswith("." + os.sep):
+            relativefilename = 'tests' + os.sep + filenamerelativetotests[2:]
         else:
-            relativefilename = 'tests/' + filenamerelativetotests
+            relativefilename = 'tests' + os.sep + filenamerelativetotests
     return relativefilename
