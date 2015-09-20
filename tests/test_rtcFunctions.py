@@ -127,6 +127,48 @@ class RtcFunctionsTestCase(unittest.TestCase):
         expectedshellcommand = 'lscm accept -v -o -r anyurl -t anyWs --changes anyRevId anyOtherRevId'
         shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
+    @patch('rtcFunctions.shell')
+    @patch('builtins.input', return_value='')
+    def test_RetryAccept_AssertThatOnlyChangesFromSameComponentGetAcceptedTogether(self, inputmock, shellmock):
+        component1 = "uuid1"
+        component2 = "uuid2"
+        changeentry1 = self.createChangeEntry(revision="anyRevId", component=component1)
+        changeentry2 = self.createChangeEntry(revision="component2RevId", component=component2)
+        changeentry3 = self.createChangeEntry(revision="anyOtherRevId", component=component1)
+        changeentries = [changeentry1, changeentry2, changeentry3]
+
+        shellmock.execute.return_value = 0
+        self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setmaxchangesetstoaccepttogether(10).setworkspace("anyWs")
+        config = self.configBuilder.build()
+        configuration.config = config
+
+        handler = ImportHandler()
+        handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
+
+        expectedshellcommand = 'lscm accept -v -o -r anyurl -t anyWs --changes anyRevId anyOtherRevId'
+        shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
+
+    @patch('rtcFunctions.shell')
+    @patch('builtins.input', return_value='N')
+    @patch('sys.exit')
+    def test_RetryAccept_NotSuccessful_AndExit(self, exitmock, inputmock, shellmock):
+        component1 = "uuid1"
+        component2 = "uuid2"
+        changeentry1 = self.createChangeEntry(revision="anyRevId", component=component1)
+        changeentry2 = self.createChangeEntry(revision="component2RevId", component=component2)
+        changeentry3 = self.createChangeEntry(revision="anyOtherRevId", component=component1)
+        changeentry3.setAccepted()
+        changeentries = [changeentry1, changeentry2, changeentry3]
+
+        self.configBuilder.setrepourl("anyurl").setuseautomaticconflictresolution("True").setmaxchangesetstoaccepttogether(10).setworkspace("anyWs")
+        config = self.configBuilder.build()
+        configuration.config = config
+
+        handler = ImportHandler()
+        handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
+        inputmock.assert_called_once_with('Do you want to continue? Y for continue, any key for abort')
+        exitmock.assert_called_once_with("Please check the output/log and rerun program with resume")
+
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectThreeChangesets(self):
         change1 = self.createChangeEntry("1")
         change2 = self.createChangeEntry("2")
@@ -140,6 +182,21 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertTrue(change2 in collectedchanges)
         self.assertTrue(change3 in collectedchanges)
         self.assertEqual(3, len(collectedchanges))
+
+    def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectOnlyUnacceptedChangesets(self):
+        change1 = self.createChangeEntry(revision="1")
+        change2 = self.createChangeEntry(revision="2")
+        change2.setAccepted()
+        change3 = self.createChangeEntry(revision="3")
+
+        changeentries = [change1, change2, change3]
+
+        configuration.config = self.configBuilder.build()
+        collectedchanges = ImportHandler().collect_changes_to_accept_to_avoid_conflicts(change1, changeentries, 10)
+        self.assertTrue(change1 in collectedchanges)
+        self.assertFalse(change2 in collectedchanges)
+        self.assertTrue(change3 in collectedchanges)
+        self.assertEqual(2, len(collectedchanges))
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldAdhereToMaxChangeSetCount(self):
         change1 = self.createChangeEntry("1")
@@ -277,6 +334,54 @@ class RtcFunctionsTestCase(unittest.TestCase):
                                    % (self.workspace, comparetypename, baseline, anyurl)
         shellmock.execute.assert_called_once_with(expected_compare_command, outputfilename)
 
+    def test_getnextchangeset_fromsamecomponent_expectsamecomponent(self):
+        component1 = "uuid_1"
+        component2 = "uuid_2"
+        # entries for component 1 (2nd entry being already accepted)
+        entry1_1 = self.createChangeEntry(revision="1.1", component=component1)
+        entry1_2 = self.createChangeEntry(revision="1.2", component=component1)
+        entry1_2.setAccepted()
+        entry1_3 = self.createChangeEntry(revision="1.3", component=component1)
+        # entries for component 2 (2nd entry being already accepted)
+        entry2_1 = self.createChangeEntry(revision="2.1", component=component2)
+        entry2_2 = self.createChangeEntry(revision="2.2", component=component2)
+        entry2_2.setAccepted()
+        entry2_3 = self.createChangeEntry(revision="2.3", component=component2)
+        changeentries = []
+        changeentries.append(entry1_1)
+        changeentries.append(entry2_1)
+        changeentries.append(entry1_2)
+        changeentries.append(entry2_2)
+        changeentries.append(entry1_3)
+        changeentries.append(entry2_3)
+
+        nextentry = ImportHandler.getnextchangeset_fromsamecomponent(currentchangeentry=entry2_1, changeentries=changeentries)
+        self.assertIsNotNone(nextentry)
+        self.assertFalse(nextentry.isAccepted())
+        self.assertEqual(component2, nextentry.component)
+        self.assertEquals("2.3", nextentry.revision)
+
+    def test_getnextchangeset_fromsamecomponent_expectnonefound(self):
+        component1 = "uuid_1"
+        component2 = "uuid_2"
+        # entries for component 1
+        entry1_1 = self.createChangeEntry(revision="1.1", component=component1)
+        entry1_1.setAccepted()
+        entry1_2 = self.createChangeEntry(revision="1.2", component=component1)
+        entry1_2.setAccepted()
+        # entries for component 2 (2nd entry being already accepted)
+        entry2_1 = self.createChangeEntry(revision="2.1", component=component2)
+        entry2_1.setAccepted()
+        entry2_2 = self.createChangeEntry(revision="2.2", component=component2)
+        entry2_2.setAccepted()
+        changeentries = []
+        changeentries.append(entry1_1)
+        changeentries.append(entry2_1)
+        changeentries.append(entry1_2)
+        changeentries.append(entry2_2)
+
+        nextentry = ImportHandler.getnextchangeset_fromsamecomponent(currentchangeentry=entry2_1, changeentries=changeentries)
+        self.assertIsNone(nextentry)
 
     def get_Sample_File_Path(self, filename):
         testpath = os.path.realpath(__file__)

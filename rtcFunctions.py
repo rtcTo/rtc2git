@@ -205,39 +205,34 @@ class ImportHandler:
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        changestoskip = 0
 
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if changestoskip > 0:
-                shouter.shout("Skipping " + changeEntry.tostring())
-                changestoskip -= 1
-                continue
-            if not Changes.accept(self.acceptlogpath, changeEntry):
-                shouter.shout("Change wasnt succesfully accepted into workspace")
-                changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
-            if not Differ.has_diff():
-                # no differences found - force reload of the workspace
-                WorkspaceHandler().load()
-            shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            Commiter.addandcommit(changeEntry)
+            if not changeEntry.isAccepted(): # change could already be accepted from a retry
+                if not Changes.accept(self.acceptlogpath, changeEntry):
+                    shouter.shout("Change wasnt succesfully accepted into workspace")
+                    self.retryacceptincludingnextchangesets(changeEntry, changeentries)
+                if not Differ.has_diff():
+                    # no differences found - force reload of the workspace
+                    WorkspaceHandler().load()
+                shouter.shout("Accepted change %d/%d into working directory" % (amountofacceptedchanges, amountofchanges))
+                Commiter.addandcommit(changeEntry)
         return amountofacceptedchanges
 
     @staticmethod
-    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes, maxchangesetstoaccepttogether):
-        changestoaccept = [changewhichcantacceptedallone]
-        nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantbeacceptedalone, changes, maxchangesetstoaccepttogether):
+        changestoaccept = [changewhichcantbeacceptedalone]
+        nextchange = ImportHandler.getnextchangeset_fromsamecomponent(changewhichcantbeacceptedalone, changes)
 
         while True:
             if nextchange and len(changestoaccept) < maxchangesetstoaccepttogether:
                 changestoaccept.append(nextchange)
-                nextchange = ImportHandler.getnextchangeset(nextchange, changes)
+                nextchange = ImportHandler.getnextchangeset_fromsamecomponent(nextchange, changes)
             else:
                 break
         return changestoaccept
 
     def retryacceptincludingnextchangesets(self, change, changes):
-        changestoskip = 0
         issuccessful = False
         changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes, self.config.maxchangesetstoaccepttogether)
         amountofchangestoaccept = len(changestoaccept)
@@ -249,14 +244,12 @@ class ImportHandler:
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
                     if Changes.accept(self.acceptlogpath, *toaccept):
-                        changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
                         issuccessful = True
                         break
                     else:
                         Changes.discard(*toaccept)  # revert initial state
         if not issuccessful:
             self.is_user_aborting(change)
-        return changestoskip
 
     @staticmethod
     def is_user_agreeing_to_accept_next_change(change):
@@ -281,12 +274,15 @@ class ImportHandler:
             sys.exit("Please check the output/log and rerun program with resume")
 
     @staticmethod
-    def getnextchangeset(currentchangeentry, changeentries):
+    def getnextchangeset_fromsamecomponent(currentchangeentry, changeentries):
         nextchangeentry = None
+        component = currentchangeentry.component
         nextindex = changeentries.index(currentchangeentry) + 1
-        has_next_changeset = nextindex != len(changeentries)
-        if has_next_changeset:
-            nextchangeentry = changeentries[nextindex]
+        while not nextchangeentry and nextindex < len(changeentries):
+            candidateentry = changeentries[nextindex]
+            if not candidateentry.isAccepted() and candidateentry.component == component:
+                nextchangeentry = candidateentry
+            nextindex += 1
         return nextchangeentry
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
