@@ -7,7 +7,7 @@ It uses the CLI of RTC to gather the required information.
 ## Prerequirements
 - RTC Version 5.0+ (Was tested using 5.0.1)
 - **[SCM Tools](https://jazz.net/downloads/rational-team-concert/releases/5.0.1?p=allDownloads)** from IBM. To avoid an account creation on jazz.net site, you could use [bugmenot](http://bugmenot.com/) (see also wiki page [configure RTC CLI] (https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI))
-- Python 3.4.2+ (might be working with earlier versions as well, but not with Python 2)
+- Python 3.4.2+ (might be working with version 3.4 as well, but not with 3.3 or less, and certainly not with Python 2)
 
 ## Usage
 - Create a config file called "config.ini" and fill out the needed informations, use the supplied "config.ini.sample" or "config.ini.minimum.sample" as reference
