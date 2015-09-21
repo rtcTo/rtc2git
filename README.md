@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.org/rtcTo/rtc2git.svg)](https://travis-ci.org/rtcTo/rtc2git) 
-![Supported Versions](https://img.shields.io/badge/python-3.4%2C%203.5%2B-blue.svg) [![MIT License](https://img.shields.io/badge/licsense-MIT-orange.svg)](https://github.com/rtcTo/rtc2git/blob/develop/LICENSE)
+[![Build Status](https://travis-ci.org/rtcTo/rtc2git.svg)](https://travis-ci.org/rtcTo/rtc2git)
+[![Supported Versions](https://img.shields.io/badge/python-3.4%2C%203.5%2B-blue.svg)](https://travis-ci.org/rtcTo/rtc2git)
+[![MIT License](https://img.shields.io/badge/licsense-MIT-orange.svg)](https://github.com/rtcTo/rtc2git/blob/develop/LICENSE)
 
 # rtc2git
 A tool made for migrating code from an existing [RTC] (https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
