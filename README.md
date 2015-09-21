@@ -27,7 +27,9 @@ It uses the CLI of RTC to gather the required information.
 
 
 ## Contribute
-Feel free to report or fix [issues](https://github.com/rtcTo/rtc2git/issues) or create new pull requests
+We welcome any feedback! :)
+
+Feel free to report and/or fix [issues](https://github.com/rtcTo/rtc2git/issues) or create new pull requests
 
 ## Wiki
 For more details [visit our wiki] (https://github.com/WtfJoke/rtc2git/wiki)
