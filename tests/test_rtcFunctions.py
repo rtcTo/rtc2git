@@ -391,7 +391,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         sample_file_path = testdirectory + os.sep + "resources" + os.sep + testfilename + "_" + filename
         return sample_file_path
 
-    def assert_Change_Entry(self, change, author, email, comment, date):
+    def assert_Change_Entry(self, change, author, email, comment, date, component, accepted=False):
         self.assertIsNotNone(change)
         self.assertEqual(author, change.author)
         self.assertEqual(email, change.email)
