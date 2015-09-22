@@ -1,13 +1,12 @@
-__author__ = 'Manuel'
-
 import unittest
 import os
 import time
 
-from gitFunctions import Commiter, Initializer
-from configuration import Builder
 import shell
 import configuration
+from gitFunctions import Commiter, Initializer
+from rtcFunctions import ChangeEntry
+from configuration import Builder
 from tests import testhelper
 
 
@@ -15,6 +14,7 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def setUp(self):
         self.cwd = os.getcwd()
+        configuration.config = Builder().build()
 
     def tearDown(self):
         configuration.config = None
@@ -180,11 +180,13 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def test_checkbranchname_quoted_expect_invalid(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            self.assertEqual(False, Commiter.checkbranchname("'master pflaster'"), "'master pflaster' should not be a valid branch name")
+            self.assertEqual(False, Commiter.checkbranchname("'master pflaster'"),
+                             "'master pflaster' should not be a valid branch name")
 
     def test_checkbranchname_unquoted_expect_invalid(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            self.assertEqual(False, Commiter.checkbranchname("master pflaster"), "master pflaster should not be a valid branch name")
+            self.assertEqual(False, Commiter.checkbranchname("master pflaster"),
+                             "master pflaster should not be a valid branch name")
 
     def test_getcommentwithprefix_enabled_commitisattached_shouldreturnwithprefix(self):
         prefix = "APREFIX-"
@@ -210,6 +212,26 @@ class GitFunctionsTestCase(unittest.TestCase):
         comment = "US1337: Fix some problems"
         self.assertEqual(comment, Commiter.getcommentwithprefix(comment))
 
+    def test_IllegalGitCharsShouldntCreateFile_Arrow(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            Commiter.addandcommit(self.createChangeEntry(comment="Some commit -> Bad"))
+            self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
+
+    def test_IllegalGitCharsShouldntCreateFile_LongArrow(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            Commiter.addandcommit(self.createChangeEntry(comment="Some commit --> Worse"))
+            self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
+
+    def test_IllegalGitCharsShouldntCreateFile_NoCommentCase(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            Commiter.addandcommit(self.createChangeEntry(comment="<No Comment>"))
+            self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
+
+    def test_IllegalGitCharsShouldntCreateFile_SpecialCaseAlreadyQuoted(self):
+        with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
+            Commiter.addandcommit(self.createChangeEntry(comment="Check out \"" + ">" + "\"US3333\""))
+            self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()
@@ -218,11 +240,14 @@ class GitFunctionsTestCase(unittest.TestCase):
         shell.execute("git add -A")
         Commiter.handle_captitalization_filename_changes()
 
+    def createChangeEntry(self, revision="anyRevisionId", author="anyAuthor", email="anyEmail", comment="anyComment",
+                          date="anyDate"):
+        return ChangeEntry(revision, author, email, date, comment)
+
 
 def create_and_change_directory(subfolder):
     os.mkdir(subfolder)
     os.chdir(subfolder)
-
 
 
 if __name__ == '__main__':

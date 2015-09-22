@@ -97,8 +97,7 @@ class Commiter:
 
     @staticmethod
     def getcommitcommand(changeentry):
-        cleancomment = Commiter.replacegitcreatingfilesymbol(changeentry.comment)
-        comment = Commiter.getcommentwithprefix(cleancomment)
+        comment = Commiter.getcommentwithprefix(changeentry.comment)
         return "git commit -m %s --date %s --author=%s" \
                % (shell.quote(comment), shell.quote(changeentry.date), changeentry.getgitauthor())
 
@@ -109,17 +108,6 @@ class Commiter:
         if prefix and Commiter.isattachedtoaworkitemregex.match(comment):
             return prefix + comment
         return comment
-
-    @staticmethod
-    def replacegitcreatingfilesymbol(comment):
-        return Commiter.replacewords(" to ", comment, "-->", "->", ">")
-
-    @staticmethod
-    def replacewords(replacedwith, word, *replacingstrings):
-        for replacingstring in replacingstrings:
-            if replacingstring in word:
-                word = word.replace(replacingstring, replacedwith)
-        return word
 
     @staticmethod
     def replaceauthor(author, email):
