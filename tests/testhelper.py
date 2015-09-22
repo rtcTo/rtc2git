@@ -59,8 +59,8 @@ def getrelativefilename(filenamerelativetotests):
     :param filenamerelativetotests:
     :return:the correct relative file name
     """
-    dir = os.getcwd()
-    if dir.endswith(os.sep + "tests"):
+    directory = os.getcwd()
+    if directory.endswith(os.sep + "tests"):
         relativefilename = filenamerelativetotests
     else:
         if filenamerelativetotests.startswith(".." + os.sep):
