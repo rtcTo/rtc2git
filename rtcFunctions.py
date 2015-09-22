@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+from enum import Enum, unique
 
 import configuration
 from configuration import ComponentBaseLineEntry
@@ -97,7 +98,10 @@ class Changes:
     def discard(*changeentries):
         config = configuration.get()
         idstodiscard = Changes._collectids(changeentries)
-        shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
+        exitcode = shell.execute(config.scmcommand + " discard -w " + config.workspace + " -r " + config.repo + " -o" + idstodiscard)
+        if exitcode is 0:
+            for changeEntry in changeentries:
+                changeEntry.setUnaccepted()
 
     @staticmethod
     def accept(logpath, *changeentries):
@@ -107,7 +111,13 @@ class Changes:
         config = configuration.get()
         Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
                                         config.workspace + " --changes" + revisions
-        return shell.execute(Changes.latest_accept_command, logpath, "a")
+        exitcode = shell.execute(Changes.latest_accept_command, logpath, "a")
+        if exitcode is 0:
+            for changeEntry in changeentries:
+                changeEntry.setAccepted()
+            return True
+        else:
+            return False
 
     @staticmethod
     def _collectids(changeentries):
@@ -195,40 +205,34 @@ class ImportHandler:
         amountofchanges = len(changeentries)
         shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
-        changestoskip = 0
 
         for changeEntry in changeentries:
             amountofacceptedchanges += 1
-            if changestoskip > 0:
-                shouter.shout("Skipping " + changeEntry.tostring())
-                changestoskip -= 1
-                continue
-            acceptedsuccesfully = Changes.accept(self.acceptlogpath, changeEntry) is 0
-            if not acceptedsuccesfully:
-                shouter.shout("Change wasnt succesfully accepted into workspace")
-                changestoskip = self.retryacceptincludingnextchangesets(changeEntry, changeentries)
-            if not Differ.has_diff():
-                # no differences found - force reload of the workspace
-                WorkspaceHandler().load()
-            shouter.shout("Accepted change %s/%s into working directory" % (amountofacceptedchanges, amountofchanges))
-            Commiter.addandcommit(changeEntry)
+            if not changeEntry.isAccepted(): # change could already be accepted from a retry
+                if not Changes.accept(self.acceptlogpath, changeEntry):
+                    shouter.shout("Change wasnt succesfully accepted into workspace")
+                    self.retryacceptincludingnextchangesets(changeEntry, changeentries)
+                if not Differ.has_diff():
+                    # no differences found - force reload of the workspace
+                    WorkspaceHandler().load()
+                shouter.shout("Accepted change %d/%d into working directory" % (amountofacceptedchanges, amountofchanges))
+                Commiter.addandcommit(changeEntry)
         return amountofacceptedchanges
 
     @staticmethod
-    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantacceptedallone, changes, maxchangesetstoaccepttogether):
-        changestoaccept = [changewhichcantacceptedallone]
-        nextchange = ImportHandler.getnextchangeset(changewhichcantacceptedallone, changes)
+    def collect_changes_to_accept_to_avoid_conflicts(changewhichcantbeacceptedalone, changes, maxchangesetstoaccepttogether):
+        changestoaccept = [changewhichcantbeacceptedalone]
+        nextchange = ImportHandler.getnextchangeset_fromsamecomponent(changewhichcantbeacceptedalone, changes)
 
         while True:
             if nextchange and len(changestoaccept) < maxchangesetstoaccepttogether:
                 changestoaccept.append(nextchange)
-                nextchange = ImportHandler.getnextchangeset(nextchange, changes)
+                nextchange = ImportHandler.getnextchangeset_fromsamecomponent(nextchange, changes)
             else:
                 break
         return changestoaccept
 
     def retryacceptincludingnextchangesets(self, change, changes):
-        changestoskip = 0
         issuccessful = False
         changestoaccept = ImportHandler.collect_changes_to_accept_to_avoid_conflicts(change, changes, self.config.maxchangesetstoaccepttogether)
         amountofchangestoaccept = len(changestoaccept)
@@ -239,15 +243,13 @@ class ImportHandler:
                 shouter.shout("Trying to resolve conflict by accepting multiple changes")
                 for index in range(1, amountofchangestoaccept):
                     toaccept = changestoaccept[0:index + 1]  # accept least possible amount of changes
-                    if Changes.accept(self.acceptlogpath, *toaccept) is 0:
-                        changestoskip = len(toaccept) - 1  # initialchange shouldnt be skipped
+                    if Changes.accept(self.acceptlogpath, *toaccept):
                         issuccessful = True
                         break
                     else:
                         Changes.discard(*toaccept)  # revert initial state
         if not issuccessful:
             self.is_user_aborting(change)
-        return changestoskip
 
     @staticmethod
     def is_user_agreeing_to_accept_next_change(change):
@@ -272,18 +274,20 @@ class ImportHandler:
             sys.exit("Please check the output/log and rerun program with resume")
 
     @staticmethod
-    def getnextchangeset(currentchangeentry, changeentries):
+    def getnextchangeset_fromsamecomponent(currentchangeentry, changeentries):
         nextchangeentry = None
+        component = currentchangeentry.component
         nextindex = changeentries.index(currentchangeentry) + 1
-        has_next_changeset = nextindex != len(changeentries)
-        if has_next_changeset:
-            nextchangeentry = changeentries[nextindex]
+        while not nextchangeentry and nextindex < len(changeentries):
+            candidateentry = changeentries[nextindex]
+            if not candidateentry.isAccepted() and candidateentry.component == component:
+                nextchangeentry = candidateentry
+            nextindex += 1
         return nextchangeentry
 
     def getchangeentriesofstreamcomponents(self, componentbaselineentries):
         missingchangeentries = {}
         shouter.shout("Start collecting changeentries")
-        changeentriesbycomponentbaselineentry = {}
         for componentBaseLineEntry in componentbaselineentries:
             shouter.shout("Collect changes until baseline %s of component %s" %
                           (componentBaseLineEntry.baselinename, componentBaseLineEntry.componentname))
@@ -321,7 +325,7 @@ class ImportHandler:
             changeentriestoaccept = sorter.tosortedlist(historywithchangeentryobject)
         else:
             changeentriestoaccept.extend(missingchangeentries.values())
-            # simple sort by date - same as returned by compare command
+            # simple sort by date
             changeentriestoaccept.sort(key=lambda change: change.date)
         return changeentriestoaccept
 
@@ -330,6 +334,8 @@ class ImportHandler:
         informationseparator = "@@"
         numberofexpectedinformationseparators = 5
         changeentries = []
+        component="unknown"
+        componentprefix = "Component ("
 
         with open(outputfilename, 'r', encoding=shell.encoding) as file:
             currentline = ""
@@ -337,23 +343,27 @@ class ImportHandler:
             for line in file:
                 cleanedline = line.strip()
                 if cleanedline:
-                    currentinformationpresent += cleanedline.count(informationseparator)
-                    if currentline:
-                        currentline += os.linesep
-                    currentline += cleanedline
-                    if currentinformationpresent >= numberofexpectedinformationseparators:
-                        splittedlines = currentline.split(informationseparator)
-                        revisionwithbrackets = splittedlines[0].strip()
-                        revision = revisionwithbrackets[1:-1]
-                        author = splittedlines[1].strip()
-                        email = splittedlines[2].strip()
-                        comment = splittedlines[3].strip()
-                        date = splittedlines[4].strip()
+                    if cleanedline.startswith(componentprefix):
+                        length = len(componentprefix)
+                        component = cleanedline[length:cleanedline.index(")", length)]
+                    else:
+                        currentinformationpresent += cleanedline.count(informationseparator)
+                        if currentline:
+                            currentline += os.linesep
+                        currentline += cleanedline
+                        if currentinformationpresent >= numberofexpectedinformationseparators:
+                            splittedlines = currentline.split(informationseparator)
+                            revisionwithbrackets = splittedlines[0].strip()
+                            revision = revisionwithbrackets[1:-1]
+                            author = splittedlines[1].strip()
+                            email = splittedlines[2].strip()
+                            comment = splittedlines[3].strip()
+                            date = splittedlines[4].strip()
 
-                        changeentries.append(ChangeEntry(revision, author, email, date, comment))
+                            changeentries.append(ChangeEntry(revision, author, email, date, comment, component))
 
-                        currentinformationpresent = 0
-                        currentline = ""
+                            currentinformationpresent = 0
+                            currentline = ""
         return changeentries
 
     @staticmethod
@@ -371,21 +381,21 @@ class ImportHandler:
         return revisions
 
     def getchangeentriesofbaseline(self, baselinetocompare):
-        return self.getchangeentriesbytypeandvalue("baseline", baselinetocompare)
+        return self.getchangeentriesbytypeandvalue(CompareType.baseline, baselinetocompare)
 
     def getchangeentriesofstream(self, streamtocompare):
         shouter.shout("Start collecting changes since baseline creation")
         missingchangeentries = {}
-        changeentries = self.getchangeentriesbytypeandvalue("stream", streamtocompare)
+        changeentries = self.getchangeentriesbytypeandvalue(CompareType.stream, streamtocompare)
         for changeentry in changeentries:
             missingchangeentries[changeentry.revision] = changeentry
         return missingchangeentries
 
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
-        outputfilename = self.config.getlogpath("Compare_" + comparetype + "_" + value + ".txt")
-        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I sw -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
-                         % (self.config.scmcommand, self.config.workspace, comparetype, value, self.config.repo,
+        outputfilename = self.config.getlogpath("Compare_" + comparetype.name + "_" + value + ".txt")
+        comparecommand = "%s --show-alias n --show-uuid y compare ws %s %s %s -r %s -I swc -C @@{name}@@{email}@@ --flow-directions i -D @@\"%s\"@@" \
+                         % (self.config.scmcommand, self.config.workspace, comparetype.name, value, self.config.repo,
                             dateformat)
         shell.execute(comparecommand, outputfilename)
         return ImportHandler.getchangeentriesfromfile(outputfilename)
@@ -396,18 +406,34 @@ class ImportHandler:
 
 
 class ChangeEntry:
-    def __init__(self, revision, author, email, date, comment):
+    def __init__(self, revision, author, email, date, comment, component="unknown"):
         self.revision = revision
         self.author = author
         self.email = email
         self.date = date
         self.comment = comment
+        self.component = component
+        self.setUnaccepted()
 
     def getgitauthor(self):
         authorrepresentation = "%s <%s>" % (self.author, self.email)
         return shell.quote(authorrepresentation)
 
+    def setAccepted(self):
+        self.accepted = True
+
+    def setUnaccepted(self):
+        self.accepted = False
+
+    def isAccepted(self):
+        return self.accepted
+
     def tostring(self):
-        return self.comment + " (Date: " + self.date + ", Author: " + self.author + ", Revision: " + self.revision + ")"
+        return "%s (Date: %s, Author: %s, Revision: %s, Component: %s, Accepted: %s)" % \
+               (self.comment, self.date, self.author, self.revision, self.component, self.accepted)
 
 
+@unique
+class CompareType(Enum):
+    baseline = 1
+    stream = 2
