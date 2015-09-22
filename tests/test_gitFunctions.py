@@ -5,7 +5,6 @@ import time
 import shell
 import configuration
 from gitFunctions import Commiter, Initializer
-from rtcFunctions import ChangeEntry
 from configuration import Builder
 from tests import testhelper
 
@@ -214,22 +213,22 @@ class GitFunctionsTestCase(unittest.TestCase):
 
     def test_IllegalGitCharsShouldntCreateFile_Arrow(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            Commiter.addandcommit(self.createChangeEntry(comment="Some commit -> Bad"))
+            Commiter.addandcommit(testhelper.createchangeentry(comment="Some commit -> Bad"))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
 
     def test_IllegalGitCharsShouldntCreateFile_LongArrow(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            Commiter.addandcommit(self.createChangeEntry(comment="Some commit --> Worse"))
+            Commiter.addandcommit(testhelper.createchangeentry(comment="Some commit --> Worse"))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
 
     def test_IllegalGitCharsShouldntCreateFile_NoCommentCase(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            Commiter.addandcommit(self.createChangeEntry(comment="<No Comment>"))
+            Commiter.addandcommit(testhelper.createchangeentry(comment="<No Comment>"))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
 
     def test_IllegalGitCharsShouldntCreateFile_SpecialCaseAlreadyQuoted(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
-            Commiter.addandcommit(self.createChangeEntry(comment="Check out \"" + ">" + "\"US3333\""))
+            Commiter.addandcommit(testhelper.createchangeentry(comment="Check out \"" + ">" + "\"US3333\""))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
@@ -239,10 +238,6 @@ class GitFunctionsTestCase(unittest.TestCase):
         os.rename(originalfilename, newfilename)  # change capitalization
         shell.execute("git add -A")
         Commiter.handle_captitalization_filename_changes()
-
-    def createChangeEntry(self, revision="anyRevisionId", author="anyAuthor", email="anyEmail", comment="anyComment",
-                          date="anyDate"):
-        return ChangeEntry(revision, author, email, date, comment)
 
 
 def create_and_change_directory(subfolder):

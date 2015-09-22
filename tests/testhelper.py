@@ -5,6 +5,7 @@ import shutil
 
 from configuration import Builder
 from gitFunctions import Initializer
+from rtcFunctions import ChangeEntry
 import configuration
 
 
@@ -69,3 +70,8 @@ def getrelativefilename(filenamerelativetotests):
         else:
             relativefilename = 'tests' + os.sep + filenamerelativetotests
     return relativefilename
+
+
+def createchangeentry(revision="anyRevisionId", author="anyAuthor", email="anyEmail", comment="anyComment",
+                      date="anyDate"):
+    return ChangeEntry(revision, author, email, date, comment)

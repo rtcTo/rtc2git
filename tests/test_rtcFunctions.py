@@ -1,13 +1,14 @@
-__author__ = 'Manuel'
-
 import unittest
-from unittest.mock import patch
 import os
+from unittest.mock import patch
 
-from rtcFunctions import Changes, ChangeEntry, ImportHandler, WorkspaceHandler
-from configuration import Builder
 import configuration
 import shell
+from rtcFunctions import Changes, ChangeEntry, ImportHandler, WorkspaceHandler
+from configuration import Builder
+from tests import testhelper
+
+__author__ = 'Manuel'
 
 
 class RtcFunctionsTestCase(unittest.TestCase):
@@ -23,7 +24,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
         configuration.config = config
-        Changes.accept(self.apath, self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        Changes.accept(self.apath, testhelper.createchangeentry(revision1), testhelper.createchangeentry(revision2))
         expected_accept_command = "lscm accept -v -o -r %s -t %s --changes %s %s" % (anyurl, self.workspace, revision1,
                                                                                      revision2)
         appendlogfileshortcut = "a"
@@ -37,7 +38,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
         configuration.config = config
-        Changes.discard(self.createChangeEntry(revision1), self.createChangeEntry(revision2))
+        Changes.discard(testhelper.createchangeentry(revision1), testhelper.createchangeentry(revision2))
         expected_discard_command = "lscm discard -w %s -r %s -o %s %s" % (self.workspace, anyurl, revision1, revision2)
         shell_mock.execute.assert_called_once_with(expected_discard_command)
 
@@ -77,8 +78,8 @@ class RtcFunctionsTestCase(unittest.TestCase):
     @patch('rtcFunctions.shell')
     @patch('builtins.input', return_value='')
     def test_RetryAccept_AssertThatTwoChangesGetAcceptedTogether(self, inputmock, shellmock):
-        changeentry1 = self.createChangeEntry("anyRevId")
-        changeentry2 = self.createChangeEntry("anyOtherRevId")
+        changeentry1 = testhelper.createchangeentry("anyRevId")
+        changeentry2 = testhelper.createchangeentry("anyOtherRevId")
         changeentries = [changeentry1, changeentry2]
 
         shellmock.execute.return_value = 0
@@ -93,9 +94,9 @@ class RtcFunctionsTestCase(unittest.TestCase):
         shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldCollectThreeChangesets(self):
-        change1 = self.createChangeEntry("1")
-        change2 = self.createChangeEntry("2")
-        change3 = self.createChangeEntry("3")
+        change1 = testhelper.createchangeentry("1")
+        change2 = testhelper.createchangeentry("2")
+        change3 = testhelper.createchangeentry("3")
 
         changeentries = [change1, change2, change3]
 
@@ -107,9 +108,9 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertEqual(3, len(collectedchanges))
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldAdhereToMaxChangeSetCount(self):
-        change1 = self.createChangeEntry("1")
-        change2 = self.createChangeEntry("2")
-        change3 = self.createChangeEntry("3")
+        change1 = testhelper.createchangeentry("1")
+        change2 = testhelper.createchangeentry("2")
+        change3 = testhelper.createchangeentry("3")
 
         changeentries = [change1, change2, change3]
 
@@ -121,7 +122,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertEqual(2, len(collectedchanges))
 
     def test_collectChangeSetsToAcceptToAvoidMergeConflict_ShouldAcceptLargeAmountOfChangeSets(self):
-        changeentries = [self.createChangeEntry(str(i)) for i in range(1, 500)]
+        changeentries = [testhelper.createchangeentry(str(i)) for i in range(1, 500)]
         change1 = changeentries[0]
 
         configuration.config = self.configBuilder.build()
@@ -131,13 +132,13 @@ class RtcFunctionsTestCase(unittest.TestCase):
     @patch('builtins.input', return_value='Y')
     def test_useragreeing_answeris_y_expecttrue(self, inputmock):
         configuration.config = self.configBuilder.build()
-        self.assertTrue(ImportHandler().is_user_agreeing_to_accept_next_change(self.createChangeEntry()))
+        self.assertTrue(ImportHandler().is_user_agreeing_to_accept_next_change(testhelper.createchangeentry()))
 
     @patch('builtins.input', return_value='n')
     def test_useragreeing_answeris_n_expectfalseandexception(self, inputmock):
         configuration.config = self.configBuilder.build()
         try:
-            ImportHandler().is_user_agreeing_to_accept_next_change(self.createChangeEntry())
+            ImportHandler().is_user_agreeing_to_accept_next_change(testhelper.createchangeentry())
             self.fail("Should have exit the program")
         except SystemExit as e:
             self.assertEqual("Please check the output/log and rerun program with resume", e.code)
