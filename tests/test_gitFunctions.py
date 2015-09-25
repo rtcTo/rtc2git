@@ -231,6 +231,14 @@ class GitFunctionsTestCase(unittest.TestCase):
             Commiter.addandcommit(testhelper.createchangeentry(comment="Check out \"" + ">" + "\"US3333\""))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
 
+    def test_translatejazzignore(self):
+        with open(testhelper.getrelativefilename('./resources/test_.jazzignore'), 'r') as jazzignore:
+            inputlines = jazzignore.readlines()
+        with open(testhelper.getrelativefilename('./resources/test_.gitignore'), 'r') as gitignore:
+            expectedlines = gitignore.readlines()
+        self.assertEqual(expectedlines, Commiter.translatejazzignore(inputlines))
+
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()

@@ -60,6 +60,7 @@ class Initializer:
 class Commiter:
     commitcounter = 0
     isattachedtoaworkitemregex = re.compile("^\d*:.*-")
+    findignorepatternregex = re.compile("\{([^\{\}]*)\}")
 
     @staticmethod
     def addandcommit(changeentry):
@@ -213,6 +214,26 @@ class Commiter:
                             repositoryfile = entry       # file on a single line (e.g. rename continuation)
                         repositoryfiles.append(repositoryfile)
         return repositoryfiles
+
+    @staticmethod
+    def translatejazzignore(jazzignorelines):
+        recursive = False
+        gitignorelines = []
+        for line in jazzignorelines:
+            if not line.startswith("#"):
+                line = line.strip()
+                if line.startswith("core.ignore"):
+                    gitignorelines.append('\n')
+                    if line.startswith("core.ignore.recursive"):
+                        recursive = True
+                    else:
+                        recursive = False
+                for foundpattern in Commiter.findignorepatternregex.findall(line):
+                    gitignoreline = foundpattern + '\n'
+                    if not recursive:
+                        gitignoreline = '/' + gitignoreline
+                    gitignorelines.append(gitignoreline)
+        return gitignorelines
 
 
 class Differ:
