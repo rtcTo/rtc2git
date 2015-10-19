@@ -14,6 +14,9 @@ class ConfigurationTestCase(unittest.TestCase):
         # reset global shell variables
         shell.logcommands = False
         shell.encoding = None
+        configuration.setconfigfile(None)
+        configuration.setUser(None)
+        configuration.setPassword(None)
 
     def test_DeletionOfFolder(self):
         config = Builder().setworkdirectory(self.workdirectory).build()
@@ -66,6 +69,12 @@ class ConfigurationTestCase(unittest.TestCase):
     def test_read_passedin_configfile(self):
         self._assertTestConfig(configuration.read(testhelper.getrelativefilename('resources/test_config.ini')))
 
+    def test_read_passedin_configfile_expect_override_user_password(self):
+        configuration.setUser('newUser')
+        configuration.setPassword('newPassword')
+        self._assertTestConfig(configuration.read(testhelper.getrelativefilename('resources/test_config.ini')),
+                               user='newUser', password='newPassword')
+
     def test_read_configfile_from_configuration(self):
         configuration.setconfigfile(testhelper.getrelativefilename('resources/test_config.ini'))
         self._assertTestConfig(configuration.read())
@@ -74,11 +83,17 @@ class ConfigurationTestCase(unittest.TestCase):
         configuration.setconfigfile(testhelper.getrelativefilename('resources/test_minimum_config.ini'))
         self._assertDefaultConfig(configuration.read())
 
-    def _assertTestConfig(self, config):
+    def _assertTestConfig(self, config, user=None, password=None):
         # [General]
         self.assertEqual('https://rtc.supercompany.com/ccm/', config.repo)
-        self.assertEqual('superuser', config.user)
-        self.assertEqual('supersecret', config.password)
+        if not user:
+            self.assertEqual('superuser', config.user)
+        else:
+            self.assertEqual(user, config.user)
+        if not password:
+            self.assertEqual('supersecret', config.password)
+        else:
+            self.assertEqual(password, config.password)
         self.assertEqual('super.git', config.gitRepoName)
         self.assertEqual('Superworkspace', config.workspace)
         self.assertEqual('/tmp/migration', config.workDirectory)

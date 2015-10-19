@@ -54,3 +54,21 @@ class MigrationTestCase(unittest.TestCase):
         sys.argv = ['migration.py']
         migration.parsecommandline()
         self.assertEqual('config.ini', configuration.configfile)
+
+    def testParseCommandLine_expect_specified_user_password_shortoptions(self):
+        sys.argv = ['migration.py', '-u', 'anyUser', '-p', 'anyPassword' ]
+        migration.parsecommandline()
+        self.assertEqual('anyUser', configuration.user)
+        self.assertEqual('anyPassword', configuration.password)
+
+    def testParseCommandLine_expect_specified_user_password_longoptions(self):
+        sys.argv = ['migration.py', '--user', 'anyUser', '--password', 'anyPassword' ]
+        migration.parsecommandline()
+        self.assertEqual('anyUser', configuration.user)
+        self.assertEqual('anyPassword', configuration.password)
+
+    def testParseCommandLine_expect_no_user_password(self):
+        sys.argv = ['migration.py']
+        migration.parsecommandline()
+        self.assertIsNone(configuration.user)
+        self.assertIsNone(configuration.password)
