@@ -30,7 +30,7 @@ class GitFunctionsTestCase(unittest.TestCase):
     def assertGitStatusShowsIsRenamed(self):
         statusoutput = shell.getoutput("git status -z")
         modifier = statusoutput[0][0]
-        self.assertEquals("R", modifier)
+        self.assertEqual("R", modifier)
 
     def test_ExistingFileStartsWithUpperCase_RenameToLowerCase_ExpectGitRename(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):

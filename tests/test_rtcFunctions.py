@@ -360,7 +360,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         self.assertIsNotNone(nextentry)
         self.assertFalse(nextentry.isAccepted())
         self.assertEqual(component2, nextentry.component)
-        self.assertEquals("2.3", nextentry.revision)
+        self.assertEqual("2.3", nextentry.revision)
 
     def test_getnextchangeset_fromsamecomponent_expectnonefound(self):
         component1 = "uuid_1"
