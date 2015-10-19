@@ -8,6 +8,8 @@ import shouter
 
 config = None
 configfile = None
+user = None
+password = None
 
 
 def read(configname=None):
@@ -19,8 +21,12 @@ def read(configname=None):
     generalsection = parsedconfig['General']
     migrationsection = parsedconfig['Migration']
     miscsectionname = 'Miscellaneous'
-    user = generalsection['User']
-    password = generalsection['Password']
+    global user
+    if not user:
+        user = generalsection['User']
+    global password
+    if not password:
+        password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection.get('ScmCommand', "lscm")
     shell.logcommands = parsedconfig.get(miscsectionname, 'LogShellCommands', fallback="False") == "True"
@@ -66,6 +72,16 @@ def get():
 def setconfigfile(newconfigfile):
     global configfile
     configfile = newconfigfile
+
+
+def setUser(newuser):
+    global user
+    user = newuser
+
+
+def setPassword(newpassword):
+    global password
+    password = newpassword
 
 
 def getinitialcomponentbaselines(definedbaselines):

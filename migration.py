@@ -112,8 +112,12 @@ def parsecommandline():
     configfilehelp = 'name of the config file, or full path to the config file; defaults to ' + configfiledefault
     parser.add_argument('-c', '--configfile', metavar='file', dest='configfile', help=configfilehelp,
                         default=configfiledefault)
+    parser.add_argument('-u', '--user', metavar='user', dest='user', help='RTC user', default=None)
+    parser.add_argument('-p', '--password', metavar='password', dest='password', help='RTC password', default=None)
     arguments = parser.parse_args()
     configuration.setconfigfile(arguments.configfile)
+    configuration.setUser(arguments.user)
+    configuration.setPassword(arguments.password)
 
 
 def validate():
