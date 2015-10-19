@@ -64,7 +64,7 @@ class Commiter:
 
     @staticmethod
     def addandcommit(changeentry):
-        Commiter.filterignore()
+        Commiter.handleignore()
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
@@ -169,16 +169,23 @@ class Commiter:
             return 1  # branch couldnt get renamed
 
     @staticmethod
-    def filterignore():
+    def handleignore():
         """
-        add files with extensions to be ignored to .gitignore
+        check untracked files and handle both global and local ignores
         """
-        # there is only work to to if there are extensions configured at all
+        # make sure we see all untracked files:
+        strippedlines = shell.getoutput("git status --untracked-files=all -z")
+        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+        Commiter.ignoreextensions(repositoryfiles)
+        Commiter.ignorejazzignore(repositoryfiles)
+
+    @staticmethod
+    def ignoreextensions(repositoryfiles):
+        """
+        add files with extensions to be ignored to the global .gitignore
+        """
         ignorefileextensions = configuration.get().ignorefileextensions
         if len(ignorefileextensions) > 0:
-            # make sure we see all untracked files:
-            strippedlines = shell.getoutput('git status --untracked-files=all -z')
-            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
             Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
 
     @staticmethod
@@ -217,6 +224,12 @@ class Commiter:
 
     @staticmethod
     def translatejazzignore(jazzignorelines):
+        """
+        translate the lines of a local .jazzignore file into the lines of a local .gitignore file
+
+        :param jazzignorelines: the input lines
+        :return: the .gitignore lines
+        """
         recursive = False
         gitignorelines = []
         for line in jazzignorelines:
@@ -231,9 +244,30 @@ class Commiter:
                 for foundpattern in Commiter.findignorepatternregex.findall(line):
                     gitignoreline = foundpattern + '\n'
                     if not recursive:
-                        gitignoreline = '/' + gitignoreline
+                        gitignoreline = '/' + gitignoreline    # forward, not os.sep
                     gitignorelines.append(gitignoreline)
         return gitignorelines
+
+    @staticmethod
+    def ignorejazzignore(repositoryfiles):
+        """
+        if a .jazzignore file is modified, translate it to .gitignore
+
+        :param repositoryfiles: the modified files
+        """
+        jazzignore = ".jazzignore"
+        for repositoryfile in repositoryfiles:
+            jazzignorelen = len(jazzignore)
+            if repositoryfile[-jazzignorelen:] == jazzignore:
+                jazzignorelines = []
+                with open(repositoryfile, 'r') as jazzignorefile:
+                    jazzignorelines = jazzignorefile.readlines()
+                if len(jazzignorelines) > 0:
+                    path = repositoryfile[0:len(repositoryfile)-jazzignorelen]
+                    gitignore = path + ".gitignore"
+                    # overwrite in any case
+                    with open(gitignore, 'w') as gitignorefile:
+                        gitignorefile.writelines(Commiter.translatejazzignore(jazzignorelines))
 
 
 class Differ:
