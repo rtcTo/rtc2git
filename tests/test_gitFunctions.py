@@ -215,6 +215,45 @@ class GitFunctionsTestCase(unittest.TestCase):
                 gitignorelines = localgitignore.readlines()
             self.assertEqual(expectedlines, gitignorelines)
 
+    def test_handleignore_local_jazzignore_expect_empty_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            gitignore = subfolder + os.sep + ".gitignore"
+            with open(gitignore, 'w') as localgitignore:
+                localgitignore.write('\n')
+                localgitignore.write("/*.pyc")
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores are empty\n")
+            Commiter.handleignore()
+            self.assertTrue(os.path.exists(gitignore))
+            gitignorelines = []
+            with open(gitignore, 'r') as localgitignore:
+                gitignorelines = localgitignore.readlines()
+            self.assertEqual(0, len(gitignorelines))
+
+    def test_handleignore_local_jazzignore_expect_delete_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            # create a repository with a .jazzignore and .gitignore file
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores\n")
+                testjazzignore.write("core.ignore = {*.pyc}")
+            Commiter.addandcommit(testhelper.createchangeentry(comment="Initial .jazzignore"))
+            gitignore = subfolder + os.sep + ".gitignore"
+            self.assertTrue(os.path.exists(gitignore))
+            # now remove .jazzignore
+            os.remove(jazzignore)
+            Commiter.handleignore()
+            self.assertFalse(os.path.exists(gitignore))
+
     def test_checkbranchname_expect_valid(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             self.assertEqual(True, Commiter.checkbranchname("master"), "master should be a valid branch name")

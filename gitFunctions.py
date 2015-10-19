@@ -251,23 +251,30 @@ class Commiter:
     @staticmethod
     def ignorejazzignore(repositoryfiles):
         """
-        if a .jazzignore file is modified, translate it to .gitignore
+        If a .jazzignore file is modified or added, translate it to .gitignore,
+        if a .jazzignore file is deleted, delete the corresponding .gitignore file as well.
 
         :param repositoryfiles: the modified files
         """
         jazzignore = ".jazzignore"
+        jazzignorelen = len(jazzignore)
         for repositoryfile in repositoryfiles:
-            jazzignorelen = len(jazzignore)
             if repositoryfile[-jazzignorelen:] == jazzignore:
-                jazzignorelines = []
-                with open(repositoryfile, 'r') as jazzignorefile:
-                    jazzignorelines = jazzignorefile.readlines()
-                if len(jazzignorelines) > 0:
-                    path = repositoryfile[0:len(repositoryfile)-jazzignorelen]
-                    gitignore = path + ".gitignore"
-                    # overwrite in any case
-                    with open(gitignore, 'w') as gitignorefile:
-                        gitignorefile.writelines(Commiter.translatejazzignore(jazzignorelines))
+                path = repositoryfile[0:len(repositoryfile)-jazzignorelen]
+                gitignore = path + ".gitignore"
+                if os.path.exists(repositoryfile):
+                    # update (or create) .gitignore
+                    jazzignorelines = []
+                    with open(repositoryfile, 'r') as jazzignorefile:
+                        jazzignorelines = jazzignorefile.readlines()
+                    if len(jazzignorelines) > 0:
+                        # overwrite in any case
+                        with open(gitignore, 'w') as gitignorefile:
+                            gitignorefile.writelines(Commiter.translatejazzignore(jazzignorelines))
+                else:
+                    # delete .gitignore
+                    if os.path.exists(gitignore):
+                        os.remove(gitignore)
 
 
 class Differ:
