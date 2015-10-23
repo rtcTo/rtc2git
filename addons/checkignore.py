@@ -2,7 +2,7 @@ import os
 
 if __name__ == "__main__":
     ignoredbutexist = []
-    directory = '/home/huo/tmp/migrate_EMS/EMS'
+    directory = '/home/huo/tmp/migrate_ESL/ESL'
     os.chdir(directory)
     ignorelines = []
     with open('.gitignore', 'r') as gitignore:
@@ -12,3 +12,5 @@ if __name__ == "__main__":
             ignoredbutexist.append(line)
     if len(ignoredbutexist) > 0:
         print("The following files have been ignored in the new git repository, but still exist in the actual RTC workspace:")
+        for ignored in ignoredbutexist:
+            print(ignored)
