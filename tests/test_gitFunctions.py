@@ -97,8 +97,8 @@ class GitFunctionsTestCase(unittest.TestCase):
             expectedlines.append(".jazzShed\n")
             expectedlines.append("\n")
             expectedlines.append("# directories\n")
-            expectedlines.append("projectX/dist\n")
-            expectedlines.append("projectZ/out\n")
+            expectedlines.append("/projectX/dist\n")
+            expectedlines.append("/projectZ/out\n")
             with open(gitignorepath, 'r') as gitignore:
                 lines = gitignore.readlines()
                 self.assertEqual(expectedlines, lines)
