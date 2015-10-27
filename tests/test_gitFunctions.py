@@ -150,21 +150,21 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[5])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[6])
 
-    def test_filterignore(self):
+    def test_handleignore_global_extensions(self):
         with testhelper.mkchdir("aFolder") as folder:
             # create test repo
-            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setignorefileextensions('.zip; .jar').build()
-            ignore = '.gitignore'
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setignorefileextensions(".zip; .jar").build()
+            ignore = ".gitignore"
             Initializer().createrepo()
             # simulate addition of .zip and .jar files
-            zip = 'test.zip'
+            zip = "test.zip"
             with open(zip, 'w') as testzip:
-                testzip.write('test zip content')
-            jar = 'test.jar'
+                testzip.write("test zip content")
+            jar = "test.jar"
             with open(jar, 'w') as testjar:
-                testjar.write('test jar content')
+                testjar.write("test jar content")
             # do the filtering
-            Commiter.filterignore()
+            Commiter.handleignore()
             # check output of .gitignore
             with open(ignore, 'r') as gitIgnore:
                 lines = gitIgnore.readlines()
@@ -172,6 +172,87 @@ class GitFunctionsTestCase(unittest.TestCase):
                 lines.sort()
                 self.assertEqual(jar, lines[0].strip())
                 self.assertEqual(zip, lines[1].strip())
+
+    def test_handleignore_local_jazzignore_expect_new_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores\n")
+                testjazzignore.write("core.ignore = {*.pyc}")
+            expectedlines = ["\n","/*.pyc\n"]
+            gitignore = subfolder + os.sep + ".gitignore"
+            self.assertFalse(os.path.exists(gitignore))
+            Commiter.handleignore()
+            self.assertTrue(os.path.exists(gitignore))
+            gitignorelines = []
+            with open(gitignore, 'r') as localgitignore:
+                gitignorelines = localgitignore.readlines()
+            self.assertEqual(expectedlines, gitignorelines)
+
+    def test_handleignore_local_jazzignore_expect_overwrite_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            gitignore = subfolder + os.sep + ".gitignore"
+            with open(gitignore, 'w') as localgitignore:
+                localgitignore.write('\n')
+                localgitignore.write("/*.pyc")
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores\n")
+                testjazzignore.write("core.ignore = {*.class} {bin}")
+            expectedlines = ["\n","/*.class\n","/bin\n"]
+            Commiter.handleignore()
+            self.assertTrue(os.path.exists(gitignore))
+            gitignorelines = []
+            with open(gitignore, 'r') as localgitignore:
+                gitignorelines = localgitignore.readlines()
+            self.assertEqual(expectedlines, gitignorelines)
+
+    def test_handleignore_local_jazzignore_expect_empty_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            gitignore = subfolder + os.sep + ".gitignore"
+            with open(gitignore, 'w') as localgitignore:
+                localgitignore.write('\n')
+                localgitignore.write("/*.pyc")
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores are empty\n")
+            Commiter.handleignore()
+            self.assertTrue(os.path.exists(gitignore))
+            gitignorelines = []
+            with open(gitignore, 'r') as localgitignore:
+                gitignorelines = localgitignore.readlines()
+            self.assertEqual(0, len(gitignorelines))
+
+    def test_handleignore_local_jazzignore_expect_delete_gitignore(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            # create a repository with a .jazzignore and .gitignore file
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").build()
+            Initializer().createrepo()
+            subfolder = "aSubFolder"
+            os.mkdir(subfolder)
+            jazzignore = subfolder + os.sep + ".jazzignore"
+            with open(jazzignore, 'w') as testjazzignore:
+                testjazzignore.write("# my ignores\n")
+                testjazzignore.write("core.ignore = {*.pyc}")
+            Commiter.addandcommit(testhelper.createchangeentry(comment="Initial .jazzignore"))
+            gitignore = subfolder + os.sep + ".gitignore"
+            self.assertTrue(os.path.exists(gitignore))
+            # now remove .jazzignore
+            os.remove(jazzignore)
+            Commiter.handleignore()
+            self.assertFalse(os.path.exists(gitignore))
 
     def test_checkbranchname_expect_valid(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
@@ -230,6 +311,14 @@ class GitFunctionsTestCase(unittest.TestCase):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             Commiter.addandcommit(testhelper.createchangeentry(comment="Check out \"" + ">" + "\"US3333\""))
             self.assertEqual(0, len(shell.getoutput("git status -z")), "No file should be created by commit message")
+
+    def test_translatejazzignore(self):
+        with open(testhelper.getrelativefilename('./resources/test_.jazzignore'), 'r') as jazzignore:
+            inputlines = jazzignore.readlines()
+        with open(testhelper.getrelativefilename('./resources/test_.gitignore'), 'r') as gitignore:
+            expectedlines = gitignore.readlines()
+        self.assertEqual(expectedlines, Commiter.translatejazzignore(inputlines))
+
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file

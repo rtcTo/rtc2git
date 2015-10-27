@@ -60,10 +60,11 @@ class Initializer:
 class Commiter:
     commitcounter = 0
     isattachedtoaworkitemregex = re.compile("^\d*:.*-")
+    findignorepatternregex = re.compile("\{([^\{\}]*)\}")
 
     @staticmethod
     def addandcommit(changeentry):
-        Commiter.filterignore()
+        Commiter.handleignore()
         Commiter.replaceauthor(changeentry.author, changeentry.email)
         shell.execute("git add -A")
 
@@ -168,16 +169,23 @@ class Commiter:
             return 1  # branch couldnt get renamed
 
     @staticmethod
-    def filterignore():
+    def handleignore():
         """
-        add files with extensions to be ignored to .gitignore
+        check untracked files and handle both global and local ignores
         """
-        # there is only work to to if there are extensions configured at all
+        # make sure we see all untracked files:
+        strippedlines = shell.getoutput("git status --untracked-files=all -z")
+        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+        Commiter.ignoreextensions(repositoryfiles)
+        Commiter.ignorejazzignore(repositoryfiles)
+
+    @staticmethod
+    def ignoreextensions(repositoryfiles):
+        """
+        add files with extensions to be ignored to the global .gitignore
+        """
         ignorefileextensions = configuration.get().ignorefileextensions
         if len(ignorefileextensions) > 0:
-            # make sure we see all untracked files:
-            strippedlines = shell.getoutput('git status --untracked-files=all -z')
-            repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
             Commiter.ignore(ExtensionFilter.match(repositoryfiles, ignorefileextensions))
 
     @staticmethod
@@ -213,6 +221,60 @@ class Commiter:
                             repositoryfile = entry       # file on a single line (e.g. rename continuation)
                         repositoryfiles.append(repositoryfile)
         return repositoryfiles
+
+    @staticmethod
+    def translatejazzignore(jazzignorelines):
+        """
+        translate the lines of a local .jazzignore file into the lines of a local .gitignore file
+
+        :param jazzignorelines: the input lines
+        :return: the .gitignore lines
+        """
+        recursive = False
+        gitignorelines = []
+        for line in jazzignorelines:
+            if not line.startswith("#"):
+                line = line.strip()
+                if line.startswith("core.ignore"):
+                    gitignorelines.append('\n')
+                    if line.startswith("core.ignore.recursive"):
+                        recursive = True
+                    else:
+                        recursive = False
+                for foundpattern in Commiter.findignorepatternregex.findall(line):
+                    gitignoreline = foundpattern + '\n'
+                    if not recursive:
+                        gitignoreline = '/' + gitignoreline    # forward, not os.sep
+                    gitignorelines.append(gitignoreline)
+        return gitignorelines
+
+    @staticmethod
+    def ignorejazzignore(repositoryfiles):
+        """
+        If a .jazzignore file is modified or added, translate it to .gitignore,
+        if a .jazzignore file is deleted, delete the corresponding .gitignore file as well.
+
+        :param repositoryfiles: the modified files
+        """
+        jazzignore = ".jazzignore"
+        jazzignorelen = len(jazzignore)
+        for repositoryfile in repositoryfiles:
+            if repositoryfile[-jazzignorelen:] == jazzignore:
+                path = repositoryfile[0:len(repositoryfile)-jazzignorelen]
+                gitignore = path + ".gitignore"
+                if os.path.exists(repositoryfile):
+                    # update (or create) .gitignore
+                    jazzignorelines = []
+                    with open(repositoryfile, 'r') as jazzignorefile:
+                        jazzignorelines = jazzignorefile.readlines()
+                    if len(jazzignorelines) > 0:
+                        # overwrite in any case
+                        with open(gitignore, 'w') as gitignorefile:
+                            gitignorefile.writelines(Commiter.translatejazzignore(jazzignorelines))
+                else:
+                    # delete .gitignore
+                    if os.path.exists(gitignore):
+                        os.remove(gitignore)
 
 
 class Differ:
