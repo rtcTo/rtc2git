@@ -47,6 +47,8 @@ def read(configname=None):
     baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
     ignorefileextensions = parsesplittedproperty(ignorefileextensionsproperty)
+    ignoredirectoriessproperty = parsedconfig.get(miscsectionname, 'IgnoreDirectories', fallback='')
+    ignoredirectories = parsesplittedproperty(ignoredirectoriessproperty)
     includecomponentroots = parsedconfig.get(miscsectionname, 'IncludeComponentRoots', fallback="False")
     commitmessageprefix = migrationsection.get('CommitMessageWorkItemPrefix', "")
     gitattributesproperty = parsedconfig.get(migrationsectionname, 'Gitattributes', fallback='')
@@ -60,6 +62,7 @@ def read(configname=None):
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
     configbuilder.setpreviousstreamname(previousstreamname)
     configbuilder.setignorefileextensions(ignorefileextensions)
+    configbuilder.setignoredirectories(ignoredirectories)
     configbuilder.setincludecomponentroots(includecomponentroots).setcommitmessageprefix(commitmessageprefix)
     configbuilder.setgitattributes(gitattributes)
     global config
@@ -133,6 +136,7 @@ class Builder:
         self.clonedgitreponame = ""
         self.previousstreamname = ""
         self.ignorefileextensions = ""
+        self.ignoredirectories = ""
         self.includecomponentroots = ""
         self.commitmessageprefix = ""
         self.gitattributes = ""
@@ -206,6 +210,10 @@ class Builder:
         self.ignorefileextensions = ignorefileextensions
         return self
 
+    def setignoredirectories(self, ignoreirectories):
+        self.ignoredirectories = ignoreirectories
+        return self
+
     def setincludecomponentroots(self, includecomponentroots):
         self.includecomponentroots = self.isenabled(includecomponentroots)
         return self
@@ -227,7 +235,7 @@ class Builder:
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
-                            self.previousstreamname, self.ignorefileextensions, self.includecomponentroots,
+                            self.previousstreamname, self.ignorefileextensions, self.ignoredirectories, self.includecomponentroots,
                             self.commitmessageprefix, self.gitattributes)
 
 
@@ -235,7 +243,7 @@ class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
-                 ignorefileextensions, includecomponentroots, commitmessageprefix, gitattributes):
+                 ignorefileextensions, ignoredirectories, includecomponentroots, commitmessageprefix, gitattributes):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -257,6 +265,7 @@ class ConfigObject:
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
         self.ignorefileextensions = ignorefileextensions
+        self.ignoredirectories = ignoredirectories
         self.includecomponentroots = includecomponentroots
         self.commitmessageprefix = commitmessageprefix
         self.gitattributes = gitattributes

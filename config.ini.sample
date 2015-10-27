@@ -66,6 +66,13 @@ LogShellCommands = False
 # IgnoreFileExtensions = .zip; .jar; .exe; .dll
 IgnoreFileExtensions =
 
+# Optional: ignore directories
+# Define a semicolon-separated list of directories to be generally excluded
+# (we need the full path inside the resulting git repository)
+# Example:
+# IgnoreDirectories = projectX/WebContent/node_modules; projectY/distribution
+IgnoreDirectories =
+
 # Set to true if you want to include component root directories when loading the workspace
 # (this will add the -i / --include-root option to the (l)scm load command)
 IncludeComponentRoots = False

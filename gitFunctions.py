@@ -24,6 +24,11 @@ class Initializer:
                 ignore.write(".jazz5" + newline)
                 ignore.write(".metadata" + newline)
                 ignore.write(".jazzShed" + newline)
+                config = configuration.get()
+                if len(config.ignoredirectories) > 0:
+                    ignore.write(newline + "# directories" + newline)
+                    for directory in config.ignoredirectories:
+                        ignore.write(directory + newline)
             shell.execute("git add " + git_ignore)
             shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 

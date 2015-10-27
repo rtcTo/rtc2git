@@ -83,6 +83,26 @@ class GitFunctionsTestCase(unittest.TestCase):
             gitignorepath = os.path.join(os.getcwd(), ignore)
             self.assertTrue(os.path.exists(gitignorepath))
 
+    def test_CreationOfGitIgnore_DoesntExist_ShouldGetCreated_WithDirectories(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setignoredirectories(["projectX/dist", "projectZ/out"]).build()
+            ignore = '.gitignore'
+            Initializer().createrepo()
+            Initializer.createignore()
+            gitignorepath = os.path.join(os.getcwd(), ignore)
+            self.assertTrue(os.path.exists(gitignorepath))
+            expectedlines = []
+            expectedlines.append(".jazz5\n")
+            expectedlines.append(".metadata\n")
+            expectedlines.append(".jazzShed\n")
+            expectedlines.append("\n")
+            expectedlines.append("# directories\n")
+            expectedlines.append("projectX/dist\n")
+            expectedlines.append("projectZ/out\n")
+            with open(gitignorepath, 'r') as gitignore:
+                lines = gitignore.readlines()
+                self.assertEqual(expectedlines, lines)
+
     def test_CreationOfGitattributes_ExistAlready_ShouldntGetCreated(self):
         with testhelper.mkchdir("aFolder") as folder:
             configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setgitattributes(["# comment", "*.sql text"]).build()
