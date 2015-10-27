@@ -83,6 +83,33 @@ class GitFunctionsTestCase(unittest.TestCase):
             gitignorepath = os.path.join(os.getcwd(), ignore)
             self.assertTrue(os.path.exists(gitignorepath))
 
+    def test_CreationOfGitattributes_ExistAlready_ShouldntGetCreated(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setgitattributes(["# comment", "*.sql text"]).build()
+            attributes = '.gitattributes'
+            existing_git_attribute_entry = "* text=auto"
+            Initializer().createrepo()
+            with open(attributes, 'w') as gitattributes:
+                gitattributes.write(existing_git_attribute_entry)
+            Initializer.createattributes()
+            with open(attributes, 'r') as gitattributes:
+                for line in gitattributes.readlines():
+                    self.assertEqual(existing_git_attribute_entry, line)
+
+    def test_CreationOfGitattributes_DoesntExist_ShouldGetCreated(self):
+        with testhelper.mkchdir("aFolder") as folder:
+            configuration.config = Builder().setworkdirectory(folder).setgitreponame("test.git").setgitattributes(["# comment", "* text=auto"]).build()
+            attributes = '.gitattributes'
+            Initializer().createrepo()
+            Initializer.createattributes()
+            gitattributespath = os.path.join(os.getcwd(), attributes)
+            self.assertTrue(os.path.exists(gitattributespath))
+            with open(gitattributespath, 'r') as gitattributes:
+                lines = gitattributes.readlines()
+                self.assertEqual(2, len(lines))
+                self.assertEquals('# comment\n', lines[0])
+                self.assertEquals('* text=auto\n', lines[1])
+
     def test_BranchRenaming_TargetBranchDoesntExist(self):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
