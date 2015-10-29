@@ -88,9 +88,8 @@ def migrate():
         git.promotebranchtomaster(streamname)
 
     RTCLogin.logout()
-    shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed. \n"
-                  "You should adjust your .gitignore to ignore the same files as defined in your .jazzignore \n"
-                  "Afterwards you can distribute the git-repo '%s'" % (streamname, config.gitRepoName))
+    shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed.\n"
+                  "You can distribute the git-repo '%s'." % (streamname, config.gitRepoName))
 
 
 def prepare():

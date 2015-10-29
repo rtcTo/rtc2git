@@ -1,0 +1,13 @@
+
+*.class
+*.so
+*.pyc
+
+/*.suo
+/.classpath
+/.idea
+/.project
+/.settings
+/bin
+/dist
+/a?c
