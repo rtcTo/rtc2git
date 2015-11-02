@@ -236,13 +236,10 @@ class Commiter:
             if not line.startswith("#"):
                 line = line.strip()
                 if line.startswith("core.ignore"):
-                    gitignorelines.append('\n')
-                    if line.startswith("core.ignore.recursive"):
-                        recursive = True
-                    else:
-                        recursive = False
+                    gitignorelines.append(os.linesep)
+                    recursive = line.startswith("core.ignore.recursive")
                 for foundpattern in Commiter.findignorepatternregex.findall(line):
-                    gitignoreline = foundpattern + '\n'
+                    gitignoreline = foundpattern + os.linesep
                     if not recursive:
                         gitignoreline = '/' + gitignoreline    # forward, not os.sep
                     gitignorelines.append(gitignoreline)
