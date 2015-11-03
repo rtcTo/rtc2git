@@ -81,7 +81,7 @@ class Commiter:
     @staticmethod
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
-        lines = shell.getoutput("git status -z")
+        lines = shell.getoutput("git status -z", stripped=False)
         for newfilerelativepath in Commiter.splitoutputofgitstatusz(lines, "A  "):
             directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
             newfilename = os.path.basename(newfilerelativepath)
@@ -174,8 +174,8 @@ class Commiter:
         check untracked files and handle both global and local ignores
         """
         # make sure we see all untracked files:
-        strippedlines = shell.getoutput("git status --untracked-files=all -z")
-        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+        lines = shell.getoutput("git status --untracked-files=all -z", stripped=False)
+        repositoryfiles = Commiter.splitoutputofgitstatusz(lines)
         Commiter.ignoreextensions(repositoryfiles)
         Commiter.ignorejazzignore(repositoryfiles)
 
@@ -201,9 +201,9 @@ class Commiter:
     @staticmethod
     def splitoutputofgitstatusz(lines, filterprefix=None):
         """
-        Split the output of  'git status -z' into single files
+        Split the output of 'git status -z' into single files
 
-        :param lines: the output line(s) from the command
+        :param lines: the unstripped output line(s) from the command
         :param filterprefix: if given, only the files of those entries matching the prefix will be returned
         :return: a list of repository files with status changes
         """
@@ -211,11 +211,10 @@ class Commiter:
         for line in lines:                           # expect exactly one line
             entries = line.split(sep='\x00')         # ascii 0 is the delimiter
             for entry in entries:
-                entry = entry.strip()
                 if len(entry) > 0:
                     if not filterprefix or entry.startswith(filterprefix):
                         start = entry.find(' ')
-                        if 1 <= start <= 2:
+                        if 0 <= start <= 2:
                             repositoryfile = entry[3:]   # output is formatted
                         else:
                             repositoryfile = entry       # file on a single line (e.g. rename continuation)
