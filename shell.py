@@ -16,7 +16,7 @@ def execute(command, outputfile=None, openmode="w"):
             return call(command, stdout=file, shell=True)
 
 
-def getoutput(command):
+def getoutput(command, stripped=True):
     shout_command_to_log(command)
     try:
         outputasbytestring = check_output(command, shell=True)
@@ -24,12 +24,15 @@ def getoutput(command):
     except CalledProcessError as e:
         shouter.shout(e)
         output = ""
-    strippedlines = []
-    for line in output:
-        cleanedline = line.strip()
-        if cleanedline:
-            strippedlines.append(cleanedline)
-    return strippedlines
+    if not stripped:
+        return output
+    else:
+        lines = []
+        for line in output:
+            strippedline = line.strip()
+            if strippedline:
+                lines.append(strippedline)
+        return lines
 
 
 def quote(stringtoquote):
