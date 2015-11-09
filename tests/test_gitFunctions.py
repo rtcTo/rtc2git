@@ -118,7 +118,7 @@ class GitFunctionsTestCase(unittest.TestCase):
     def test_splitoutputofgitstatusz(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines())
-            self.assertEqual(12, len(repositoryfiles))
+            self.assertEqual(13, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
             self.assertEqual('project2/src/taka.txt', repositoryfiles[1])
             self.assertEqual('project1/src/taka.txt', repositoryfiles[2]) # rename continuation would bite here
@@ -131,6 +131,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling \\and\\ klong.zip', repositoryfiles[9])
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
+            self.assertEqual('project1/src/sub/.jazzignore', repositoryfiles[12])
 
     def test_splitoutputofgitstatusz_filterprefix_A(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
