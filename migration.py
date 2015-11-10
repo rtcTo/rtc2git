@@ -88,8 +88,7 @@ def migrate():
         git.promotebranchtomaster(streamname)
 
     RTCLogin.logout()
-    shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed.\n"
-                  "You can distribute the git-repo '%s'." % (streamname, config.gitRepoName))
+    summary(streamname)
 
 
 def prepare():
@@ -103,6 +102,33 @@ def prepare():
     # set components to that baselines
     rtcworkspace.setcomponentstobaseline(componentbaselineentries, config.previousstreamuuid)
     rtcworkspace.load()
+
+
+def summary(streamname):
+    config = configuration.get()
+    shouter.shout("\nAll changes accepted - Migration of stream '%s' is completed."
+                  "\nYou can distribute the git-repo '%s'." % (streamname, config.gitRepoName))
+    if len(config.ignorefileextensions) > 0:
+        # determine and log the ignored but still present files
+        os.chdir(config.workDirectory)
+        os.chdir(config.clonedGitRepoName)
+        pathtoclonedgitrepo = config.workDirectory + os.sep + config.clonedGitRepoName
+        if pathtoclonedgitrepo[-1:] != os.sep:
+            pathtoclonedgitrepo += os.sep
+        ignoredbutexist = []
+        with open('.gitignore', 'r') as gitignore:
+            for line in gitignore.readlines():
+                line = line.strip()
+                if line != ".jazz5" and line != ".metadata" and line != ".jazzShed":
+                    pathtoignored = pathtoclonedgitrepo + line
+                    if os.path.exists(pathtoignored):
+                        ignoredbutexist.append(line)
+        if len(ignoredbutexist) > 0:
+            shouter.shout("\nThe following files have been ignored in the new git repository, " +
+                          "but still exist in the actual RTC workspace:")
+            ignoredbutexist.sort()
+            for ignored in ignoredbutexist:
+                shouter.shout("\t" + ignored)
 
 
 def parsecommandline():
