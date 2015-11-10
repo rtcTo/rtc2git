@@ -159,10 +159,10 @@ class Commiter:
     @staticmethod
     def promotebranchtomaster(branchname):
         master = "master"
-        masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%Y%m%d_%H%M%S'))
+        masterrename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%Y%m%d_%H%M%S'))
         copybranch = Commiter.copybranch(branchname, master)
 
-        if masterename is 0 and copybranch is 0:
+        if masterrename is 0 and copybranch is 0:
             return Commiter.pushbranch(master, True)
         else:
             shouter.shout("Branch %s couldnt get renamed to master, please do that on your own" % branchname)
