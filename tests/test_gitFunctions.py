@@ -1,6 +1,8 @@
 import unittest
 import os
 import time
+from unittest.mock import patch
+import datetime
 
 import shell
 import configuration
@@ -97,10 +99,13 @@ class GitFunctionsTestCase(unittest.TestCase):
             time.sleep(1)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
 
-    def test_BranchRenaming_TwoCallsAtTheSameTime_ShouldFail(self):
+    @patch('gitFunctions.datetime')
+    def test_BranchRenaming_TwoCallsAtTheSameTime_ShouldFail(self, datetimemock):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
+            faketime = datetime.datetime(2015, 11, 11, 11, 11, 11)
+            datetimemock.now.return_value = faketime
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
             self.assertEqual(1, Commiter.promotebranchtomaster(branchname))
 
