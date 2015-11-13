@@ -1,6 +1,8 @@
 import unittest
 import os
 import time
+from unittest.mock import patch
+import datetime
 
 import shell
 import configuration
@@ -124,10 +126,13 @@ class GitFunctionsTestCase(unittest.TestCase):
             time.sleep(1)
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
 
-    def test_BranchRenaming_TwoCallsAtTheSameTime_ShouldFail(self):
+    @patch('gitFunctions.datetime')
+    def test_BranchRenaming_TwoCallsAtTheSameTime_ShouldFail(self, datetimemock):
         with testhelper.createrepo(folderprefix="gitfunctionstestcase_"):
             branchname = "hello"
             Commiter.branch(branchname)
+            faketime = datetime.datetime(2015, 11, 11, 11, 11, 11)
+            datetimemock.now.return_value = faketime
             self.assertEqual(0, Commiter.promotebranchtomaster(branchname))
             self.assertEqual(1, Commiter.promotebranchtomaster(branchname))
 
@@ -145,7 +150,7 @@ class GitFunctionsTestCase(unittest.TestCase):
     def test_splitoutputofgitstatusz(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines())
-            self.assertEqual(12, len(repositoryfiles))
+            self.assertEqual(13, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
             self.assertEqual('project2/src/taka.txt', repositoryfiles[1])
             self.assertEqual('project1/src/taka.txt', repositoryfiles[2]) # rename continuation would bite here
@@ -158,6 +163,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling \\and\\ klong.zip', repositoryfiles[9])
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
+            self.assertEqual('project1/src/sub/.jazzignore', repositoryfiles[12])
 
     def test_splitoutputofgitstatusz_filterprefix_A(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:

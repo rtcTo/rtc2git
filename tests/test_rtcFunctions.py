@@ -294,7 +294,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
 
     def test_ChangeEntry_tostring(self):
         change = testhelper.createchangeentry(revision="anyRev", component="anyCmp")
-        self.assertEqual("anyComment (Date: anyDate, Author: anyAuthor, Revision: anyRev, Component: anyCmp, Accepted: False)",
+        self.assertEqual("anyComment (Date: 2015-01-22, Author: anyAuthor, Revision: anyRev, Component: anyCmp, Accepted: False)",
                          change.tostring())
 
     @patch('rtcFunctions.shell')
