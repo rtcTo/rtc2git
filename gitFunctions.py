@@ -16,7 +16,7 @@ class Initializer:
 
     @staticmethod
     def createignore():
-        newline = "\n"
+        newline = os.linesep
         git_ignore = ".gitignore"
 
         if not os.path.exists(git_ignore):
@@ -34,7 +34,7 @@ class Initializer:
         """
         config = configuration.get()
         if len(config.gitattributes) > 0:
-            newline = "\n"
+            newline = os.linesep
             gitattribues = ".gitattributes"
             if not os.path.exists(gitattribues):
                 with open(gitattribues, "w") as attributes:
@@ -316,5 +316,5 @@ class ExtensionFilter:
                 if len(repositoryfile) >= extlen:
                     if repositoryfile[-extlen:] == extension:
                         # escape a backslash with a backslash, and append a newline
-                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
+                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + os.linesep)
         return repositoryfilestoignore
