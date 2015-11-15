@@ -19,7 +19,8 @@ def read(configname=None):
     parsedconfig = configparser.ConfigParser()
     parsedconfig.read(configname)
     generalsection = parsedconfig['General']
-    migrationsection = parsedconfig['Migration']
+    migrationsectionname = 'Migration'
+    migrationsection = parsedconfig[migrationsectionname]
     miscsectionname = 'Miscellaneous'
     global user
     if not user:
@@ -45,9 +46,11 @@ def read(configname=None):
     previousstreamname = migrationsection.get('PreviousStream', '').strip()
     baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
-    ignorefileextensions = parseignorefileextensionsproperty(ignorefileextensionsproperty)
+    ignorefileextensions = parsesplittedproperty(ignorefileextensionsproperty)
     includecomponentroots = parsedconfig.get(miscsectionname, 'IncludeComponentRoots', fallback="False")
     commitmessageprefix = migrationsection.get('CommitMessageWorkItemPrefix', "")
+    gitattributesproperty = parsedconfig.get(migrationsectionname, 'Gitattributes', fallback='')
+    gitattributes = parsesplittedproperty(gitattributesproperty)
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
@@ -58,6 +61,7 @@ def read(configname=None):
     configbuilder.setpreviousstreamname(previousstreamname)
     configbuilder.setignorefileextensions(ignorefileextensions)
     configbuilder.setincludecomponentroots(includecomponentroots).setcommitmessageprefix(commitmessageprefix)
+    configbuilder.setgitattributes(gitattributes)
     global config
     config = configbuilder.build()
     return config
@@ -96,18 +100,16 @@ def getinitialcomponentbaselines(definedbaselines):
     return initialcomponentbaselines
 
 
-def parseignorefileextensionsproperty(ignorefileextensionsproperty):
+def parsesplittedproperty(property, separator=';'):
     """
-    :param ignorefileextensionsproperty
-    :return: a list of file extensions to be ignored, possibly empty
+    :param property
+    :return: a list single properties, possibly empty
     """
-    splittedextensions = []
-    if ignorefileextensionsproperty and len(ignorefileextensionsproperty) > 0:
-        splittedextensions = ignorefileextensionsproperty.split(';')
-    ignorefileextensions = []
-    for splittedextension in splittedextensions:
-        ignorefileextensions.append(splittedextension.strip())
-    return ignorefileextensions
+    properties = []
+    if property and len(property) > 0:
+        for splittedproperty in property.split(separator):
+            properties.append(splittedproperty.strip())
+    return properties
 
 
 class Builder:
@@ -133,6 +135,7 @@ class Builder:
         self.ignorefileextensions = ""
         self.includecomponentroots = ""
         self.commitmessageprefix = ""
+        self.gitattributes = ""
 
     def setuser(self, user):
         self.user = user
@@ -211,6 +214,10 @@ class Builder:
         self.commitmessageprefix = commitmessageprefix
         return self
 
+    def setgitattributes(self, gitattributes):
+        self.gitattributes = gitattributes
+        return self
+
     @staticmethod
     def isenabled(stringwithbooleanexpression):
         return stringwithbooleanexpression == "True"
@@ -221,14 +228,14 @@ class Builder:
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
                             self.previousstreamname, self.ignorefileextensions, self.includecomponentroots,
-                            self.commitmessageprefix)
+                            self.commitmessageprefix, self.gitattributes)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
-                 ignorefileextensionsproperty, includecomponentroots, commitmessageprefix):
+                 ignorefileextensions, includecomponentroots, commitmessageprefix, gitattributes):
         self.user = user
         self.password = password
         self.repo = repourl
@@ -249,9 +256,10 @@ class ConfigObject:
         self.streamuuid = ""
         self.previousstreamname = previousstreamname
         self.previousstreamuuid = ""
-        self.ignorefileextensions = ignorefileextensionsproperty
+        self.ignorefileextensions = ignorefileextensions
         self.includecomponentroots = includecomponentroots
         self.commitmessageprefix = commitmessageprefix
+        self.gitattributes = gitattributes
 
     def getlogpath(self, filename):
         if not self.hasCreatedLogFolder:

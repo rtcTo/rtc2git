@@ -48,23 +48,41 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(config, configuration.get())
 
     def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromNone(self):
-        config = Builder().setignorefileextensions(configuration.parseignorefileextensionsproperty(None)).build()
+        config = Builder().setignorefileextensions(configuration.parsesplittedproperty(None)).build()
         self.assertEqual(0, len(config.ignorefileextensions))
 
     def test_fileExtensionsToBeIgnored_ShouldBeEmpty_FromEmpty(self):
         config = Builder().setignorefileextensions("").build()
         self.assertEqual(0, len(config.ignorefileextensions))
 
-    def test_fileExtensionsToBeIgnored_SingleExtensions(self):
-        config = Builder().setignorefileextensions(configuration.parseignorefileextensionsproperty(" .zip  ")).build()
+    def test_fileExtensionsToBeIgnored_SingleExtension(self):
+        config = Builder().setignorefileextensions(configuration.parsesplittedproperty(" .zip  ")).build()
         self.assertEqual(1, len(config.ignorefileextensions))
         self.assertEqual(['.zip'], config.ignorefileextensions)
 
     def test_fileExtensionsToBeIgnored_MultipleExtensions(self):
-        config = Builder().setignorefileextensions(configuration.parseignorefileextensionsproperty(".zip; .jar;  .exe")) \
+        config = Builder().setignorefileextensions(configuration.parsesplittedproperty(".zip; .jar;  .exe")) \
             .build()
         self.assertEqual(3, len(config.ignorefileextensions))
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
+
+    def test_gitattributes_ShouldBeEmpty_FromNone(self):
+        config = Builder().setgitattributes(configuration.parsesplittedproperty(None)).build()
+        self.assertEqual(0, len(config.gitattributes))
+
+    def test_gitattributes_ShouldBeEmpty_FromEmpty(self):
+        config = Builder().setgitattributes(configuration.parsesplittedproperty("")).build()
+        self.assertEqual(0, len(config.gitattributes))
+
+    def test_gitattributes__SingleProperty(self):
+        config = Builder().setgitattributes(configuration.parsesplittedproperty("  * text=auto  ")).build()
+        self.assertEqual(1, len(config.gitattributes))
+        self.assertEqual(['* text=auto'], config.gitattributes)
+
+    def test_gitattributes__MultipleProperties(self):
+        config = Builder().setgitattributes(configuration.parsesplittedproperty(" # some comment ;   * text=auto  ; *.sql text ")).build()
+        self.assertEqual(3, len(config.gitattributes))
+        self.assertEqual(['# some comment', '* text=auto', '*.sql text'], config.gitattributes)
 
     def test_read_passedin_configfile(self):
         self._assertTestConfig(configuration.read(testhelper.getrelativefilename('resources/test_config.ini')))
@@ -115,6 +133,12 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertTrue(config.useautomaticconflictresolution)
         self.assertEqual(100, config.maxchangesetstoaccepttogether)
         self.assertEqual("UP-", config.commitmessageprefix)
+        gitattributes = config.gitattributes
+        self.assertEqual(4, len(gitattributes))
+        self.assertEqual('# Handle line endings automatically for text files', gitattributes[0])
+        self.assertEqual('# and leave binary files untouched', gitattributes[1])
+        self.assertEqual('* text=auto', gitattributes[2])
+        self.assertEqual('*.sql text', gitattributes[3])
         # [Miscellaneous]
         self.assertTrue(shell.logcommands)  # directly deviated to shell
         ignorefileextensions = config.ignorefileextensions
@@ -142,6 +166,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertFalse(config.useautomaticconflictresolution)
         self.assertEqual(10, config.maxchangesetstoaccepttogether)
         self.assertEqual("", config.commitmessageprefix)
+        self.assertEqual(0, len(config.gitattributes))
         # [Miscellaneous]
         self.assertFalse(shell.logcommands)  # directly deviated to shell
         self.assertEqual(0, len(config.ignorefileextensions))

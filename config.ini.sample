@@ -50,6 +50,12 @@ MaxChangeSetsToAcceptTogether = 10
 # On bitbucket/github: #
 CommitMessageWorkItemPrefix=
 
+# Optional: Specifies the line(s) which are added to .gitattributes
+# Define a semicolon-separated list of lines
+# Example:
+# Gitattributes = # handle text files; * text=auto; *.sql text
+Gitattributes =
+
 [Miscellaneous]
 # Set to true if you want to see which commands are sent to command line
 LogShellCommands = False

@@ -16,7 +16,7 @@ class Initializer:
 
     @staticmethod
     def createignore():
-        newline = "\n"
+        newline = os.linesep
         git_ignore = ".gitignore"
 
         if not os.path.exists(git_ignore):
@@ -27,6 +27,22 @@ class Initializer:
             shell.execute("git add " + git_ignore)
             shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 
+    @staticmethod
+    def createattributes():
+        """
+        create a .gitattributes file (if so specified and not yet present)
+        """
+        config = configuration.get()
+        if len(config.gitattributes) > 0:
+            newline = os.linesep
+            gitattribues = ".gitattributes"
+            if not os.path.exists(gitattribues):
+                with open(gitattribues, "w") as attributes:
+                    for line in config.gitattributes:
+                        attributes.write(line + newline)
+                shell.execute("git add " + gitattribues)
+                shell.execute("git commit -m %s -q" % shell.quote("Add .gitattributes"))
+
     def initalize(self):
         self.createrepo()
         self.preparerepo()
@@ -35,6 +51,7 @@ class Initializer:
     def preparerepo():
         Initializer.setgitconfigs()
         Initializer.createignore()
+        Initializer.createattributes()
 
     def createrepo(self):
         shell.execute("git init --bare " + self.repoName)
@@ -299,5 +316,5 @@ class ExtensionFilter:
                 if len(repositoryfile) >= extlen:
                     if repositoryfile[-extlen:] == extension:
                         # escape a backslash with a backslash, and append a newline
-                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
+                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + os.linesep)
         return repositoryfilestoignore
