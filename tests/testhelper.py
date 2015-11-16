@@ -73,5 +73,5 @@ def getrelativefilename(filenamerelativetotests):
 
 
 def createchangeentry(revision="anyRevisionId", author="anyAuthor", email="anyEmail", comment="anyComment",
-                      date="anyDate", component="anyComponentUUID"):
+                      date="2015-01-22", component="anyComponentUUID"):
     return ChangeEntry(revision, author, email, date, comment, component)

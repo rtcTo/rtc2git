@@ -16,7 +16,7 @@ class Initializer:
 
     @staticmethod
     def createignore():
-        newline = "\n"
+        newline = os.linesep
         git_ignore = ".gitignore"
 
         if not os.path.exists(git_ignore):
@@ -39,7 +39,7 @@ class Initializer:
         """
         config = configuration.get()
         if len(config.gitattributes) > 0:
-            newline = "\n"
+            newline = os.linesep
             gitattribues = ".gitattributes"
             if not os.path.exists(gitattribues):
                 with open(gitattribues, "w") as attributes:
@@ -103,7 +103,7 @@ class Commiter:
     @staticmethod
     def handle_captitalization_filename_changes():
         sandbox = os.path.join(configuration.get().workDirectory, configuration.get().clonedGitRepoName)
-        lines = shell.getoutput("git status -z")
+        lines = shell.getoutput("git status -z", stripped=False)
         for newfilerelativepath in Commiter.splitoutputofgitstatusz(lines, "A  "):
             directoryofnewfile = os.path.dirname(os.path.join(sandbox, newfilerelativepath))
             newfilename = os.path.basename(newfilerelativepath)
@@ -181,10 +181,10 @@ class Commiter:
     @staticmethod
     def promotebranchtomaster(branchname):
         master = "master"
-        masterename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%Y%m%d_%H%M%S'))
+        masterrename = Commiter.renamebranch(master, "masterRenamedAt_" + datetime.now().strftime('%Y%m%d_%H%M%S'))
         copybranch = Commiter.copybranch(branchname, master)
 
-        if masterename is 0 and copybranch is 0:
+        if masterrename is 0 and copybranch is 0:
             return Commiter.pushbranch(master, True)
         else:
             shouter.shout("Branch %s couldnt get renamed to master, please do that on your own" % branchname)
@@ -196,8 +196,8 @@ class Commiter:
         check untracked files and handle both global and local ignores
         """
         # make sure we see all untracked files:
-        strippedlines = shell.getoutput("git status --untracked-files=all -z")
-        repositoryfiles = Commiter.splitoutputofgitstatusz(strippedlines)
+        lines = shell.getoutput("git status --untracked-files=all -z", stripped=False)
+        repositoryfiles = Commiter.splitoutputofgitstatusz(lines)
         Commiter.ignoreextensions(repositoryfiles)
         Commiter.ignorejazzignore(repositoryfiles)
 
@@ -223,9 +223,9 @@ class Commiter:
     @staticmethod
     def splitoutputofgitstatusz(lines, filterprefix=None):
         """
-        Split the output of  'git status -z' into single files
+        Split the output of 'git status -z' into single files
 
-        :param lines: the output line(s) from the command
+        :param lines: the unstripped output line(s) from the command
         :param filterprefix: if given, only the files of those entries matching the prefix will be returned
         :return: a list of repository files with status changes
         """
@@ -233,11 +233,10 @@ class Commiter:
         for line in lines:                           # expect exactly one line
             entries = line.split(sep='\x00')         # ascii 0 is the delimiter
             for entry in entries:
-                entry = entry.strip()
                 if len(entry) > 0:
                     if not filterprefix or entry.startswith(filterprefix):
                         start = entry.find(' ')
-                        if 1 <= start <= 2:
+                        if 0 <= start <= 2:
                             repositoryfile = entry[3:]   # output is formatted
                         else:
                             repositoryfile = entry       # file on a single line (e.g. rename continuation)
@@ -258,13 +257,10 @@ class Commiter:
             if not line.startswith("#"):
                 line = line.strip()
                 if line.startswith("core.ignore"):
-                    gitignorelines.append('\n')
-                    if line.startswith("core.ignore.recursive"):
-                        recursive = True
-                    else:
-                        recursive = False
+                    gitignorelines.append(os.linesep)
+                    recursive = line.startswith("core.ignore.recursive")
                 for foundpattern in Commiter.findignorepatternregex.findall(line):
-                    gitignoreline = foundpattern + '\n'
+                    gitignoreline = foundpattern + os.linesep
                     if not recursive:
                         gitignoreline = '/' + gitignoreline    # forward, not os.sep
                     gitignorelines.append(gitignoreline)
@@ -325,5 +321,5 @@ class ExtensionFilter:
                 if len(repositoryfile) >= extlen:
                     if repositoryfile[-extlen:] == extension:
                         # escape a backslash with a backslash, and append a newline
-                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + '\n')
+                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + os.linesep)
         return repositoryfilestoignore
