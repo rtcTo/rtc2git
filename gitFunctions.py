@@ -29,6 +29,7 @@ class Initializer:
                     ignore.write(newline + "# directories" + newline)
                     for directory in config.ignoredirectories:
                         ignore.write('/' + directory + newline)
+                    ignore.write(newline)
             shell.execute("git add " + git_ignore)
             shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 

@@ -101,6 +101,7 @@ class GitFunctionsTestCase(unittest.TestCase):
             expectedlines.append("# directories\n")
             expectedlines.append("/projectX/dist\n")
             expectedlines.append("/projectZ/out\n")
+            expectedlines.append("\n")
             with open(gitignorepath, 'r') as gitignore:
                 lines = gitignore.readlines()
                 self.assertEqual(expectedlines, lines)
