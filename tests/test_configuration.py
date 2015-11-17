@@ -66,6 +66,25 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(3, len(config.ignorefileextensions))
         self.assertEqual(['.zip', '.jar', '.exe'], config.ignorefileextensions)
 
+    def test_directoriesToBeIgnored_ShouldBeEmpty_FromNone(self):
+        config = Builder().setignoredirectories(configuration.parsesplittedproperty(None)).build()
+        self.assertEqual(0, len(config.ignoredirectories))
+
+    def test_directoriesToBeIgnored_ShouldBeEmpty_FromEmpty(self):
+        config = Builder().setignoredirectories("").build()
+        self.assertEqual(0, len(config.ignoredirectories))
+
+    def test_directoriesToBeIgnored_SingleExtension(self):
+        config = Builder().setignoredirectories(configuration.parsesplittedproperty(" project/dist  ")).build()
+        self.assertEqual(1, len(config.ignoredirectories))
+        self.assertEqual(['project/dist'], config.ignoredirectories)
+
+    def test_directoriesToBeIgnored_MultipleExtensions(self):
+        config = Builder().setignoredirectories(configuration.parsesplittedproperty(" project/dist ; project/lib ;  out ")) \
+            .build()
+        self.assertEqual(3, len(config.ignoredirectories))
+        self.assertEqual(['project/dist', 'project/lib', 'out'], config.ignoredirectories)
+
     def test_gitattributes_ShouldBeEmpty_FromNone(self):
         config = Builder().setgitattributes(configuration.parsesplittedproperty(None)).build()
         self.assertEqual(0, len(config.gitattributes))
@@ -146,6 +165,10 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual('.zip', ignorefileextensions[0])
         self.assertEqual('.jar', ignorefileextensions[1])
         self.assertTrue(config.includecomponentroots)
+        ignoredirectories = config.ignoredirectories
+        self.assertEqual(2, len(ignoredirectories))
+        self.assertEqual('projectX/WebContent/node_modules', ignoredirectories[0])
+        self.assertEqual('projectY/distribution', ignoredirectories[1])
 
     def _assertDefaultConfig(self, config):
         # [General]
