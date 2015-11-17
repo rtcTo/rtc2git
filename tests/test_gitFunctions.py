@@ -223,8 +223,9 @@ class GitFunctionsTestCase(unittest.TestCase):
                 lines = gitIgnore.readlines()
                 self.assertEqual(2, len(lines))
                 lines.sort()
-                self.assertEqual(jar, lines[0].strip())
-                self.assertEqual(zip, lines[1].strip())
+                # the ignore should not be recursive:
+                self.assertEqual('/' + jar, lines[0].strip())
+                self.assertEqual('/' + zip, lines[1].strip())
 
     def test_handleignore_local_jazzignore_expect_new_gitignore(self):
         with testhelper.mkchdir("aFolder") as folder:

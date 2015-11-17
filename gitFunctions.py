@@ -320,6 +320,8 @@ class ExtensionFilter:
                 extlen = len(extension)
                 if len(repositoryfile) >= extlen:
                     if repositoryfile[-extlen:] == extension:
-                        # escape a backslash with a backslash, and append a newline
-                        repositoryfilestoignore.append(repositoryfile.replace('\\', '\\\\') + os.linesep)
+                        # prepend a forward slash (for non recursive,)
+                        # escape a backslash with a backslash
+                        # append a newline
+                        repositoryfilestoignore.append('/' + repositoryfile.replace('\\', '\\\\') + os.linesep)
         return repositoryfilestoignore
