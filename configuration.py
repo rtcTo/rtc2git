@@ -17,7 +17,8 @@ def read(configname=None):
         global configfile
         configname = configfile
     parsedconfig = configparser.ConfigParser()
-    parsedconfig.read(configname)
+    if len(parsedconfig.read(configname)) < 1:
+        raise IOError('unable to read %s' % configname)
     generalsection = parsedconfig['General']
     migrationsectionname = 'Migration'
     migrationsection = parsedconfig[migrationsectionname]
