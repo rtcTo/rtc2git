@@ -109,7 +109,7 @@ class Changes:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
         config = configuration.get()
-        Changes.latest_accept_command = config.scmcommand + " accept -v -o -r " + config.repo + " -t " + \
+        Changes.latest_accept_command = config.scmcommand + " accept --verbose --overwrite-uncommitted --accept-missing-changesets --no-merge --repository-uri " + config.repo + " --target " + \
                                         config.workspace + " --changes" + revisions
         exitcode = shell.execute(Changes.latest_accept_command, logpath, "a")
         if exitcode is 0:
@@ -211,7 +211,7 @@ class ImportHandler:
             if not changeEntry.isAccepted(): # change could already be accepted from a retry
                 if not Changes.accept(self.acceptlogpath, changeEntry):
                     shouter.shout("Change wasnt succesfully accepted into workspace")
-                    self.retryacceptincludingnextchangesets(changeEntry, changeentries)
+                    # self.retryacceptincludingnextchangesets(changeEntry, changeentries)
                 if not Differ.has_diff():
                     # no differences found - force reload of the workspace
                     WorkspaceHandler().load()
@@ -246,8 +246,9 @@ class ImportHandler:
                     if Changes.accept(self.acceptlogpath, *toaccept):
                         issuccessful = True
                         break
-                    else:
-                        Changes.discard(*toaccept)  # revert initial state
+                    # ++++ check ++++
+                    #else:
+                    #    Changes.discard(*toaccept)  # revert initial state
         if not issuccessful:
             self.is_user_aborting(change)
 
