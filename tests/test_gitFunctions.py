@@ -1,7 +1,7 @@
 import unittest
 import os
 import time
-from unittest.mock import patch
+from unittest.mock import patch, call
 import datetime
 
 import shell
@@ -171,7 +171,7 @@ class GitFunctionsTestCase(unittest.TestCase):
     def test_splitoutputofgitstatusz(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines())
-            self.assertEqual(13, len(repositoryfiles))
+            self.assertEqual(15, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
             self.assertEqual('project2/src/taka.txt', repositoryfiles[1])
             self.assertEqual('project1/src/taka.txt', repositoryfiles[2]) # rename continuation would bite here
@@ -185,12 +185,22 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[10])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[11])
             self.assertEqual('project1/src/sub/.jazzignore', repositoryfiles[12])
+            self.assertEqual('project1/src/.gitignore', repositoryfiles[13])
+            self.assertEqual('project1/src/sub/.gitignore', repositoryfiles[14])
 
     def test_splitoutputofgitstatusz_filterprefix_A(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
             repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), 'A  ')
             self.assertEqual(1, len(repositoryfiles))
             self.assertEqual('project1/src/tobedeleted.txt', repositoryfiles[0])
+
+    def test_splitoutputofgitstatusz_filterprefix_D(self):
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
+            repositoryfiles = Commiter.splitoutputofgitstatusz(file.readlines(), ' D ')
+            self.assertEqual(3, len(repositoryfiles))
+            self.assertEqual('project1/src/sub/.jazzignore', repositoryfiles[0])
+            self.assertEqual('project1/src/.gitignore', repositoryfiles[1])
+            self.assertEqual('project1/src/sub/.gitignore', repositoryfiles[2])
 
     def test_splitoutputofgitstatusz_filterprefix_double_question(self):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
@@ -203,6 +213,22 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/kling \\and\\ klong.zip', repositoryfiles[4])
             self.assertEqual('project1/src/sub/kling |and| klong.zip', repositoryfiles[5])
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[6])
+
+    @patch('gitFunctions.shell')
+    def test_restore_shed_gitignore_with_sibling_jazzignore(self, shellmock):
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
+            with patch('os.path.exists', return_value=True): # answer inquries for sibling .jazzignore with True
+                Commiter.restore_shed_gitignore(file.readlines())
+                calls = [call.execute('git checkout -- project1/src/.gitignore'), call.execute('git checkout -- project1/src/sub/.gitignore')]
+                shellmock.assert_has_calls(calls)
+
+    @patch('gitFunctions.shell')
+    def test_restore_shed_gitignore_without_sibling_jazzignore(self, shellmock):
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
+            with patch('os.path.exists', return_value=True): # answer inquries for sibling .jazzignore with False
+                Commiter.restore_shed_gitignore(file.readlines())
+                calls = [] # if there are no siblings, we are not allowed to checkout
+                shellmock.assert_has_calls(calls)
 
     def test_handleignore_global_extensions(self):
         with testhelper.mkchdir("aFolder") as folder:
@@ -373,7 +399,6 @@ class GitFunctionsTestCase(unittest.TestCase):
         with open(testhelper.getrelativefilename('./resources/test_.gitignore'), 'r') as gitignore:
             expectedlines = gitignore.readlines()
         self.assertEqual(expectedlines, Commiter.translatejazzignore(inputlines))
-
 
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file

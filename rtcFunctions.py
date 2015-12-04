@@ -60,6 +60,8 @@ class WorkspaceHandler:
         shouter.shout("Start (re)loading current workspace: " + command)
         shell.execute(command)
         shouter.shout("Load of workspace finished")
+        Commiter.restore_shed_gitignore(Commiter.get_untracked_statuszlines())
+
 
     def setcomponentstobaseline(self, componentbaselineentries, streamuuid):
         for entry in componentbaselineentries:
