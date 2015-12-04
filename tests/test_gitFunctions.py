@@ -215,11 +215,20 @@ class GitFunctionsTestCase(unittest.TestCase):
             self.assertEqual('project1/src/sub/klingklong.zip', repositoryfiles[6])
 
     @patch('gitFunctions.shell')
-    def test_restore_shed_gitignore(self, shellmock):
+    def test_restore_shed_gitignore_with_sibling_jazzignore(self, shellmock):
         with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
-            Commiter.restore_shed_gitignore(file.readlines())
-            calls = [call.execute('git checkout -- project1/src/.gitignore'), call.execute('git checkout -- project1/src/sub/.gitignore')]
-            shellmock.assert_has_calls(calls)
+            with patch('os.path.exists', return_value=True): # answer inquries for sibling .jazzignore with True
+                Commiter.restore_shed_gitignore(file.readlines())
+                calls = [call.execute('git checkout -- project1/src/.gitignore'), call.execute('git checkout -- project1/src/sub/.gitignore')]
+                shellmock.assert_has_calls(calls)
+
+    @patch('gitFunctions.shell')
+    def test_restore_shed_gitignore_without_sibling_jazzignore(self, shellmock):
+        with open(testhelper.getrelativefilename('./resources/test_ignore_git_status_z.txt'), 'r') as file:
+            with patch('os.path.exists', return_value=True): # answer inquries for sibling .jazzignore with False
+                Commiter.restore_shed_gitignore(file.readlines())
+                calls = [] # if there are no siblings, we are not allowed to checkout
+                shellmock.assert_has_calls(calls)
 
     def test_handleignore_global_extensions(self):
         with testhelper.mkchdir("aFolder") as folder:

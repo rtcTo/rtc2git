@@ -280,10 +280,13 @@ class Commiter:
         """
         gitignore = ".gitignore"
         gitignorelen = len(gitignore)
-        deletedfiles = Commiter.splitoutputofgitstatusz(statuszlines, ' D ')
+        deletedfiles = Commiter.splitoutputofgitstatusz(statuszlines, " D ")
         for deletedfile in deletedfiles:
             if deletedfile[-gitignorelen:] == gitignore:
-                shell.execute("git checkout -- %s" % deletedfile)
+                # only restore .gitignore if sibling .jazzignore still exists
+                jazzignorefile = deletedfile[:-gitignorelen] + ".jazzignore"
+                if os.path.exists(jazzignorefile):
+                    shell.execute("git checkout -- %s" % deletedfile)
 
     @staticmethod
     def ignorejazzignore(repositoryfiles):
