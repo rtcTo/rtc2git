@@ -1,6 +1,6 @@
 import unittest
 import os
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 import configuration
 import shell
@@ -236,22 +236,29 @@ class RtcFunctionsTestCase(unittest.TestCase):
             self.assertEqual("Please check the output/log and rerun program with resume", e.code)
 
     @patch('rtcFunctions.shell')
-    def test_load(self, shellmock):
+    @patch('rtcFunctions.Commiter')
+    def test_load(self, commitermock, shellmock):
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
         configuration.config = config
         WorkspaceHandler().load()
         expected_load_command = "lscm load -r %s %s --force" % (anyurl, self.workspace)
         shellmock.execute.assert_called_once_with(expected_load_command)
+        calls = [call.get_untracked_statuszlines(), call.restore_shed_gitignore(commitermock.get_untracked_statuszlines())]
+        commitermock.assert_has_calls(calls)
 
     @patch('rtcFunctions.shell')
-    def test_load_includecomponentroots(self, shellmock):
+    @patch('rtcFunctions.Commiter')
+    def test_load_includecomponentroots(self, commitermock, shellmock):
         anyurl = "anyUrl"
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).setincludecomponentroots("True").build()
         configuration.config = config
         WorkspaceHandler().load()
         expected_load_command = "lscm load -r %s %s --force --include-root" % (anyurl, self.workspace)
         shellmock.execute.assert_called_once_with(expected_load_command)
+        shellmock.execute.assert_called_once_with(expected_load_command)
+        calls = [call.get_untracked_statuszlines(), call.restore_shed_gitignore(commitermock.get_untracked_statuszlines())]
+        commitermock.assert_has_calls(calls)
 
     def test_CreateChangeEntry_minimal(self):
         revision="anyRevisionId"

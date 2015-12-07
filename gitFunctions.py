@@ -192,13 +192,16 @@ class Commiter:
             return 1  # branch couldnt get renamed
 
     @staticmethod
+    def get_untracked_statuszlines():
+        return shell.getoutput("git status --untracked-files=all -z", stripped=False)
+
+
+    @staticmethod
     def handleignore():
         """
         check untracked files and handle both global and local ignores
         """
-        # make sure we see all untracked files:
-        lines = shell.getoutput("git status --untracked-files=all -z", stripped=False)
-        repositoryfiles = Commiter.splitoutputofgitstatusz(lines)
+        repositoryfiles = Commiter.splitoutputofgitstatusz(Commiter.get_untracked_statuszlines())
         Commiter.ignoreextensions(repositoryfiles)
         Commiter.ignorejazzignore(repositoryfiles)
 
@@ -266,6 +269,24 @@ class Commiter:
                         gitignoreline = '/' + gitignoreline    # forward, not os.sep
                     gitignorelines.append(gitignoreline)
         return gitignorelines
+
+    @staticmethod
+    def restore_shed_gitignore(statuszlines):
+        """
+        If a force reload of the RTC workspace sheds .gitignore files away, we need to restore them.
+        In this case they are marked as deletions from git.
+
+        :param statuszlines: the git status z output lines
+        """
+        gitignore = ".gitignore"
+        gitignorelen = len(gitignore)
+        deletedfiles = Commiter.splitoutputofgitstatusz(statuszlines, " D ")
+        for deletedfile in deletedfiles:
+            if deletedfile[-gitignorelen:] == gitignore:
+                # only restore .gitignore if sibling .jazzignore still exists
+                jazzignorefile = deletedfile[:-gitignorelen] + ".jazzignore"
+                if os.path.exists(jazzignorefile):
+                    shell.execute("git checkout -- %s" % deletedfile)
 
     @staticmethod
     def ignorejazzignore(repositoryfiles):
