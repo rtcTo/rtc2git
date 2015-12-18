@@ -68,8 +68,8 @@ class Initializer:
     @staticmethod
     def setgitconfigs():
         shell.execute("git config push.default current")
-        shell.execute("git config core.ignorecase false")
-        shouter.shout("Set core.ignorecase to false")
+        shell.execute("git config core.ignoreCase false") # should be the default anyway
+        shouter.shout("Set core.ignoreCase to false")
 
     @staticmethod
     def initialcommit():
