@@ -1,4 +1,5 @@
-.idea
+/.idea
+/.project
 config.ini
 Compare_*.txt
 StreamComponents_*.txt
@@ -9,3 +10,4 @@ __pycache__
 *.swp
 *.pyc
 *~
+.DS_Store

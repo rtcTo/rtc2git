@@ -46,7 +46,7 @@ MaxChangeSetsToAcceptTogether = 10
 #
 # Examples:
 # In jira: AP- (Project has the key AP and is followed by a dash)
-# see https://confluence.atlassian.com/cloud/processing-jira-issues-with-commit-messages-686854819.html for more details)
+# see https://confluence.atlassian.com/jiracloud/processing-jira-issues-with-commit-messages-740098538.html for more details)
 # On bitbucket/github: #
 CommitMessageWorkItemPrefix=
 
