@@ -41,4 +41,4 @@ Feel free to report and/or fix [issues](https://github.com/rtcTo/rtc2git/issues)
 
 ## Wiki
 
-For more details [visit our wiki](https://github.com/WtfJoke/rtc2git/wiki)
+For more details [visit our wiki](https://github.com/rtcTo/rtc2git/wiki)
