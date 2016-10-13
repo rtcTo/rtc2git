@@ -400,6 +400,36 @@ class GitFunctionsTestCase(unittest.TestCase):
             expectedlines = gitignore.readlines()
         self.assertEqual(expectedlines, Commiter.translatejazzignore(inputlines))
 
+    def testDefaultemail(self):
+        self.assertEqual("default@rtc.to", Commiter.defaultemail(None))
+        self.assertEqual("default@rtc.to", Commiter.defaultemail(""))
+        self.assertEqual("_@rtc.to", Commiter.defaultemail("."))
+        self.assertEqual("_.@rtc.to", Commiter.defaultemail(".."))
+        self.assertEqual("_._@rtc.to", Commiter.defaultemail("..."))
+        self.assertEqual("_@rtc.to", Commiter.defaultemail(" "))
+        self.assertEqual("_.@rtc.to", Commiter.defaultemail("  "))
+        self.assertEqual("_._@rtc.to", Commiter.defaultemail("   "))
+        self.assertEqual("a@rtc.to", Commiter.defaultemail("A"))
+        self.assertEqual("a.@rtc.to", Commiter.defaultemail("a "))
+        self.assertEqual("ab@rtc.to", Commiter.defaultemail("aB"))
+        self.assertEqual("a.b@rtc.to", Commiter.defaultemail("A b"))
+        self.assertEqual("a.b@rtc.to", Commiter.defaultemail("A#B"))
+        self.assertEqual("scarlet.o_hara@rtc.to", Commiter.defaultemail("Scarlet O'Hara"))
+
+    @patch('shell.call')
+    def testReplaceAuthor(self, mock_call):
+        expected_mail_replace_command = "git config --replace-all user.email myEmail"
+        Commiter.replaceauthor("myAuthor@do.not.check", "myEmail")
+        self.assertEqual(2, mock_call.call_count)
+        mock_call.assert_any_call(expected_mail_replace_command, shell=True)
+
+    @patch('shell.call')
+    def testReplaceAuthor_emptyEmail_shouldBeReplacedWithDefault(self, mock_call):
+        expected_mail_replace_command = "git config --replace-all user.email my.author@rtc.to"
+        Commiter.replaceauthor("My Author", "")
+        self.assertEqual(2, mock_call.call_count)
+        mock_call.assert_any_call(expected_mail_replace_command, shell=True)
+
     def simulateCreationAndRenameInGitRepo(self, originalfilename, newfilename):
         open(originalfilename, 'a').close()  # create file
         Initializer.initialcommit()

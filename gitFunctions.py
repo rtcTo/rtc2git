@@ -136,7 +136,29 @@ class Commiter:
     @staticmethod
     def replaceauthor(author, email):
         shell.execute("git config --replace-all user.name " + shell.quote(author))
+        if not email:
+            email = Commiter.defaultemail(author)
         shell.execute("git config --replace-all user.email " + email)
+
+    @staticmethod
+    def defaultemail(author):
+        if not author:
+            name = "default"
+        else:
+            haspoint = False
+            index = 0
+            name = ""
+            for c in author:
+                if c.isalnum() or c == "_":
+                    name += c
+                else:
+                    if index > 0 and not haspoint:
+                        name += "."
+                        haspoint = True
+                    else:
+                        name += "_"
+                index += 1
+        return name.lower() + "@rtc.to"
 
     @staticmethod
     def checkbranchname(branchname):
