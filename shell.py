@@ -38,7 +38,11 @@ def getoutput(command, stripped=True):
 def quote(stringtoquote):
     stringtoquote = stringtoquote.replace('\"', "'")  # replace " with '
     quotedstring = '\"' + stringtoquote + '\"'
-    return quotedstring
+    return escapeShellVariableExpansion(quotedstring)
+
+
+def escapeShellVariableExpansion(comment):
+    return comment.replace('$', '"\\$"')
 
 
 def shout_command_to_log(command, outputfile=None):
