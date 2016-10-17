@@ -30,3 +30,7 @@ class ShellTest(unittest.TestCase):
     def testSetNoEncoding_ShouldBeNone(self):
         shell.setencoding("")
         self.assertIsNone(shell.encoding)
+
+    def testEscapeShellVariableExpansion(self):
+        self.assertEqual('my simple comment', shell.escapeShellVariableExpansion('my simple comment'))
+        self.assertEqual('my simple "\$"variable comment', shell.escapeShellVariableExpansion('my simple $variable comment'))
