@@ -6,5 +6,6 @@ GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
 
 [Migration]
-# Stream to be migrated,  referenced by Name or UUID
+# Stream to be migrated,  referenced by Name and UUID
 StreamToMigrate = MyDevelopmentStream
+StreamToMigrateUUID= MyDevelopmentStreamUUID

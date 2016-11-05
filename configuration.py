@@ -44,7 +44,9 @@ def read(configname=None):
 
     workdirectory = generalsection.get('Directory', os.getcwd())
     streamname = shlex.quote(migrationsection['StreamToMigrate'].strip())
+    streamuuid = shlex.quote(migrationsection['StreamToMigrateUUID'].strip())
     previousstreamname = migrationsection.get('PreviousStream', '').strip()
+    previousstreamuuid = migrationsection.get('PreviousStreamUUID', '').strip()
     baselines = getinitialcomponentbaselines(migrationsection.get('InitialBaseLines'))
     ignorefileextensionsproperty = parsedconfig.get(miscsectionname, 'IgnoreFileExtensions', fallback='')
     ignorefileextensions = parsesplittedproperty(ignorefileextensionsproperty)
@@ -61,7 +63,9 @@ def read(configname=None):
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setmaxchangesetstoaccepttogether(maxchangesetstoaccepttogether)
     configbuilder.setworkdirectory(workdirectory).setstreamname(streamname).setinitialcomponentbaselines(baselines)
+    configbuilder.setstreamuuid(streamuuid)
     configbuilder.setpreviousstreamname(previousstreamname)
+    configbuilder.setpreviousstreamuuid(previousstreamuuid)
     configbuilder.setignorefileextensions(ignorefileextensions)
     configbuilder.setignoredirectories(ignoredirectories)
     configbuilder.setincludecomponentroots(includecomponentroots).setcommitmessageprefix(commitmessageprefix)
@@ -133,9 +137,11 @@ class Builder:
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
         self.initialcomponentbaselines = ""
         self.streamname = ""
+        self.streamuuid = ""
         self.gitreponame = ""
         self.clonedgitreponame = ""
         self.previousstreamname = ""
+        self.previousstreamuuid = ""
         self.ignorefileextensions = ""
         self.ignoredirectories = ""
         self.includecomponentroots = ""
@@ -182,6 +188,10 @@ class Builder:
         self.streamname = streamname
         return self
 
+    def setstreamuuid(self, streamuuid):
+        self.streamuuid = streamuuid
+        return self
+
     def setgitreponame(self, reponame):
         self.gitreponame = reponame
         self.clonedgitreponame = reponame[:-4]  # cut .git
@@ -205,6 +215,10 @@ class Builder:
 
     def setpreviousstreamname(self, previousstreamname):
         self.previousstreamname = previousstreamname
+        return self
+
+    def setpreviousstreamuuid(self, previousstreamuuid):
+        self.previousstreamuuid = previousstreamuuid
         return self
 
     def setignorefileextensions(self, ignorefileextensions):
@@ -234,16 +248,16 @@ class Builder:
     def build(self):
         return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
-                            self.streamname, self.gitreponame, self.useprovidedhistory,
+                            self.streamname, self.streamuuid, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
-                            self.previousstreamname, self.ignorefileextensions, self.ignoredirectories, self.includecomponentroots,
+                            self.previousstreamname, self.previousstreamuuid, self.ignorefileextensions, self.ignoredirectories, self.includecomponentroots,
                             self.commitmessageprefix, self.gitattributes)
 
 
 class ConfigObject:
     def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
-                 initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
-                 useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
+                 initialcomponentbaselines, streamname, streamuuid, gitreponame, useprovidedhistory,
+                 useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname, previousstreamuuid,
                  ignorefileextensions, ignoredirectories, includecomponentroots, commitmessageprefix, gitattributes):
         self.user = user
         self.password = password
@@ -257,14 +271,14 @@ class ConfigObject:
         self.workDirectory = workdirectory
         self.initialcomponentbaselines = initialcomponentbaselines
         self.streamname = streamname
+        self.streamuuid = streamuuid
         self.gitRepoName = gitreponame
         self.clonedGitRepoName = clonedgitreponame
         self.rootFolder = rootfolder
         self.logFolder = rootfolder + os.sep + "Logs"
         self.hasCreatedLogFolder = os.path.exists(self.logFolder)
-        self.streamuuid = ""
         self.previousstreamname = previousstreamname
-        self.previousstreamuuid = ""
+        self.previousstreamuuid = previousstreamuuid
         self.ignorefileextensions = ignorefileextensions
         self.ignoredirectories = ignoredirectories
         self.includecomponentroots = includecomponentroots
@@ -285,21 +299,6 @@ class ConfigObject:
     def gethistorypath(self, filename):
         historypath = self.rootFolder + os.sep + "History"
         return historypath + os.sep + filename
-
-    def collectstreamuuid(self, streamname):
-        if not streamname:
-            return
-        shouter.shout("Get UUID of configured stream " + streamname)
-        showuuidcommand = "%s --show-alias n --show-uuid y show attributes -r %s -w %s" % (
-            self.scmcommand, self.repo, streamname)
-        output = shell.getoutput(showuuidcommand)
-        splittedfirstline = output[0].split(" ")
-        streamuuid = splittedfirstline[0].strip()[1:-1]
-        return streamuuid
-
-    def collectstreamuuids(self):
-        self.streamuuid = self.collectstreamuuid(self.streamname)
-        self.previousstreamuuid = self.collectstreamuuid(self.previousstreamname)
 
 
 class ComponentBaseLineEntry:
