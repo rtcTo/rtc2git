@@ -29,7 +29,6 @@ class RTCLogin:
     def loginandcollectstreamuuid():
         config = configuration.get()
         shell.execute("%s login -r %s -u %s -P \"%s\"" % (config.scmcommand, config.repo, config.user, config.password))
-     ###   config.collectstreamuuids()
 
     @staticmethod
     def logout():
@@ -70,7 +69,6 @@ class WorkspaceHandler:
 
             replacecommand = "%s workspace replace-components -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
-            shouter.shout(replacecommand)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
