@@ -21,15 +21,14 @@ class RTCInitializer:
             shouter.shout("Use existing workspace to start migration")
             workspace.load()
         else:
-            workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
+             workspace.createandload(config.streamuuid, config.initialcomponentbaselines)
 
 
 class RTCLogin:
     @staticmethod
     def loginandcollectstreamuuid():
         config = configuration.get()
-        shell.execute("%s login -r %s -u '%s' -P '%s'" % (config.scmcommand, config.repo, config.user, config.password))
-        config.collectstreamuuids()
+        shell.execute("%s login -r %s -u %s -P \"%s\"" % (config.scmcommand, config.repo, config.user, config.password))
 
     @staticmethod
     def logout():
@@ -68,16 +67,15 @@ class WorkspaceHandler:
             shouter.shout("Set component '%s'(%s) to baseline '%s' (%s)" % (entry.componentname, entry.component,
                                                                             entry.baselinename, entry.baseline))
 
-            replacecommand = "%s set component -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
+            replacecommand = "%s workspace replace-components -r %s -b %s %s stream %s %s --overwrite-uncommitted" % \
                              (self.scmcommand, self.repo, entry.baseline, self.workspace, streamuuid, entry.component)
             shell.execute(replacecommand)
 
     def setnewflowtargets(self, streamuuid):
         shouter.shout("Set new Flowtargets")
         if not self.hasflowtarget(streamuuid):
-            shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
-
-        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
+            shell.execute("%s workspace flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
+        command = "%s workspace flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
@@ -111,7 +109,7 @@ class Changes:
             shouter.shout("Accepting: " + changeEntry.tostring())
         revisions = Changes._collectids(changeentries)
         config = configuration.get()
-        Changes.latest_accept_command = config.scmcommand + " accept --verbose --overwrite-uncommitted --accept-missing-changesets --no-merge --repository-uri " + config.repo + " --target " + \
+        Changes.latest_accept_command = config.scmcommand + " accept --verbose --overwrite-uncommitted --no-merge --repository-uri " + config.repo + " --target " + \
                                         config.workspace + " --changes" + revisions
         exitcode = shell.execute(Changes.latest_accept_command, logpath, "a")
         if exitcode is 0:
@@ -187,7 +185,7 @@ class ImportHandler:
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
-            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -P '%s' -m 20000" % \
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -P \"%s\" -m 20000" % \
                       (entry.component, config.repo, config.user, config.password)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top

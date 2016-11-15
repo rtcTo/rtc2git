@@ -139,7 +139,9 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual('UTF-8', shell.encoding)  # directly deviated to shell
         # [Migration]
         self.assertEqual('Superstream', config.streamname)
+        self.assertEqual('SuperstreamUUID', config.streamuuid)
         self.assertEqual('Previousstream', config.previousstreamname)
+        self.assertEqual('PreviousstreamUUID', config.previousstreamuuid)
         initialcomponentbaselines = config.initialcomponentbaselines
         self.assertEqual(2, len(initialcomponentbaselines))
         initialcomponentbaseline = initialcomponentbaselines[0]
@@ -183,7 +185,9 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertEqual(None, shell.encoding)  # directly deviated to shell
         # [Migration]
         self.assertEqual('Ministream', config.streamname)
+        self.assertEqual('MinistreamUUID', config.streamuuid)
         self.assertEqual('', config.previousstreamname)
+        self.assertEqual('', config.previousstreamuuid)
         self.assertEqual(0, len(config.initialcomponentbaselines))
         self.assertFalse(config.useprovidedhistory)
         self.assertFalse(config.useautomaticconflictresolution)

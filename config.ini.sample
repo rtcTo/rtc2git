@@ -15,8 +15,9 @@ ScmCommand = lscm
 encoding =
 
 [Migration]
-# Stream to be migrated,  referenced by Name or UUID
+# Stream to be migrated,  referenced by Name and UUID
 StreamToMigrate = MyDevelopmentStream
+StreamToMigrateUUID= MyDevelopmentStreamUUID
 
 # Optional - Used by author for prepare a workspace for migrating an earlier release-stream to a later one
 # (eg. When Migrating Stream_Version2, Previous-Stream would be Stream_Version1

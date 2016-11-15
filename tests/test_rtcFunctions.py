@@ -25,7 +25,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         config = self.configBuilder.setrepourl(anyurl).setworkspace(self.workspace).build()
         configuration.config = config
         Changes.accept(self.apath, testhelper.createchangeentry(revision1), testhelper.createchangeentry(revision2))
-        commandtemplate = u"lscm accept --verbose --overwrite-uncommitted --accept-missing-changesets --no-merge --repository-uri {0:s} --target {1:s} --changes {2:s} {3:s}"
+        commandtemplate = u"lscm accept --verbose --overwrite-uncommitted --no-merge --repository-uri {0:s} --target {1:s} --changes {2:s} {3:s}"
         expected_accept_command = commandtemplate.format(anyurl, self.workspace, revision1, revision2)
         appendlogfileshortcut = "a"
         shell_mock.execute.assert_called_once_with(expected_accept_command, self.apath, appendlogfileshortcut)
@@ -125,7 +125,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         handler = ImportHandler()
         handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
 
-        expectedshellcommand = 'lscm accept --verbose --overwrite-uncommitted --accept-missing-changesets --no-merge --repository-uri anyurl --target anyWs --changes anyRevId anyOtherRevId'
+        expectedshellcommand = 'lscm accept --verbose --overwrite-uncommitted --no-merge --repository-uri anyurl --target anyWs --changes anyRevId anyOtherRevId'
         shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
     @patch('rtcFunctions.shell')
@@ -146,7 +146,7 @@ class RtcFunctionsTestCase(unittest.TestCase):
         handler = ImportHandler()
         handler.retryacceptincludingnextchangesets(changeentry1, changeentries)
 
-        expectedshellcommand = 'lscm accept --verbose --overwrite-uncommitted --accept-missing-changesets --no-merge --repository-uri anyurl --target anyWs --changes anyRevId anyOtherRevId'
+        expectedshellcommand = 'lscm accept --verbose --overwrite-uncommitted --no-merge --repository-uri anyurl --target anyWs --changes anyRevId anyOtherRevId'
         shellmock.execute.assert_called_once_with(expectedshellcommand, handler.config.getlogpath("accept.txt"), "a")
 
     @patch('rtcFunctions.shell')
