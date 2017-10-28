@@ -8,7 +8,7 @@ python:
   - "3.7-dev" # 3.7 development branch
   - "nightly" # currently points to 3.7-dev
 before_script:
-  - git config --global user.email "maxpower@rtc.to"
-  - git config --global user.name "Max Power"
+  - git config --global user.email "manuel@rtc.to"
+  - git config --global user.name "Manuel W"
 
 script: python -m unittest discover -s tests
