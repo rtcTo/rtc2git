@@ -404,6 +404,13 @@ class ImportHandler:
             missingchangeentries[changeentry.revision] = changeentry
         return missingchangeentries
 
+    def getchangeentriesofworkspace(self, workspacetocompare):
+        missingchangeentries = {}
+        changeentries = self.getchangeentriesbytypeandvalue(CompareType.workspace, workspacetocompare)
+        for changeentry in changeentries:
+            missingchangeentries[changeentry.revision] = changeentry
+        return missingchangeentries
+
     def getchangeentriesbytypeandvalue(self, comparetype, value):
         dateformat = "yyyy-MM-dd HH:mm:ss"
         outputfilename = self.config.getlogpath("Compare_" + comparetype.name + "_" + value + ".txt")
@@ -450,3 +457,4 @@ class ChangeEntry:
 class CompareType(Enum):
     baseline = 1
     stream = 2
+    workspace = 3
