@@ -1,13 +1,13 @@
-import sys
 import os
 import re
+import sys
 from enum import Enum, unique
 
 import configuration
-from configuration import ComponentBaseLineEntry
-import sorter
 import shell
 import shouter
+import sorter
+from configuration import ComponentBaseLineEntry
 from gitFunctions import Commiter, Differ
 
 
@@ -212,7 +212,9 @@ class ImportHandler:
             amountofacceptedchanges += 1
             if not changeEntry.isAccepted(): # change could already be accepted from a retry
                 if not Changes.accept(self.acceptlogpath, changeEntry):
-                    shouter.shout("Change wasnt succesfully accepted into workspace")
+                    shouter.shout(
+                        "Change wasnt succesfully accepted into workspace, please load your workspace in eclipse and check whats wrong")
+                    self.is_user_aborting(changeEntry)
                     # self.retryacceptincludingnextchangesets(changeEntry, changeentries)
                 if not Differ.has_diff():
                     # no differences found - force reload of the workspace
@@ -269,7 +271,7 @@ class ImportHandler:
     @staticmethod
     def is_user_aborting(change):
         shouter.shout("Last executed command: \n" + Changes.latest_accept_command)
-        shouter.shout("Apropriate git commit command \n" + Commiter.getcommitcommand(change))
+        shouter.shout("Appropriate git commit command \n" + Commiter.getcommitcommand(change))
         reallycontinue = "Do you want to continue? Y for continue, any key for abort"
         if input(reallycontinue).lower() == "y":
             return True
