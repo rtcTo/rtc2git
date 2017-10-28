@@ -219,6 +219,9 @@ class ImportHandler:
                 if not Differ.has_diff():
                     # no differences found - force reload of the workspace
                     WorkspaceHandler().load()
+                    if not Differ.has_diff():
+                        # still no differences, something wrong
+                        self.is_user_aborting(changeentries)
                 shouter.shout("Accepted change %d/%d into working directory" % (amountofacceptedchanges, amountofchanges))
                 Commiter.addandcommit(changeEntry)
         return amountofacceptedchanges
