@@ -205,7 +205,10 @@ class ImportHandler:
 
     def acceptchangesintoworkspace(self, changeentries):
         amountofchanges = len(changeentries)
-        shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
+        if amountofchanges == 0:
+            shouter.shout("Found no changes to accept")
+        else:
+            shouter.shoutwithdate("Start accepting %s changesets" % amountofchanges)
         amountofacceptedchanges = 0
 
         for changeEntry in changeentries:
