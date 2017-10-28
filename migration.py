@@ -1,24 +1,25 @@
 #!/usr/bin/python3
 
+import argparse
 import os
 import sys
-import argparse
 
-from rtcFunctions import ImportHandler
-from rtcFunctions import WorkspaceHandler
-from rtcFunctions import RTCInitializer
-from rtcFunctions import RTCLogin
-from gitFunctions import Initializer, Differ
-from gitFunctions import Commiter
 import configuration
 import shouter
+from gitFunctions import Commiter
+from gitFunctions import Initializer, Differ
+from rtcFunctions import ImportHandler
+from rtcFunctions import RTCInitializer
+from rtcFunctions import RTCLogin
+from rtcFunctions import WorkspaceHandler
 
 
 def initialize():
     config = configuration.get()
     directory = config.workDirectory
     if os.path.exists(directory):
-        sys.exit("Configured directory already exists, please make sure to use a non-existing directory")
+        sys.exit("Configured directory '" + directory + "' already exists, please make sure to use a "
+                 + "non-existing directory")
     shouter.shout("Migration will take place in " + directory)
     os.makedirs(directory)
     os.chdir(directory)
