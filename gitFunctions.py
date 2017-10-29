@@ -1,10 +1,10 @@
 import os
-from datetime import datetime
 import re
+from datetime import datetime
 
-import shouter
-import shell
 import configuration
+import shell
+import shouter
 
 
 class Initializer:
@@ -16,20 +16,19 @@ class Initializer:
 
     @staticmethod
     def createignore():
-        newline = os.linesep
         git_ignore = ".gitignore"
 
         if not os.path.exists(git_ignore):
             with open(git_ignore, "w") as ignore:
-                ignore.write(".jazz5" + newline)
-                ignore.write(".metadata" + newline)
-                ignore.write(".jazzShed" + newline)
+                ignore.write(".jazz5" + '\n')
+                ignore.write(".metadata" + '\n')
+                ignore.write(".jazzShed" + '\n')
                 config = configuration.get()
                 if len(config.ignoredirectories) > 0:
-                    ignore.write(newline + "# directories" + newline)
+                    ignore.write('\n' + "# directories" + '\n')
                     for directory in config.ignoredirectories:
-                        ignore.write('/' + directory + newline)
-                    ignore.write(newline)
+                        ignore.write('/' + directory + '\n')
+                    ignore.write('\n')
             shell.execute("git add " + git_ignore)
             shell.execute("git commit -m %s -q" % shell.quote("Add .gitignore"))
 
@@ -40,12 +39,11 @@ class Initializer:
         """
         config = configuration.get()
         if len(config.gitattributes) > 0:
-            newline = os.linesep
             gitattribues = ".gitattributes"
             if not os.path.exists(gitattribues):
                 with open(gitattribues, "w") as attributes:
                     for line in config.gitattributes:
-                        attributes.write(line + newline)
+                        attributes.write(line + '\n')
                 shell.execute("git add " + gitattribues)
                 shell.execute("git commit -m %s -q" % shell.quote("Add .gitattributes"))
 
@@ -283,10 +281,10 @@ class Commiter:
             if not line.startswith("#"):
                 line = line.strip()
                 if line.startswith("core.ignore"):
-                    gitignorelines.append(os.linesep)
+                    gitignorelines.append('\n')
                     recursive = line.startswith("core.ignore.recursive")
                 for foundpattern in Commiter.findignorepatternregex.findall(line):
-                    gitignoreline = foundpattern + os.linesep
+                    gitignoreline = foundpattern + '\n'
                     if not recursive:
                         gitignoreline = '/' + gitignoreline    # forward, not os.sep
                     gitignorelines.append(gitignoreline)
@@ -367,5 +365,5 @@ class ExtensionFilter:
                         # prepend a forward slash (for non recursive,)
                         # escape a backslash with a backslash
                         # append a newline
-                        repositoryfilestoignore.append('/' + repositoryfile.replace('\\', '\\\\') + os.linesep)
+                        repositoryfilestoignore.append('/' + repositoryfile.replace('\\', '\\\\') + '\n')
         return repositoryfilestoignore
