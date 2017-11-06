@@ -13,6 +13,15 @@ from gitFunctions import Commiter, Differ
 loginCredentialsCommand = "-u '%s' -P '%s'"
 
 
+class RTCversion:
+    @staticmethod
+    def getversion():
+        command = "%s --version" % configuration.get().scmcommand
+        output = shell.getoutput(command)
+        version = output[1].split()[1].split(".")
+        return version
+
+
 class RTCInitializer:
     @staticmethod
     def initialize():
@@ -165,6 +174,10 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
+
+        # Get version major number
+        v_maj = int(RTCversion.getversion()[0])
+
         with open(filename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 cleanedline = line.strip()
@@ -178,7 +191,11 @@ class ImportHandler:
                         component = uuidpart[3].strip()[1:-1]
                         componentname = splittedinformationline[1]
                     else:
-                        baseline = uuidpart[5].strip()[1:-1]
+                        if v_maj > 6:
+                            # fix trim brackets for vers. 6.x.x
+                            baseline = uuidpart[7].strip()[1:-1]
+                        else:
+                            baseline = uuidpart[5].strip()[1:-1]
                         baselinename = splittedinformationline[1]
 
                     if baseline and component:
