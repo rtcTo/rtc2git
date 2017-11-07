@@ -110,7 +110,14 @@ class WorkspaceHandler:
         if not self.hasflowtarget(streamuuid):
             shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
-        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
+        flowarg = ""
+        if RTCVersion.greaterequalthan("6.0.0"):
+            # Need to specify an arg to default and current option or
+            # set flowtarget command will fail.
+            # Assume that this is mandatory for RTC version >= 6.0.0
+            flowarg = "b"
+        command = "%s set flowtarget -r %s %s --default %s --current %s %s" % (self.scmcommand, self.repo, self.workspace,
+                                                                               flowarg, flowarg, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
@@ -187,9 +194,6 @@ class ImportHandler:
         componentname = ""
         baselinename = ""
 
-        # Get version major number
-        v_maj = int(RTCversion.getversion()[0])
-
         with open(filename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 cleanedline = line.strip()
@@ -203,7 +207,7 @@ class ImportHandler:
                         component = uuidpart[3].strip()[1:-1]
                         componentname = splittedinformationline[1]
                     else:
-                        if v_maj > 6:
+                        if RTCVersion.greaterequalthan("6.0.0"):
                             # fix trim brackets for vers. 6.x.x
                             baseline = uuidpart[7].strip()[1:-1]
                         else:
