@@ -226,7 +226,7 @@ class ImportHandler:
                     if not Differ.has_diff():
                         shouter.shout("Still no changes... Please load your workspace in eclipse and check whats wrong")
                         # still no differences, something wrong
-                        self.is_user_aborting(changeentries)
+                        self.is_user_aborting(changeEntry)
                 shouter.shout("Accepted change %d/%d into working directory" % (amountofacceptedchanges, amountofchanges))
                 Commiter.addandcommit(changeEntry)
         return amountofacceptedchanges
