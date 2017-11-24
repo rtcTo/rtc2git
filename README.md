@@ -39,6 +39,14 @@ We welcome any feedback! :)
 
 Feel free to report and/or fix [issues](https://github.com/rtcTo/rtc2git/issues) or create new pull requests
 
+### Pull-Requests
+
+1. [Fork it](https://github.com/rtcTo/rtc2git#fork-destination-box)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
 ## Wiki
 
 For more details [visit our wiki](https://github.com/rtcTo/rtc2git/wiki)
