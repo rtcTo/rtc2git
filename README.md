@@ -4,8 +4,8 @@
 
 # rtc2git
 
-A tool made for migrating code from an existing [RTC](https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
-It uses the CLI of RTC to gather the required information.
+A tool made for migrating code and code-history from an existing [RTC](https://jazz.net/products/rational-team-concert/) SCM repository into a Git repository
+It uses the CLI of RTC to gather the required informations.
 
 ## Prerequirements
 
@@ -16,11 +16,21 @@ It uses the CLI of RTC to gather the required information.
    There is a wiki page on how to [configure RTC CLI](https://github.com/rtcTo/rtc2git/wiki/configure-RTC-CLI))
 - Python 3.4+ (does not work with previous versions or with Python 2)
 
+## Development-Status
+For migrating bigger repositoriys (> 10000 changes) I advice to use our other tool [rtc2gitcli](https://github.com/rtcTo/rtc2gitcli) as the IBM Java API is more stable than IBM CLI API. 
+However this project is easier to run and adapt to different environments.
+
+This project is no longer in active development, because the author has no access to any RTC Server anymore (since they are migrated to git) and changes to code can only be hardly tested.
+
 ## Usage
 
 - Create a config file called `config.ini` and fill out the needed information, use the supplied `config.ini.sample` or `config.ini.minimum.sample` as reference
 - Execute `migration.py`
 
+
+### Pitfalls
+- Sometimes rtc2git can not determine any baseline and wont find any changes (accepting changesets 0) - Please referr to UseProvidedHistory config entry explained [here](https://github.com/rtcTo/rtc2git/wiki/Getting-your-History-Files)
+- The provided result of the compare command of IBM RTC CLI API does sometimes not provide the changesets in the fully correct order. This can result in merge conflicts, which should be solved by loading the workspace into eclipse, manually resolve them and resuming the migration by running the rtc2git again.
 
 ## How does it work?
 
