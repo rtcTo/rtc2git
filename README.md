@@ -61,3 +61,4 @@ Feel free to report and/or fix [issues](https://github.com/rtcTo/rtc2git/issues)
 ## Wiki
 
 For more details [visit our wiki](https://github.com/rtcTo/rtc2git/wiki)
+You could also join us in [slack](https://rtc.to/#slack)
