@@ -29,6 +29,7 @@ This project is no longer in active development, because the author has no acces
 
 
 ### Pitfalls
+- Your stream or workspace is not allowed to have spaces in their name - In case your name contains spaces, please clone and rename them and use the cloned workspace/stream for migration (see [#104](https://github.com/rtcTo/rtc2git/issues/104), [#51](https://github.com/rtcTo/rtc2git/issues/51)).
 - Sometimes rtc2git can not determine any baseline and wont find any changes (accepting changesets 0) - Please referr to UseProvidedHistory config entry explained [here](https://github.com/rtcTo/rtc2git/wiki/Getting-your-History-Files)
 - The provided result of the compare command of IBM RTC CLI API does sometimes not provide the changesets in the fully correct order. This can result in merge conflicts, which should be solved by loading the workspace into eclipse, manually resolve them and resuming the migration by running the rtc2git again.
 
