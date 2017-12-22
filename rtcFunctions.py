@@ -29,12 +29,12 @@ class RTCInitializer:
 class RTCLogin:
     @staticmethod
     def loginandcollectstreamuuid():
+        global loginCredentialsCommand
         config = configuration.get()
         loginHeaderCommand = "%s login -r %s "
         exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
         if exitcode is not 0:
             shouter.shout("Login failed. Trying again without quotes.")
-            global loginCredentialsCommand
             loginCredentialsCommand = "-u %s -P %s"
             exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
             if exitcode is not 0:
