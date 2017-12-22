@@ -11,6 +11,8 @@ from configuration import ComponentBaseLineEntry
 from gitFunctions import Commiter, Differ
 
 
+loginCredentialsCommand = "-u '%s' -P '%s'"
+
 class RTCInitializer:
     @staticmethod
     def initialize():
@@ -28,7 +30,15 @@ class RTCLogin:
     @staticmethod
     def loginandcollectstreamuuid():
         config = configuration.get()
-        shell.execute("%s login -r %s -u '%s' -P '%s'" % (config.scmcommand, config.repo, config.user, config.password))
+        loginHeaderCommand = "%s login -r %s "
+        exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
+        if exitcode is not 0:
+            shouter.shout("Login failed. Trying again without quotes.")
+            global loginCredentialsCommand
+            loginCredentialsCommand = "-u %s -P %s"
+            exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
+            if exitcode is not 0:
+                sys.exit("Login failed. Please check your connection and credentials.")
         config.collectstreamuuids()
 
     @staticmethod
@@ -187,7 +197,7 @@ class ImportHandler:
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
-            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -u %s -P '%s' -m 20000" % \
+            command = ("scm --show-alias n --show-uuid y list baselines --components %s -r %s " + loginCredentialsCommand + " -m 20000") % \
                       (entry.component, config.repo, config.user, config.password)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
