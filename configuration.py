@@ -33,6 +33,7 @@ def read(configname=None):
     scmcommand = generalsection.get('ScmCommand', "lscm")
     shell.logcommands = parsedconfig.get(miscsectionname, 'LogShellCommands', fallback="False") == "True"
     shell.setencoding(generalsection.get('encoding'))
+    scmversion = generalsection.get('ScmVersion', "5");
 
     workspace = shlex.quote(generalsection['WorkspaceName'])
     gitreponame = generalsection['GIT-Reponame']
@@ -56,7 +57,7 @@ def read(configname=None):
     gitattributes = parsesplittedproperty(gitattributesproperty)
 
     configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
-    configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
+    configbuilder.setscmversion(scmversion).setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
     configbuilder.setmaxchangesetstoaccepttogether(maxchangesetstoaccepttogether)
@@ -122,6 +123,7 @@ class Builder:
         self.password = ""
         self.repourl = ""
         self.scmcommand = "lscm"
+        self.scmversion = ""
         self.workspace = ""
         self.useexistingworkspace = ""
         self.useprovidedhistory = ""
@@ -156,6 +158,10 @@ class Builder:
 
     def setscmcommand(self, scmcommand):
         self.scmcommand = scmcommand
+        return self
+
+    def setscmversion(self, scmversion):
+        self.scmversion = int(scmversion)
         return self
 
     def setworkspace(self, workspace):
@@ -232,7 +238,7 @@ class Builder:
         return stringwithbooleanexpression == "True"
 
     def build(self):
-        return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
+        return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.scmversion, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
@@ -241,7 +247,7 @@ class Builder:
 
 
 class ConfigObject:
-    def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
+    def __init__(self, user, password, repourl, scmcommand, scmversion, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
                  ignorefileextensions, ignoredirectories, includecomponentroots, commitmessageprefix, gitattributes):
@@ -249,6 +255,7 @@ class ConfigObject:
         self.password = password
         self.repo = repourl
         self.scmcommand = scmcommand
+        self.scmversion = scmversion
         self.workspace = workspace
         self.useexistingworkspace = useexistingworkspace
         self.useprovidedhistory = useprovidedhistory
