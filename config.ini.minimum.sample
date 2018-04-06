@@ -4,6 +4,8 @@ User=USR
 Password=secret
 GIT-Reponame = myGitRepo.git
 WorkspaceName=ToBeCreatedWorkspaceName
+# Folder to be created - where migration will take place
+Directory = \temp\myWorkingDirectory
 
 [Migration]
 # Stream to be migrated,  referenced by Name or UUID
