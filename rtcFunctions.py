@@ -31,20 +31,22 @@ class RTCLogin:
     def loginandcollectstreamuuid():
         global loginCredentialsCommand
         config = configuration.get()
-        loginHeaderCommand = "%s login -r %s "
-        exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
-        if exitcode is not 0:
-            shouter.shout("Login failed. Trying again without quotes.")
-            loginCredentialsCommand = "-u %s -P %s"
+        if not config.stored:
+            loginHeaderCommand = "%s login -r %s "
             exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
             if exitcode is not 0:
-                sys.exit("Login failed. Please check your connection and credentials.")
+                shouter.shout("Login failed. Trying again without quotes.")
+                loginCredentialsCommand = "-u %s -P %s"
+                exitcode = shell.execute((loginHeaderCommand + loginCredentialsCommand) % (config.scmcommand, config.repo, config.user, config.password))
+                if exitcode is not 0:
+                    sys.exit("Login failed. Please check your connection and credentials.")
         config.collectstreamuuids()
 
     @staticmethod
     def logout():
         config = configuration.get()
-        shell.execute("%s logout -r %s" % (config.scmcommand, config.repo))
+        if not config.stored:
+            shell.execute("%s logout -r %s" % (config.scmcommand, config.repo))
 
 
 class WorkspaceHandler:
@@ -197,8 +199,10 @@ class ImportHandler:
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
-            command = ("scm --show-alias n --show-uuid y list baselines --components %s -r %s " + loginCredentialsCommand + " -m 20000") % \
-                      (entry.component, config.repo, config.user, config.password)
+            command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s -m 20000" % \
+                      (entry.component, config.repo)
+            if not config.stored:
+                command += loginCredentialsCommand % (config.user, config.password)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
 

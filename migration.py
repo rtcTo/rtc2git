@@ -142,10 +142,12 @@ def parsecommandline():
                         default=configfiledefault)
     parser.add_argument('-u', '--user', metavar='user', dest='user', help='RTC user', default=None)
     parser.add_argument('-p', '--password', metavar='password', dest='password', help='RTC password', default=None)
+    parser.add_argument('-s', '--stored', help='Use stored password for the repository connection', action='store_true')
     arguments = parser.parse_args()
     configuration.setconfigfile(arguments.configfile)
     configuration.setUser(arguments.user)
     configuration.setPassword(arguments.password)
+    configuration.setStored(arguments.stored)
 
 
 def validate():
