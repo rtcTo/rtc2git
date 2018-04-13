@@ -34,6 +34,27 @@ class RTCVersion:
         return True
 
 
+class RTCVersion:
+    @staticmethod
+    def getversion():
+        scmcommand = configuration.get().scmcommand
+        command = "%s --version" % scmcommand
+        output = shell.getoutput(command)
+        version = output[1].split()[1]
+        return version
+
+    @staticmethod
+    def greaterequalthan(version2compare):
+        thisver = RTCVersion.getversion().split('.')
+        v2c = version2compare.split('.')
+        if thisver == v2c:
+            return True
+        for n,v in enumerate(thisver):
+            if int(v) < int(v2c[n]):
+                return False
+        return True
+
+
 class RTCInitializer:
     @staticmethod
     def initialize():
