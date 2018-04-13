@@ -12,49 +12,6 @@ from gitFunctions import Commiter, Differ
 
 loginCredentialsCommand = "-u '%s' -P '%s'"
 
-
-class RTCVersion:
-    @staticmethod
-    def getversion():
-        scmcommand = configuration.get().scmcommand
-        command = "%s --version" % scmcommand
-        output = shell.getoutput(command)
-        version = output[1].split()[1]
-        return version
-
-    @staticmethod
-    def greaterequalthan(version2compare):
-        thisver = RTCVersion.getversion().split('.')
-        v2c = version2compare.split('.')
-        if thisver == v2c:
-            return True
-        for n,v in enumerate(thisver):
-            if int(v) < int(v2c[n]):
-                return False
-        return True
-
-
-class RTCVersion:
-    @staticmethod
-    def getversion():
-        scmcommand = configuration.get().scmcommand
-        command = "%s --version" % scmcommand
-        output = shell.getoutput(command)
-        version = output[1].split()[1]
-        return version
-
-    @staticmethod
-    def greaterequalthan(version2compare):
-        thisver = RTCVersion.getversion().split('.')
-        v2c = version2compare.split('.')
-        if thisver == v2c:
-            return True
-        for n,v in enumerate(thisver):
-            if int(v) < int(v2c[n]):
-                return False
-        return True
-
-
 class RTCInitializer:
     @staticmethod
     def initialize():
@@ -97,6 +54,7 @@ class WorkspaceHandler:
         self.workspace = self.config.workspace
         self.repo = self.config.repo
         self.scmcommand = self.config.scmcommand
+        self.rtcversion = self.config.rtcversion
 
     def createandload(self, stream, componentbaselineentries=[]):
         shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
@@ -132,7 +90,7 @@ class WorkspaceHandler:
             shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
         flowarg = ""
-        if RTCVersion.greaterequalthan("6.0.0"):
+        if self.rtcversion >= 6:
             # Need to specify an arg to default and current option or
             # set flowtarget command will fail.
             # Assume that this is mandatory for RTC version >= 6.0.0
@@ -228,7 +186,7 @@ class ImportHandler:
                         component = uuidpart[3].strip()[1:-1]
                         componentname = splittedinformationline[1]
                     else:
-                        if RTCVersion.greaterequalthan("6.0.0"):
+                        if self.config.rtcversion >= 6:
                             # fix trim brackets for vers. 6.x.x
                             baseline = uuidpart[7].strip()[1:-1]
                         else:
