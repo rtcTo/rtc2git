@@ -137,6 +137,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertTrue(config.useexistingworkspace)
         self.assertEqual('scm', config.scmcommand)
         self.assertEqual('UTF-8', shell.encoding)  # directly deviated to shell
+        self.assertEqual(6, config.scmversion)
         # [Migration]
         self.assertEqual('Superstream', config.streamname)
         self.assertEqual('Previousstream', config.previousstreamname)
@@ -181,6 +182,7 @@ class ConfigurationTestCase(unittest.TestCase):
         self.assertFalse(config.useexistingworkspace)
         self.assertEqual('lscm', config.scmcommand)
         self.assertEqual(None, shell.encoding)  # directly deviated to shell
+        self.assertEqual(5, config.scmversion)
         # [Migration]
         self.assertEqual('Ministream', config.streamname)
         self.assertEqual('', config.previousstreamname)

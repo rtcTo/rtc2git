@@ -13,6 +13,8 @@ ScmCommand = lscm
 # Optional - Set encoding of files (For example encoding = UTF-8)
 # See "https://github.com/rtcTo/rtc2git/wiki/Encoding" for further instructions
 encoding =
+# Optional - SCM version. Different SCM versions have different commands. If not specific, default is 5.
+ScmVersion = 5
 
 [Migration]
 # Stream to be migrated,  referenced by Name or UUID
