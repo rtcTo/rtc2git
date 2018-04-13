@@ -10,8 +10,8 @@ import sorter
 from configuration import ComponentBaseLineEntry
 from gitFunctions import Commiter, Differ
 
-
 loginCredentialsCommand = "-u '%s' -P '%s'"
+
 
 class RTCInitializer:
     @staticmethod
@@ -196,14 +196,14 @@ class ImportHandler:
         pattern = re.compile(regex)
         config = self.config
         componentbaselinesentries = self.getcomponentbaselineentriesfromstream(stream)
-        logincred = ""
+        logincredentials = ""
         if not config.stored:
-            logincred = loginCredentialsCommand % (config.user, config.password)
+            logincredentials = loginCredentialsCommand % (config.user, config.password)
         for entry in componentbaselinesentries:
             shouter.shout("Determine initial baseline of " + entry.componentname)
             # use always scm, lscm fails when specifying maximum over 10k
             command = "scm --show-alias n --show-uuid y list baselines --components %s -r %s %s -m 20000" % \
-                      (entry.component, config.repo, logincred)
+                      (entry.component, config.repo, logincredentials)
             baselineslines = shell.getoutput(command)
             baselineslines.reverse()  # reverse to have earliest baseline on top
 
