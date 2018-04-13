@@ -44,6 +44,7 @@ def resume():
     if config.previousstreamname:
         prepare()
     else:
+        Commiter.branch(config.streamname)
         WorkspaceHandler().load()
 
 
