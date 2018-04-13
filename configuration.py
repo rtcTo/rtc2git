@@ -10,6 +10,7 @@ config = None
 configfile = None
 user = None
 password = None
+stored = None
 
 
 def read(configname=None):
@@ -24,10 +25,10 @@ def read(configname=None):
     migrationsection = parsedconfig[migrationsectionname]
     miscsectionname = 'Miscellaneous'
     global user
-    if not user:
+    if not user and not stored:
         user = generalsection['User']
     global password
-    if not password:
+    if not password and not stored:
         password = generalsection['Password']
     repositoryurl = generalsection['Repo']
     scmcommand = generalsection.get('ScmCommand', "lscm")
@@ -55,7 +56,7 @@ def read(configname=None):
     gitattributesproperty = parsedconfig.get(migrationsectionname, 'Gitattributes', fallback='')
     gitattributes = parsesplittedproperty(gitattributesproperty)
 
-    configbuilder = Builder().setuser(user).setpassword(password).setrepourl(repositoryurl).setscmcommand(scmcommand)
+    configbuilder = Builder().setuser(user).setpassword(password).setstored(stored).setrepourl(repositoryurl).setscmcommand(scmcommand)
     configbuilder.setworkspace(workspace).setgitreponame(gitreponame).setrootfolder(os.getcwd())
     configbuilder.setuseexistingworkspace(useexistingworkspace).setuseprovidedhistory(useprovidedhistory)
     configbuilder.setuseautomaticconflictresolution(useautomaticconflictresolution)
@@ -92,6 +93,11 @@ def setPassword(newpassword):
     password = newpassword
 
 
+def setStored(newstored):
+    global stored
+    stored = newstored
+
+
 def getinitialcomponentbaselines(definedbaselines):
     initialcomponentbaselines = []
     if definedbaselines:
@@ -120,6 +126,7 @@ class Builder:
     def __init__(self):
         self.user = ""
         self.password = ""
+        self.stored = False
         self.repourl = ""
         self.scmcommand = "lscm"
         self.workspace = ""
@@ -148,6 +155,10 @@ class Builder:
 
     def setpassword(self, password):
         self.password = password
+        return self
+
+    def setstored(self, stored):
+        self.stored = stored
         return self
 
     def setrepourl(self, repourl):
@@ -232,7 +243,7 @@ class Builder:
         return stringwithbooleanexpression == "True"
 
     def build(self):
-        return ConfigObject(self.user, self.password, self.repourl, self.scmcommand, self.workspace,
+        return ConfigObject(self.user, self.password, self.stored, self.repourl, self.scmcommand, self.workspace,
                             self.useexistingworkspace, self.workdirectory, self.initialcomponentbaselines,
                             self.streamname, self.gitreponame, self.useprovidedhistory,
                             self.useautomaticconflictresolution, self.maxchangesetstoaccepttogether, self.clonedgitreponame, self.rootFolder,
@@ -241,12 +252,13 @@ class Builder:
 
 
 class ConfigObject:
-    def __init__(self, user, password, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
+    def __init__(self, user, password, stored, repourl, scmcommand, workspace, useexistingworkspace, workdirectory,
                  initialcomponentbaselines, streamname, gitreponame, useprovidedhistory,
                  useautomaticconflictresolution, maxchangesetstoaccepttogether, clonedgitreponame, rootfolder, previousstreamname,
                  ignorefileextensions, ignoredirectories, includecomponentroots, commitmessageprefix, gitattributes):
         self.user = user
         self.password = password
+        self.stored = stored
         self.repo = repourl
         self.scmcommand = scmcommand
         self.workspace = workspace
