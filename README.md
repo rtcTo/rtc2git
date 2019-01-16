@@ -17,8 +17,8 @@ It uses the CLI of RTC to gather the required informations.
 - Python 3.4+ (does not work with previous versions or with Python 2)
 
 ## Development-Status
-For migrating bigger repositoriys (> 10000 changes) I advice to use our other tool [rtc2gitcli](https://github.com/rtcTo/rtc2gitcli) as the IBM Java API is more stable than IBM CLI API. 
-However this project is easier to run and adapt to different environments.
+For migrating bigger repositories (> 10000 changes) I advise you to use our other tool [rtc2gitcli](https://github.com/rtcTo/rtc2gitcli) as the IBM Java API is more stable than IBM CLI API. 
+However, this project is easier to run and adapt to different environments.
 
 This project is no longer in active development, because the author has no access to any RTC Server anymore (since they are migrated to git) and changes to code can only be hardly tested.
 
@@ -29,9 +29,9 @@ This project is no longer in active development, because the author has no acces
 
 
 ### Pitfalls
-- Your stream or workspace is not allowed to have spaces in their name - In case your name contains spaces, please clone and rename them and use the cloned workspace/stream for migration (see [#104](https://github.com/rtcTo/rtc2git/issues/104), [#51](https://github.com/rtcTo/rtc2git/issues/51)).
-- Sometimes rtc2git can not determine any baseline and wont find any changes (accepting changesets 0) - Please referr to how to reset your workspace to an older state explained [here](https://github.com/rtcTo/rtc2git/wiki/Resetting-your-workspace-to-an-older-state)
-- The provided result of the compare command of IBM RTC CLI API does sometimes not provide the changesets in the fully correct order. This can result in merge conflicts, which should be solved by loading the workspace into eclipse, manually resolve them and resuming the migration by running the rtc2git again.
+- Your stream or workspace is not allowed to have spaces in their name. In the case where names contain spaces, please clone and rename them and use the cloned workspace/stream for migration (see [#104](https://github.com/rtcTo/rtc2git/issues/104), [#51](https://github.com/rtcTo/rtc2git/issues/51)).
+- Sometimes rtc2git can not determine any baseline and won't find any changes (accepting changesets 0) - Please refer to how to reset your workspace to an older state explained [here](https://github.com/rtcTo/rtc2git/wiki/Resetting-your-workspace-to-an-older-state)
+- The provided result of the compare command of IBM RTC CLI API does sometimes not provide the changesets in the fully correct order. This can result in merge conflicts, which should be solved by loading the workspace into eclipse, manually resolving them and resuming the migration by running the rtc2git again.
 
 ## How does it work?
 
