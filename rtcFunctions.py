@@ -12,7 +12,6 @@ from gitFunctions import Commiter, Differ
 
 loginCredentialsCommand = "-u '%s' -P '%s'"
 
-
 class RTCInitializer:
     @staticmethod
     def initialize():
@@ -55,6 +54,7 @@ class WorkspaceHandler:
         self.workspace = self.config.workspace
         self.repo = self.config.repo
         self.scmcommand = self.config.scmcommand
+        self.rtcversion = self.config.rtcversion
 
     def createandload(self, stream, componentbaselineentries=[]):
         shell.execute("%s create workspace -r %s -s %s %s" % (self.scmcommand, self.repo, stream, self.workspace))
@@ -89,7 +89,14 @@ class WorkspaceHandler:
         if not self.hasflowtarget(streamuuid):
             shell.execute("%s add flowtarget -r %s %s %s" % (self.scmcommand, self.repo, self.workspace, streamuuid))
 
-        command = "%s set flowtarget -r %s %s --default --current %s" % (self.scmcommand, self.repo, self.workspace, streamuuid)
+        flowarg = ""
+        if self.rtcversion >= 6:
+            # Need to specify an arg to default and current option or
+            # set flowtarget command will fail.
+            # Assume that this is mandatory for RTC version >= 6.0.0
+            flowarg = "b"
+        command = "%s set flowtarget -r %s %s --default %s --current %s %s" % (self.scmcommand, self.repo, self.workspace,
+                                                                               flowarg, flowarg, streamuuid)
         shell.execute(command)
 
     def hasflowtarget(self, streamuuid):
@@ -165,6 +172,7 @@ class ImportHandler:
         baseline = ""
         componentname = ""
         baselinename = ""
+
         with open(filename, 'r', encoding=shell.encoding) as file:
             for line in file:
                 cleanedline = line.strip()
@@ -178,7 +186,11 @@ class ImportHandler:
                         component = uuidpart[3].strip()[1:-1]
                         componentname = splittedinformationline[1]
                     else:
-                        baseline = uuidpart[5].strip()[1:-1]
+                        if self.config.rtcversion >= 6:
+                            # fix trim brackets for vers. 6.x.x
+                            baseline = uuidpart[7].strip()[1:-1]
+                        else:
+                            baseline = uuidpart[5].strip()[1:-1]
                         baselinename = splittedinformationline[1]
 
                     if baseline and component:
